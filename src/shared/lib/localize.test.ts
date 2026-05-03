@@ -62,6 +62,28 @@ describe('localizeMove', () => {
     expect(result.difficulty).toBe('BEGINNER');
     expect(result.youtubeUrl).toBe('https://youtube.com');
   });
+
+  it('passes through null optional fields for pl locale', () => {
+    const move = { ...baseMove, description_pl: null, gripType_pl: null, coachNote_pl: null };
+    const result = localizeMove(move, 'pl');
+    expect(result.description).toBeNull();
+    expect(result.gripType).toBeNull();
+    expect(result.coachNote).toBeNull();
+  });
+
+  it('passes through null optional fields for en locale', () => {
+    const move = { ...baseMove, description_en: null, entry_en: null, coachNote_en: null };
+    const result = localizeMove(move, 'en');
+    expect(result.description).toBeNull();
+    expect(result.entry).toBeNull();
+    expect(result.coachNote).toBeNull();
+  });
+
+  it('handles empty stepsData arrays', () => {
+    const move = { ...baseMove, stepsData_pl: [], stepsData_en: [] };
+    expect(localizeMove(move, 'pl').stepsData).toEqual([]);
+    expect(localizeMove(move, 'en').stepsData).toEqual([]);
+  });
 });
 
 describe('localizeTag', () => {
