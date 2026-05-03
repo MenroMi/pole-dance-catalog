@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { auth } from '@/shared/lib/auth';
 
-import styles from './landing.module.css';
+import styles from '@/app/landing.module.css';
 
 export const metadata: Metadata = {
   title: 'pole space — a catalog of pole dance moves',
@@ -12,7 +12,9 @@ export const metadata: Metadata = {
     'A small, careful catalog of pole moves — written by performers we know, photographed in studios we visit. No feed, no streaks. Just the moves and your notes.',
 };
 
-export default async function HomePage() {
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function HomePage({ params: _params }: Props) {
   const session = await auth();
   if (session) redirect('/catalog');
 

@@ -1,31 +1,7 @@
-import type { Metadata } from 'next';
-import { Space_Grotesk, Manrope } from 'next/font/google';
-
-import { Providers } from '@/shared/components/Providers';
-
-import './globals.css';
-
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
-  subsets: ['latin'],
-});
-
-const manrope = Manrope({
-  variable: '--font-manrope',
-  subsets: ['latin'],
-});
-
-export const metadata: Metadata = {
-  title: 'Pole Space — Pole Artistry Platform',
-  description: 'Catalog of pole dance moves',
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${manrope.variable}`}>
-      <body className="antialiased">
-        <Providers>{children}</Providers>
-      </body>
+    <html>
+      <body>{children}</body>
     </html>
   );
 }

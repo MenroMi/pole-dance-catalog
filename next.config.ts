@@ -1,6 +1,9 @@
+import createNextIntlPlugin from 'next-intl/plugin';
 import path from 'path';
 
 import type { NextConfig } from 'next';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -29,10 +32,10 @@ const nextConfig: NextConfig = {
     const noStore = [{ key: 'Cache-Control', value: 'no-store' }];
     return [
       { source: '/(.*)', headers: securityHeaders },
-      { source: '/profile/(.*)', headers: noStore },
-      { source: '/settings(.*)', headers: noStore },
-      { source: '/reset-password(.*)', headers: noStore },
-      { source: '/admin(.*)', headers: noStore },
+      { source: '/[a-z]{2}/profile/(.*)', headers: noStore },
+      { source: '/[a-z]{2}/settings(.*)', headers: noStore },
+      { source: '/[a-z]{2}/reset-password(.*)', headers: noStore },
+      { source: '/[a-z]{2}/admin(.*)', headers: noStore },
     ];
   },
   experimental: {
@@ -54,4 +57,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
