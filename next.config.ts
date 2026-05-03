@@ -32,10 +32,9 @@ const nextConfig: NextConfig = {
     const noStore = [{ key: 'Cache-Control', value: 'no-store' }];
     return [
       { source: '/(.*)', headers: securityHeaders },
-      { source: '/[a-z]{2}/profile/(.*)', headers: noStore },
-      { source: '/[a-z]{2}/settings(.*)', headers: noStore },
-      { source: '/[a-z]{2}/reset-password(.*)', headers: noStore },
-      { source: '/[a-z]{2}/admin(.*)', headers: noStore },
+      { source: '/:locale([a-z]{2})/profile/(.*)', headers: noStore },
+      { source: '/:locale([a-z]{2})/reset-password(.*)', headers: noStore },
+      { source: '/:locale([a-z]{2})/admin(.*)', headers: noStore },
     ];
   },
   experimental: {

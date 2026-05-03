@@ -308,6 +308,11 @@ Worktree: `.worktrees/error-boundaries`
 - `gripType_pl: 'Split grip'` у Chair Spin и Carousel Spin — оставлен на английском (все остальные переведены). Уточнить: это принятый польский термин или пропуск?
 - `title_pl: 'Wejście na Słup'` для Basic Climb — в плане было `'Podstawowe Wspinanie'`. Другая семантика ("Getting on the Pole" vs "Basic Climb"). Подтвердить итоговый вариант.
 
+**`next.config.ts` — паттерн `/settings(.*)` удалён как мёртвый** (2026-05-03)
+
+- Оригинальный `Cache-Control: no-store` паттерн `/settings(.*)` не совпадал ни с одним реальным роутом (settings живёт на `/profile/settings`, покрыт правилом `/profile/(.*)`)
+- Удалён при исправлении паттернов для i18n. Если появится отдельный роут `/settings`, добавить `/:locale([a-z]{2})/settings(.*)` обратно
+
 **`getRelatedMovesAction` — `orderBy: { title: 'asc' }` сломан** (2026-05-03, см. ниже в Design System)
 
 - После переименования колонки `title` → `title_pl`/`title_en` этот orderBy упадёт в рантайме
