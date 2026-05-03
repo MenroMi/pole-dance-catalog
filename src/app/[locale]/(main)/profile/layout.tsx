@@ -1,3 +1,4 @@
+import { getLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import ProfileAside from '@/features/profile/components/ProfileAside';
@@ -7,7 +8,10 @@ import { auth } from '@/shared/lib/auth';
 
 export default async function ProfileLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session?.user) redirect('/login');
+  if (!session?.user) {
+    const locale = await getLocale();
+    redirect(`/${locale}/login`);
+  }
 
   return (
     <SessionGuard>

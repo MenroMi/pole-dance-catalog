@@ -1,7 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BadgeCheck, Lock, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useSession } from 'next-auth/react';
 import { forwardRef, useState } from 'react';
 import type { InputHTMLAttributes } from 'react';

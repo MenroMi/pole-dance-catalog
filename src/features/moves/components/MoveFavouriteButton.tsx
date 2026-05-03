@@ -1,6 +1,6 @@
 'use client';
 import { Heart } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useOptimistic, useTransition } from 'react';
 
 import { addFavouriteAction, removeFavouriteAction } from '@/features/profile/actions';

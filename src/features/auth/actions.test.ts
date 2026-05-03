@@ -160,7 +160,7 @@ describe('signupAction', () => {
     expect(mockGenToken).toHaveBeenCalledWith('alice@example.com');
     expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', 'mock-token');
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining('/verify-email?sent=true&email=alice%40example.com'),
+      '/pl/verify-email?sent=true&email=alice%40example.com',
     );
   });
 
@@ -244,7 +244,7 @@ describe('resendVerificationAction', () => {
   it('redirects to rate-limited when rate limit is exceeded', async () => {
     mockResendLimit.mockResolvedValue({ success: false });
     await expect(resendVerificationAction('alice@example.com')).rejects.toThrow('NEXT_REDIRECT');
-    expect(mockRedirect).toHaveBeenCalledWith(expect.stringContaining('/verify-email?error=rate-limited'));
+    expect(mockRedirect).toHaveBeenCalledWith('/pl/verify-email?error=rate-limited');
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
@@ -259,7 +259,7 @@ describe('resendVerificationAction', () => {
     expect(mockGenToken).toHaveBeenCalledWith('alice@example.com');
     expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', 'mock-token');
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining('/verify-email?sent=true&email=alice%40example.com'),
+      '/pl/verify-email?sent=true&email=alice%40example.com',
     );
   });
 
@@ -268,7 +268,7 @@ describe('resendVerificationAction', () => {
 
     await expect(resendVerificationAction('nobody@example.com')).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockRedirect).toHaveBeenCalledWith(expect.stringContaining('/verify-email?error=invalid'));
+    expect(mockRedirect).toHaveBeenCalledWith('/pl/verify-email?error=invalid');
     expect(mockGenToken).not.toHaveBeenCalled();
   });
 
@@ -277,7 +277,7 @@ describe('resendVerificationAction', () => {
 
     await expect(resendVerificationAction('verified@example.com')).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockRedirect).toHaveBeenCalledWith(expect.stringContaining('/catalog'));
+    expect(mockRedirect).toHaveBeenCalledWith('/pl/catalog');
     expect(mockGenToken).not.toHaveBeenCalled();
   });
 
@@ -291,7 +291,7 @@ describe('resendVerificationAction', () => {
     await expect(resendVerificationAction('alice@example.com')).rejects.toThrow('NEXT_REDIRECT');
 
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining('/verify-email?sent=true&email=alice%40example.com'),
+      '/pl/verify-email?sent=true&email=alice%40example.com',
     );
     expect(mockGenToken).not.toHaveBeenCalled();
     expect(mockSendEmail).not.toHaveBeenCalled();
@@ -320,7 +320,7 @@ describe('resendVerificationAction', () => {
 
     expect(mockDeleteTokens).toHaveBeenCalledWith('alice@example.com');
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining('/verify-email?error=send-failed&email=alice%40example.com'),
+      '/pl/verify-email?error=send-failed&email=alice%40example.com',
     );
   });
 });

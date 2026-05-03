@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,8 +10,12 @@ vi.mock('@/features/profile/actions', () => ({
 }));
 
 const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: mockPush }),
+  redirect: vi.fn(),
 }));
 
 import { addFavouriteAction, removeFavouriteAction } from '@/features/profile/actions';

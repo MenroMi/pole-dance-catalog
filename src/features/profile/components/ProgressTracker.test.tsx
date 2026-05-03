@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,28 +11,16 @@ vi.mock('../actions', () => ({
   removeProgressAction: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ refresh: vi.fn() }),
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
 vi.mock('next/image', () => ({
   default: ({ alt }: { alt: string }) => <img alt={alt} />,
-}));
-
-vi.mock('next/link', () => ({
-  default: ({
-    href,
-    children,
-    ...props
-  }: {
-    href: string;
-    children: React.ReactNode;
-    [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
 }));
 
 function makeMove(id: string, title: string, difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') {

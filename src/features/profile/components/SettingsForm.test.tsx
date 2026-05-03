@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -16,8 +17,12 @@ vi.mock('../actions', () => ({
 vi.mock('./AvatarUpload', () => ({ default: () => null }));
 
 const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(() => ({ refresh: vi.fn(), push: mockPush })),
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: mockPush, refresh: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
 const mockSessionUpdate = vi.fn();

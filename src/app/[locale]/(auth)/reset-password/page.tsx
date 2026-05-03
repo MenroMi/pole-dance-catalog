@@ -1,3 +1,4 @@
+import { getLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { findResetToken } from '@/features/auth/lib/reset-tokens';
@@ -11,11 +12,12 @@ type Props = {
 export default async function ResetPasswordPage({ searchParams }: Props) {
   const { token } = await searchParams;
 
-  if (!token) redirect('/forgot-password?expired=true');
+  const locale = await getLocale();
+  if (!token) redirect(`/${locale}/forgot-password?expired=true`);
 
   const record = await findResetToken(token);
   if (!record || record.expiresAt < new Date()) {
-    redirect('/forgot-password?expired=true');
+    redirect(`/${locale}/forgot-password?expired=true`);
   }
 
   return <ResetPasswordForm token={token} />;

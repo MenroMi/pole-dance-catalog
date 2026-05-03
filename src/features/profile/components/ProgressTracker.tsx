@@ -1,8 +1,7 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, Search, X } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useMemo, useOptimistic, useState, useTransition } from 'react';
 
 import { cardVariants, tabContentVariants } from '@/shared/lib/motion';
