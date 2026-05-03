@@ -234,6 +234,18 @@ describe('getMovesAction', () => {
     );
   });
 
+  it('filters by search with case-insensitive title_en match when locale is en', async () => {
+    mockTransaction.mockResolvedValue([mockMoves, 2]);
+    await getMovesAction({ search: 'jade' }, 'en');
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          title_en: { contains: 'jade', mode: 'insensitive' },
+        }),
+      }),
+    );
+  });
+
   it('total reflects filtered count not all moves', async () => {
     mockTransaction.mockResolvedValue([[mockMoves[0]], 1]);
     const result = await getMovesAction({ poleTypes: ['STATIC'] }, 'pl');
@@ -251,7 +263,7 @@ describe('getMovesAction', () => {
 });
 
 describe('getTagsAction', () => {
-  it('returns tags ordered by name_pl', async () => {
+  it('returns tags ordered by name_pl when locale is pl', async () => {
     const mockTags = [
       { id: 'tag-1', name: 'aerial', color: '#3b82f6' },
       { id: 'tag-2', name: 'flexibility', color: '#a855f7' },
@@ -260,6 +272,17 @@ describe('getTagsAction', () => {
     const result = await getTagsAction('pl');
     expect(result).toEqual(mockTags);
     expect(mockTagFindMany).toHaveBeenCalledWith({ orderBy: { name_pl: 'asc' } });
+  });
+
+  it('returns tags ordered by name_en when locale is en', async () => {
+    const mockTags = [
+      { id: 'tag-1', name: 'aerial', color: '#3b82f6' },
+      { id: 'tag-2', name: 'flexibility', color: '#a855f7' },
+    ];
+    mockTagFindMany.mockResolvedValue(mockTags);
+    const result = await getTagsAction('en');
+    expect(result).toEqual(mockTags);
+    expect(mockTagFindMany).toHaveBeenCalledWith({ orderBy: { name_en: 'asc' } });
   });
 
   it('returns empty array when no tags exist', async () => {

@@ -48,11 +48,22 @@ export async function getRelatedMovesAction(tagIds: string[], excludeId: string,
       id: { not: excludeId },
       tags: { some: { id: { in: tagIds } } },
     },
-    include: { tags: true },
+    select: {
+      id: true,
+      title_pl: true,
+      title_en: true,
+      difficulty: true,
+      imageUrl: true,
+      youtubeUrl: true,
+    },
     take: 4,
   });
+  const pl = locale === 'pl';
   return moves.map((move) => ({
-    ...localizeMove(move as Parameters<typeof localizeMove>[0], locale),
-    tags: move.tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale)),
+    id: move.id,
+    title: pl ? move.title_pl : move.title_en,
+    difficulty: move.difficulty,
+    imageUrl: move.imageUrl,
+    youtubeUrl: move.youtubeUrl,
   }));
 }

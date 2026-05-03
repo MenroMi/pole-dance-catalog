@@ -1,3 +1,5 @@
+import type { Difficulty, PoleType } from '@prisma/client';
+
 import type { Locale } from '@/i18n/routing';
 
 export type RawMove = {
@@ -15,9 +17,9 @@ export type RawMove = {
   coachNote_pl: string | null;
   coachNote_en: string | null;
   coachNoteAuthor: string | null;
-  difficulty: string;
+  difficulty: Difficulty;
   category: string;
-  poleTypes: string[];
+  poleTypes: PoleType[];
   youtubeUrl: string;
   imageUrl: string | null;
   duration: string | null;

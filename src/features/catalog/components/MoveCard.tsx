@@ -16,7 +16,9 @@ const DIFFICULTY_BADGE: Record<string, { className: string; style?: React.CSSPro
   ADVANCED: { className: '', style: { backgroundColor: '#92400e', color: '#fef3c7' } },
 };
 
-export default function MoveCard({ move }: { move: LocalizedMoveWithTags }) {
+type MoveCardProps = { move: LocalizedMoveWithTags };
+
+export default function MoveCard({ move }: MoveCardProps) {
   const badge = DIFFICULTY_BADGE[move.difficulty] ?? DIFFICULTY_BADGE.BEGINNER;
 
   const imageSrc: string | null =

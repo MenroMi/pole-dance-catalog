@@ -15,6 +15,7 @@ import { cn } from '@/shared/lib/utils';
 import { Difficulty, PoleType } from '@/shared/types/enums';
 
 import type { MoveFilters } from '@/shared/types';
+import type { LocalizedTag } from '@/shared/lib/localize';
 
 const POLE_TYPES = Object.values(PoleType);
 const DIFFICULTIES = Object.values(Difficulty);
@@ -38,7 +39,7 @@ function buildQuery(
 
 type CatalogFiltersProps = {
   filters: MoveFilters;
-  availableTags: { id: string; name: string; color: string | null }[];
+  availableTags: LocalizedTag[];
 };
 
 export default function CatalogFilters({ filters, availableTags }: CatalogFiltersProps) {

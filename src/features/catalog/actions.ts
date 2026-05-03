@@ -79,6 +79,7 @@ export async function getMovesAction(
 }
 
 export async function getTagsAction(locale: Locale = 'pl'): Promise<LocalizedTag[]> {
-  const tags = await prisma.tag.findMany({ orderBy: { name_pl: 'asc' } });
+  const nameField = locale === 'pl' ? 'name_pl' : 'name_en';
+  const tags = await prisma.tag.findMany({ orderBy: { [nameField]: 'asc' } });
   return tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale));
 }
