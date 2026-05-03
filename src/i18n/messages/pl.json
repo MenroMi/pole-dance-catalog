@@ -1,0 +1,180 @@
+{
+  "common": {
+    "back": "Wróć",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "loading": "Ładowanie...",
+    "error": "Błąd"
+  },
+  "nav": {
+    "catalog": "Katalog",
+    "profile": "Profil",
+    "admin": "Admin",
+    "accountMenu": "Menu konta",
+    "settings": "Ustawienia",
+    "logOut": "Wyloguj się",
+    "logIn": "Zaloguj się",
+    "logOutConfirmTitle": "Wylogować się?",
+    "logOutConfirmDescription": "Będziesz musiał zalogować się ponownie, aby uzyskać dostęp do profilu.",
+    "logOutConfirmAction": "Wyloguj się",
+    "logOutError": "Coś poszło nie tak. Spróbuj ponownie."
+  },
+  "auth": {
+    "login": {
+      "title": "witaj ponownie.",
+      "subtitle": "zaloguj się, by kontynuować trening.",
+      "emailLabel": "adres e-mail",
+      "passwordLabel": "hasło",
+      "forgot": "nie pamiętasz?",
+      "submit": "zaloguj się",
+      "submitting": "logowanie...",
+      "noAccount": "nowy w pole space?",
+      "createAccount": "utwórz konto",
+      "orContinueWith": "lub kontynuuj przez",
+      "resetBanner": "Hasło zaktualizowane — zaloguj się.",
+      "verifiedBanner": "Email zweryfikowany — zaloguj się.",
+      "resendVerificationLink": "wyślij email weryfikacyjny ponownie"
+    },
+    "signup": {
+      "title": "dołącz do pole space.",
+      "subtitle": "utwórz konto, żeby zacząć śledzić postępy.",
+      "firstNameLabel": "imię",
+      "lastNameLabel": "nazwisko",
+      "emailLabel": "adres e-mail",
+      "passwordLabel": "hasło",
+      "submit": "zarejestruj się",
+      "submitting": "rejestrowanie...",
+      "hasAccount": "masz już konto?",
+      "signIn": "zaloguj się",
+      "orContinueWith": "lub kontynuuj przez"
+    },
+    "verifyEmail": {
+      "sentHeading": "sprawdź swoją skrzynkę.",
+      "sentBody": "wysłaliśmy link weryfikacyjny na twój e-mail. wygaśnie za 24 godziny.",
+      "expiredHeading": "link wygasł.",
+      "expiredBody": "twój link weryfikacyjny wygasł. podaj e-mail, żeby dostać nowy.",
+      "sendFailedHeading": "nie udało się wysłać e-maila.",
+      "sendFailedBody": "nie mogliśmy dostarczyć e-maila weryfikacyjnego. spróbuj ponownie.",
+      "invalidHeading": "nieprawidłowy link.",
+      "invalidBody": "ten link weryfikacyjny jest nieprawidłowy. zarejestruj się ponownie.",
+      "serverHeading": "coś poszło nie tak.",
+      "serverBody": "nie mogliśmy zweryfikować twojego e-maila. spróbuj ponownie później.",
+      "backToSignIn": "wróć do logowania",
+      "backToSignUp": "wróć do rejestracji",
+      "spamNote": "nie dostałeś e-maila? sprawdź folder ze spamem",
+      "resendSubmit": "wyślij ponownie",
+      "resendWait": "wyślij ponownie za {seconds}s",
+      "emailPlaceholder": "twoj@email.com",
+      "sending": "wysyłanie..."
+    },
+    "forgotPassword": {
+      "heading": "zresetuj hasło.",
+      "body": "podaj e-mail powiązany z kontem, a wyślemy ci link do resetowania hasła.",
+      "emailLabel": "adres e-mail",
+      "submit": "wyślij link",
+      "submitting": "wysyłanie...",
+      "successHeading": "sprawdź swoją skrzynkę.",
+      "successBody": "jeśli konto istnieje, wysłaliśmy link do resetowania hasła. wygasa za 1 godzinę.",
+      "backToSignIn": "wróć do logowania"
+    },
+    "resetPassword": {
+      "heading": "nowe hasło.",
+      "passwordLabel": "nowe hasło",
+      "submit": "zapisz hasło",
+      "submitting": "zapisywanie...",
+      "invalidToken": "link do resetowania hasła jest nieprawidłowy lub wygasł."
+    }
+  },
+  "catalog": {
+    "title": "galeria ruchów",
+    "empty": "brak ruchów spełniających kryteria.",
+    "filters": {
+      "poleState": "Stan słupa",
+      "difficulty": "Poziom trudności",
+      "tags": "Tagi",
+      "search": "szukaj ruchów...",
+      "searchLabel": "Szukaj"
+    }
+  },
+  "moves": {
+    "breadcrumb": "Katalog",
+    "specs": "Specyfikacja",
+    "relatedMoves": "Podobne ruchy",
+    "steps": "Kroki",
+    "gripType": "Chwyt",
+    "entry": "Wejście",
+    "coachNote": "Notatka trenera",
+    "noRelated": "Brak podobnych ruchów."
+  },
+  "profile": {
+    "overview": "Przegląd",
+    "progress": "Postęp",
+    "favourites": "Ulubione",
+    "settings": "Ustawienia",
+    "editAvatar": "Zmień zdjęcie",
+    "saveChanges": "Zapisz zmiany",
+    "currentlyLearning": "Aktualnie uczę się",
+    "wantToLearn": "Chcę się nauczyć",
+    "learned": "Nauczone",
+    "noProgress": "Brak postępu. Zacznij śledzić ruchy w katalogu.",
+    "noFavourites": "Brak ulubionych. Dodaj ruchy z katalogu."
+  },
+  "admin": {
+    "title": "Panel admina",
+    "createMove": "Utwórz ruch"
+  },
+  "enums": {
+    "difficulty": {
+      "BEGINNER": "Początkujący",
+      "INTERMEDIATE": "Średniozaawansowany",
+      "ADVANCED": "Zaawansowany"
+    },
+    "learnStatus": {
+      "WANT_TO_LEARN": "Chcę się nauczyć",
+      "IN_PROGRESS": "W trakcie",
+      "LEARNED": "Nauczone"
+    },
+    "poleType": {
+      "STATIC": "Static",
+      "SPIN": "Spin"
+    },
+    "category": {
+      "SPINS": "Spiny",
+      "CLIMBS": "Wspinaczki",
+      "HOLDS": "Trzymania",
+      "COMBOS": "Kombo",
+      "FLOORWORK": "Praca z podłogą"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "heading": "straciłeś momentum?",
+      "message": "ten ruch nie istnieje jeszcze w naszym katalogu, albo link stracił uchwyt.",
+      "backToGallery": "wróć do galerii",
+      "goHome": "strona główna"
+    },
+    "unexpected": {
+      "heading": "coś poszło nie tak.",
+      "message": "wystąpił nieoczekiwany błąd. spróbuj odświeżyć stronę.",
+      "retry": "spróbuj ponownie"
+    }
+  },
+  "emails": {
+    "verification": {
+      "subject": "Zweryfikuj swój e-mail — Pole Space",
+      "heading": "Zweryfikuj swój e-mail",
+      "body": "Kliknij poniższy przycisk, aby zweryfikować swój adres e-mail.",
+      "cta": "Zweryfikuj e-mail",
+      "expiry": "Link wygaśnie za 24 godziny.",
+      "ignore": "Jeśli nie zakładałeś konta w Pole Space, zignoruj ten e-mail."
+    },
+    "passwordReset": {
+      "subject": "Resetowanie hasła — Pole Space",
+      "heading": "Zresetuj swoje hasło",
+      "body": "Kliknij poniższy przycisk, aby zresetować hasło.",
+      "cta": "Zresetuj hasło",
+      "expiry": "Link wygaśnie za 1 godzinę.",
+      "ignore": "Jeśli nie prosiłeś o resetowanie hasła, zignoruj ten e-mail."
+    }
+  }
+}

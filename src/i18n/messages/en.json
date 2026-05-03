@@ -1,0 +1,180 @@
+{
+  "common": {
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "nav": {
+    "catalog": "Catalog",
+    "profile": "Profile",
+    "admin": "Admin",
+    "accountMenu": "Account menu",
+    "settings": "Settings",
+    "logOut": "Log out",
+    "logIn": "Log in",
+    "logOutConfirmTitle": "Log out?",
+    "logOutConfirmDescription": "You'll need to sign back in to access your profile.",
+    "logOutConfirmAction": "Log out",
+    "logOutError": "Something went wrong. Please try again."
+  },
+  "auth": {
+    "login": {
+      "title": "welcome back.",
+      "subtitle": "sign in to continue your practice.",
+      "emailLabel": "email address",
+      "passwordLabel": "password",
+      "forgot": "forgot?",
+      "submit": "sign in",
+      "submitting": "signing in...",
+      "noAccount": "new to pole space?",
+      "createAccount": "create account",
+      "orContinueWith": "or continue with",
+      "resetBanner": "Password updated — please sign in.",
+      "verifiedBanner": "Email verified — please sign in.",
+      "resendVerificationLink": "resend verification email"
+    },
+    "signup": {
+      "title": "join pole space.",
+      "subtitle": "create your account to start tracking.",
+      "firstNameLabel": "first name",
+      "lastNameLabel": "last name",
+      "emailLabel": "email address",
+      "passwordLabel": "password",
+      "submit": "sign up",
+      "submitting": "signing up...",
+      "hasAccount": "already have an account?",
+      "signIn": "sign in",
+      "orContinueWith": "or continue with"
+    },
+    "verifyEmail": {
+      "sentHeading": "check your inbox.",
+      "sentBody": "we sent a verification link to your email. it expires in 24 hours.",
+      "expiredHeading": "link expired.",
+      "expiredBody": "your verification link has expired. enter your email to get a new one.",
+      "sendFailedHeading": "couldn't send email.",
+      "sendFailedBody": "we failed to deliver your verification email. please try again.",
+      "invalidHeading": "invalid link.",
+      "invalidBody": "this verification link is invalid. please sign up again.",
+      "serverHeading": "something went wrong.",
+      "serverBody": "we could not verify your email. please try again later.",
+      "backToSignIn": "back to sign in",
+      "backToSignUp": "back to sign up",
+      "spamNote": "didn't get an email? check your spam folder",
+      "resendSubmit": "resend verification email",
+      "resendWait": "resend in {seconds}s",
+      "emailPlaceholder": "your@email.com",
+      "sending": "sending..."
+    },
+    "forgotPassword": {
+      "heading": "forgot password.",
+      "body": "enter the email associated with your account and we'll send you a reset link.",
+      "emailLabel": "email address",
+      "submit": "send link",
+      "submitting": "sending...",
+      "successHeading": "check your inbox.",
+      "successBody": "if that address is registered, a reset link is on its way. it expires in 1 hour.",
+      "backToSignIn": "back to sign in"
+    },
+    "resetPassword": {
+      "heading": "new password.",
+      "passwordLabel": "new password",
+      "submit": "save password",
+      "submitting": "saving...",
+      "invalidToken": "the password reset link is invalid or has expired."
+    }
+  },
+  "catalog": {
+    "title": "move gallery",
+    "empty": "no moves match your filters.",
+    "filters": {
+      "poleState": "Pole state",
+      "difficulty": "Difficulty",
+      "tags": "Tags",
+      "search": "search moves...",
+      "searchLabel": "Search"
+    }
+  },
+  "moves": {
+    "breadcrumb": "Catalog",
+    "specs": "Specs",
+    "relatedMoves": "Related moves",
+    "steps": "Steps",
+    "gripType": "Grip",
+    "entry": "Entry",
+    "coachNote": "Coach note",
+    "noRelated": "No related moves."
+  },
+  "profile": {
+    "overview": "Overview",
+    "progress": "Progress",
+    "favourites": "Favourites",
+    "settings": "Settings",
+    "editAvatar": "Change photo",
+    "saveChanges": "Save changes",
+    "currentlyLearning": "Currently learning",
+    "wantToLearn": "Want to learn",
+    "learned": "Learned",
+    "noProgress": "No progress yet. Start tracking moves from the catalog.",
+    "noFavourites": "No favourites yet. Add moves from the catalog."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "createMove": "Create move"
+  },
+  "enums": {
+    "difficulty": {
+      "BEGINNER": "Beginner",
+      "INTERMEDIATE": "Intermediate",
+      "ADVANCED": "Advanced"
+    },
+    "learnStatus": {
+      "WANT_TO_LEARN": "Want to learn",
+      "IN_PROGRESS": "In progress",
+      "LEARNED": "Learned"
+    },
+    "poleType": {
+      "STATIC": "Static",
+      "SPIN": "Spin"
+    },
+    "category": {
+      "SPINS": "Spins",
+      "CLIMBS": "Climbs",
+      "HOLDS": "Holds",
+      "COMBOS": "Combos",
+      "FLOORWORK": "Floorwork"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "heading": "lost your momentum?",
+      "message": "this move doesn't exist in our catalog yet, or the link has lost its grip.",
+      "backToGallery": "back to gallery",
+      "goHome": "go home"
+    },
+    "unexpected": {
+      "heading": "something went wrong.",
+      "message": "an unexpected error occurred. try refreshing the page.",
+      "retry": "try again"
+    }
+  },
+  "emails": {
+    "verification": {
+      "subject": "Verify your email — Pole Space",
+      "heading": "Verify your email",
+      "body": "Click the button below to verify your email address.",
+      "cta": "Verify email",
+      "expiry": "The link expires in 24 hours.",
+      "ignore": "If you didn't create a Pole Space account, ignore this email."
+    },
+    "passwordReset": {
+      "subject": "Password reset — Pole Space",
+      "heading": "Reset your password",
+      "body": "Click the button below to reset your password.",
+      "cta": "Reset password",
+      "expiry": "The link expires in 1 hour.",
+      "ignore": "If you didn't request a password reset, ignore this email."
+    }
+  }
+}
