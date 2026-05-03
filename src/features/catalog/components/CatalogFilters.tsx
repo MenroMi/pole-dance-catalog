@@ -1,6 +1,6 @@
 'use client';
 import { Check, Gauge, RotateCw, Search, Tag, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useRef, useState } from 'react';
 
 import {

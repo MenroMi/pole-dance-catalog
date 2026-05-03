@@ -1,10 +1,17 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import HeaderNav from './HeaderNav';
 
-vi.mock('next/navigation', () => ({ usePathname: vi.fn() }));
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: vi.fn(),
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
+}));
 
 beforeEach(() => vi.clearAllMocks());
 

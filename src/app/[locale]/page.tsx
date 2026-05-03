@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { Link, redirect } from '@/i18n/navigation';
 
 import { auth } from '@/shared/lib/auth';
 

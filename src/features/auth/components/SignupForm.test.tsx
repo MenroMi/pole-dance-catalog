@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -6,6 +7,13 @@ import { SignupForm } from './SignupForm';
 
 vi.mock('@/features/auth/actions', () => ({
   signupAction: vi.fn(),
+}));
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
 import { signupAction } from '@/features/auth/actions';

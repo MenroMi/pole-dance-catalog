@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useRef } from 'react';
 

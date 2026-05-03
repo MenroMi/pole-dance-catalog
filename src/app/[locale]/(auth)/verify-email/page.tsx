@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 
 import { resendVerificationAction } from '@/features/auth';
 import { getResendCooldownRemaining } from '@/features/auth/lib/cooldown';

@@ -1,9 +1,14 @@
+import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('next/navigation', () => ({
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
   useRouter: vi.fn(),
+  redirect: vi.fn(),
 }));
 vi.mock('@/features/auth/actions', () => ({
   checkEmailVerifiedAction: vi.fn(),

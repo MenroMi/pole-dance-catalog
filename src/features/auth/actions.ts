@@ -2,6 +2,7 @@
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
 import { AuthError } from 'next-auth';
 import { z } from 'zod';
 
@@ -55,7 +56,8 @@ export async function signupAction(data: SignupFormData) {
     return { error: 'Failed to send email, please try again' };
   }
 
-  redirect(`/verify-email?sent=true&email=${encodeURIComponent(parsed.data.email)}`);
+  const locale = await getLocale();
+  redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(parsed.data.email)}`);
 }
 
 export async function loginAction(data: LoginFormData) {
@@ -80,17 +82,18 @@ export async function loginAction(data: LoginFormData) {
 
 export async function resendVerificationAction(email: string) {
   const { success: withinLimit } = await resendRatelimit.limit(email);
-  if (!withinLimit) redirect(`/verify-email?error=rate-limited`);
+  const locale = await getLocale();
+  if (!withinLimit) redirect(`/${locale}/verify-email?error=rate-limited`);
 
   const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) redirect('/verify-email?error=invalid');
-  if (user.emailVerified !== null) redirect('/catalog');
+  if (!user) redirect(`/${locale}/verify-email?error=invalid`);
+  if (user.emailVerified !== null) redirect(`/${locale}/catalog`);
 
   const existing = await prisma.verificationToken.findFirst({ where: { identifier: email } });
   if (existing) {
     if (Date.now() - existing.createdAt.getTime() < RESEND_COOLDOWN_MS) {
-      redirect(`/verify-email?sent=true&email=${encodeURIComponent(email)}`);
+      redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(email)}`);
     }
   }
 
@@ -101,10 +104,10 @@ export async function resendVerificationAction(email: string) {
     await sendVerificationEmail(email, token);
   } catch {
     await deleteUserTokens(email);
-    redirect(`/verify-email?error=send-failed&email=${encodeURIComponent(email)}`);
+    redirect(`/${locale}/verify-email?error=send-failed&email=${encodeURIComponent(email)}`);
   }
 
-  redirect(`/verify-email?sent=true&email=${encodeURIComponent(email)}`);
+  redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(email)}`);
 }
 
 export async function checkEmailVerifiedAction(email: string): Promise<boolean> {

@@ -8,6 +8,9 @@ vi.mock('next/navigation', () => ({
     throw e;
   }),
 }));
+vi.mock('next-intl/server', () => ({
+  getLocale: vi.fn().mockResolvedValue('pl'),
+}));
 vi.mock('bcryptjs', () => ({
   default: {
     hash: vi.fn().mockResolvedValue('hashed_pw'),
@@ -241,7 +244,7 @@ describe('resendVerificationAction', () => {
   it('redirects to rate-limited when rate limit is exceeded', async () => {
     mockResendLimit.mockResolvedValue({ success: false });
     await expect(resendVerificationAction('alice@example.com')).rejects.toThrow('NEXT_REDIRECT');
-    expect(mockRedirect).toHaveBeenCalledWith('/verify-email?error=rate-limited');
+    expect(mockRedirect).toHaveBeenCalledWith(expect.stringContaining('/verify-email?error=rate-limited'));
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
@@ -265,7 +268,7 @@ describe('resendVerificationAction', () => {
 
     await expect(resendVerificationAction('nobody@example.com')).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockRedirect).toHaveBeenCalledWith('/verify-email?error=invalid');
+    expect(mockRedirect).toHaveBeenCalledWith(expect.stringContaining('/verify-email?error=invalid'));
     expect(mockGenToken).not.toHaveBeenCalled();
   });
 
@@ -274,7 +277,7 @@ describe('resendVerificationAction', () => {
 
     await expect(resendVerificationAction('verified@example.com')).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockRedirect).toHaveBeenCalledWith('/catalog');
+    expect(mockRedirect).toHaveBeenCalledWith(expect.stringContaining('/catalog'));
     expect(mockGenToken).not.toHaveBeenCalled();
   });
 

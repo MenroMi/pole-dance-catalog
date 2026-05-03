@@ -1,10 +1,17 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HomePage from './page';
 
-vi.mock('next/navigation', () => ({ redirect: vi.fn() }));
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
+}));
 vi.mock('@/shared/lib/auth', () => ({ auth: vi.fn() }));
 
 import { auth } from '@/shared/lib/auth';

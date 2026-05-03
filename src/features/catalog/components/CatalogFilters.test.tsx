@@ -1,10 +1,17 @@
+import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import CatalogFilters from './CatalogFilters';
 
-vi.mock('next/navigation', () => ({ useRouter: vi.fn() }));
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: vi.fn(),
+  redirect: vi.fn(),
+}));
 
 const mockTags = [
   { id: 'tag-1', name: 'aerial', color: '#3b82f6' },
