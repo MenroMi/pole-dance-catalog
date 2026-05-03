@@ -288,7 +288,23 @@ Worktree: `.worktrees/error-boundaries`
 - Old single-select category accordion removed; replaced with Pole state + Tags
 - Remaining open question: mobile UX (bottom-sheet vs sidebar collapse) — deferred until mobile layout pass
 
-## i18n (feat/i18n — в работе)
+## i18n (feat/i18n — в работе, прогресс 8/12 задач)
+
+**Выполнено (Tasks 1–8):**
+- next-intl 4.11.0 установлен, routing config, message files (pl/en)
+- Middleware `proxy.ts` заменён на `src/middleware.ts` (createMiddleware + createNavigation)
+- Prisma schema: bilingual `_pl`/`_en` columns на Move и Tag, `locale` field на токенах
+- `localizeMove`/`localizeTag` helpers (TDD, 8 тестов)
+- App directory перенесён под `src/app/[locale]/`
+- Navigation imports → `@/i18n/navigation`
+- Catalog + moves actions принимают `locale` param, применяют localize helpers
+- Email localization: `sendVerificationEmail`/`sendPasswordResetEmail` принимают `locale`, используют `getTranslations`; токены хранят locale в БД; `verify/route.ts` использует `token.locale` для редиректов
+
+**Осталось (Tasks 9–12):**
+- Task 9: LocaleSwitcher component (TDD)
+- Task 10: Static translations — auth components
+- Task 11: Static translations — nav + main + errors
+- Task 12: Final validation + e2e checklist
 
 **`Move.title_en` — отсутствует `@unique` constraint** (2026-05-03)
 
