@@ -13,7 +13,7 @@ export async function sendVerificationEmail(
 ): Promise<void> {
   const t = await getTranslations({ locale, namespace: 'emails.verification' });
   const base = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
-  const verifyUrl = `${base}/api/auth/verify?token=${token}`;
+  const verifyUrl = `${base}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
   const { error } = await resend.emails.send({
     from: FROM,

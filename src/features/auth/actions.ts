@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server';
 import { AuthError } from 'next-auth';
 import { z } from 'zod';
 
+import { locales, defaultLocale } from '@/i18n/routing';
 import type { Locale } from '@/i18n/routing';
 import { signIn } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
@@ -35,7 +36,8 @@ export async function signupAction(data: SignupFormData) {
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) return { error: 'Email already in use' };
 
-  const locale = (await getLocale()) as Locale;
+  const raw = await getLocale();
+  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
 
   const hashed = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.create({
@@ -84,7 +86,8 @@ export async function loginAction(data: LoginFormData) {
 
 export async function resendVerificationAction(email: string) {
   const { success: withinLimit } = await resendRatelimit.limit(email);
-  const locale = (await getLocale()) as Locale;
+  const raw = await getLocale();
+  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
   if (!withinLimit) redirect(`/${locale}/verify-email?error=rate-limited`);
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -145,7 +148,8 @@ export async function forgotPasswordAction(
 
   if (!user || user.password === null) return { sent: true };
 
-  const locale = (await getLocale()) as Locale;
+  const raw = await getLocale();
+  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
 
   await deleteResetTokensByEmail(email);
   const token = await generateResetToken(email, locale);
@@ -172,7 +176,7 @@ export async function resetPasswordAction(
   if (!record) return { error: 'invalid' };
   if (record.expiresAt < new Date()) return { error: 'expired' };
 
-  const tokenLocale = (record.locale ?? 'pl') as Locale;
+  const tokenLocale = (record.locale ?? defaultLocale) as Locale;
 
   const hashed = await bcrypt.hash(newPassword, 10);
   await prisma.user.update({ where: { email: record.email }, data: { password: hashed } });

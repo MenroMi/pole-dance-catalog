@@ -13,7 +13,7 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
   const t = await getTranslations({ locale, namespace: 'emails.passwordReset' });
   const base = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
-  const resetUrl = `${base}/reset-password?token=${encodeURIComponent(token)}`;
+  const resetUrl = `${base}/${locale}/reset-password?token=${encodeURIComponent(token)}`;
 
   const { error } = await resend.emails.send({
     from: FROM,

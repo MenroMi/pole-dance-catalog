@@ -34,9 +34,11 @@ describe('sendPasswordResetEmail', () => {
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@example.com',
-        html: expect.stringContaining('test-token-123'),
+        html: expect.stringContaining('/pl/reset-password'),
       }),
     );
+    const call = mockSend.mock.calls[0][0] as { html: string };
+    expect(call.html).toContain('test-token-123');
   });
 
   it('sends Polish subject when locale is pl', async () => {
@@ -47,6 +49,7 @@ describe('sendPasswordResetEmail', () => {
 
     await sendPasswordResetEmail('u@e.com', 'tok', 'pl');
 
+    expect(getTranslations).toHaveBeenCalledWith({ locale: 'pl', namespace: 'emails.passwordReset' });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Resetowanie hasła — Pole Space' }),
     );
@@ -60,6 +63,7 @@ describe('sendPasswordResetEmail', () => {
 
     await sendPasswordResetEmail('u@e.com', 'tok', 'en');
 
+    expect(getTranslations).toHaveBeenCalledWith({ locale: 'en', namespace: 'emails.passwordReset' });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Password reset — Pole Space' }),
     );

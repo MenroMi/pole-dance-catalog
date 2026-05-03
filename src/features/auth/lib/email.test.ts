@@ -47,6 +47,7 @@ describe('sendVerificationEmail', () => {
 
     await sendVerificationEmail('u@e.com', 'tok', 'pl');
 
+    expect(getTranslations).toHaveBeenCalledWith({ locale: 'pl', namespace: 'emails.verification' });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Zweryfikuj swój e-mail — Pole Space' }),
     );
@@ -60,6 +61,7 @@ describe('sendVerificationEmail', () => {
 
     await sendVerificationEmail('u@e.com', 'tok', 'en');
 
+    expect(getTranslations).toHaveBeenCalledWith({ locale: 'en', namespace: 'emails.verification' });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Verify your email — Pole Space' }),
     );
