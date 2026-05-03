@@ -288,6 +288,31 @@ Worktree: `.worktrees/error-boundaries`
 - Old single-select category accordion removed; replaced with Pole state + Tags
 - Remaining open question: mobile UX (bottom-sheet vs sidebar collapse) — deferred until mobile layout pass
 
+## i18n (feat/i18n — в работе)
+
+**`Move.title_en` — отсутствует `@unique` constraint** (2026-05-03)
+
+- `seed-move-detail.ts`, `seed-coach-notes.ts`, `seed-tags.ts` ищут moves через `findFirst({ where: { title_en } })` — без уникального индекса это ненадёжно при дублях
+- Fix: добавить `@unique` к `title_en` в `schema.prisma` + новая миграция
+- Приоритет: низкий — в dev-базе дублей не будет, но стоит закрыть до merge
+
+**`poleTypes` — нет DB-дефолта несмотря на миграцию** (2026-05-03)
+
+- Миграция добавляла `NOT NULL DEFAULT '{}'`, но Neon/PostgreSQL не сохраняет default для enum-массивов в `information_schema.columns`
+- Workaround в `seed.ts`: явный `poleTypes: []` в create-цикле
+- Если кто-то напишет новый seed без этого — получит тихий P2011
+- Fix: создать дополнительную миграцию с `ALTER TABLE "Move" ALTER COLUMN "poleTypes" SET DEFAULT '{}'`; после проверки — убрать workaround
+
+**Контентные вопросы — подтвердить** (2026-05-03)
+
+- `gripType_pl: 'Split grip'` у Chair Spin и Carousel Spin — оставлен на английском (все остальные переведены). Уточнить: это принятый польский термин или пропуск?
+- `title_pl: 'Wejście na Słup'` для Basic Climb — в плане было `'Podstawowe Wspinanie'`. Другая семантика ("Getting on the Pole" vs "Basic Climb"). Подтвердить итоговый вариант.
+
+**`getRelatedMovesAction` — `orderBy: { title: 'asc' }` сломан** (2026-05-03, см. ниже в Design System)
+
+- После переименования колонки `title` → `title_pl`/`title_en` этот orderBy упадёт в рантайме
+- Fix: заменить на `orderBy: { title_pl: 'asc' }` или `title_en: 'asc'` (покрывается Task 7)
+
 ## Database
 
 ~~**`PoleType` on existing moves**~~ ✅ Resolved (2026-04-25) — `prisma/seed-progress.ts`
