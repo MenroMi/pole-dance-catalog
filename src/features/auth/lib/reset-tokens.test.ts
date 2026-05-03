@@ -33,6 +33,13 @@ describe('generateResetToken', () => {
     expect(token).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
   });
 
+  it('generates a unique token on each call', async () => {
+    mockCreate.mockResolvedValue({});
+    const a = await generateResetToken('user@example.com', 'pl');
+    const b = await generateResetToken('user@example.com', 'pl');
+    expect(a).not.toBe(b);
+  });
+
   it('creates record with correct email, 1h TTL, and locale', async () => {
     mockCreate.mockResolvedValue({});
     const before = Date.now();
