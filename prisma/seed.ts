@@ -224,6 +224,7 @@ async function main() {
   await prisma.move.deleteMany();
 
   for (const move of moves) {
+    // poleTypes has no DB default despite migration — must be passed explicitly
     await prisma.move.create({ data: { ...move, poleTypes: [] } });
   }
 
