@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
-import type { MoveWithTags } from '../types';
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCard from './MoveCard';
 
@@ -18,7 +18,7 @@ vi.mock('@/i18n/navigation', () => ({
   redirect: vi.fn(),
 }));
 
-const baseMove: MoveWithTags = {
+const baseMove: LocalizedMoveWithTags = {
   id: 'move-1',
   title: 'Jade Split',
   description: 'A beautiful aerial move requiring flexibility.',
@@ -30,7 +30,7 @@ const baseMove: MoveWithTags = {
   createdAt: new Date(),
   updatedAt: new Date(),
   tags: [],
-  stepsData: [],
+  stepsData: null,
   gripType: null,
   entry: null,
   duration: null,
@@ -78,7 +78,7 @@ describe('MoveCard', () => {
         { id: '2', name: 'strength', color: null },
         { id: '3', name: 'core', color: null },
         { id: '4', name: 'hidden-tag', color: null },
-      ] as MoveWithTags['tags'],
+      ] as LocalizedMoveWithTags['tags'],
     };
     render(<MoveCard move={move} />);
     expect(screen.getByText('flexibility')).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('MoveCard', () => {
   it('renders tag with tinted bg and colored text when color is set', () => {
     const move = {
       ...baseMove,
-      tags: [{ id: '1', name: 'aerial', color: '#3b82f6' }] as MoveWithTags['tags'],
+      tags: [{ id: '1', name: 'aerial', color: '#3b82f6' }] as LocalizedMoveWithTags['tags'],
     };
     render(<MoveCard move={move} />);
     const tag = screen.getByText('aerial');
@@ -100,7 +100,7 @@ describe('MoveCard', () => {
   it('renders tag without inline style when color is null', () => {
     const move = {
       ...baseMove,
-      tags: [{ id: '1', name: 'aerial', color: null }] as MoveWithTags['tags'],
+      tags: [{ id: '1', name: 'aerial', color: null }] as LocalizedMoveWithTags['tags'],
     };
     render(<MoveCard move={move} />);
     const tag = screen.getByText('aerial');

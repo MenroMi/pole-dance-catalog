@@ -8,6 +8,7 @@ import RelatedMoves from '@/features/moves/components/RelatedMoves';
 import { extractVideoId } from '@/features/moves/lib/youtube';
 import { auth } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
+import type { Locale } from '@/i18n/routing';
 
 export async function generateStaticParams() {
   try {
@@ -23,10 +24,10 @@ const getMove = cache(getMoveByIdAction);
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: Locale }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const move = await getMove(id, undefined);
+  const { id, locale } = await params;
+  const move = await getMove(id, locale, undefined);
   if (!move) return {};
 
   const videoId = extractVideoId(move.youtubeUrl);
@@ -45,17 +46,22 @@ export async function generateMetadata({
   };
 }
 
-export default async function MoveDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function MoveDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: Locale }>;
+}) {
+  const { id, locale } = await params;
   const session = await auth();
   const userId = session?.user?.id;
-  const move = await getMoveByIdAction(id, userId);
+  const move = await getMoveByIdAction(id, locale, userId);
 
   if (!move) return notFound();
 
   const related = await getRelatedMovesAction(
     move.tags.map((t) => t.id),
     id,
+    locale,
   );
 
   const isFavourited = move.favourites.length > 0;

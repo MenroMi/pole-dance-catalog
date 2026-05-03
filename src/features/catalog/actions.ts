@@ -3,8 +3,12 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { prisma } from '@/shared/lib/prisma';
+import { localizeMove, localizeTag } from '@/shared/lib/localize';
+import type { Locale } from '@/i18n/routing';
 import type { MoveFilters, PaginatedResult } from '@/shared/types';
 import { Difficulty, PoleType } from '@/shared/types/enums';
+
+import type { LocalizedMoveWithTags, LocalizedTag } from './types';
 
 const moveFiltersSchema = z.object({
   poleTypes: z.array(z.nativeEnum(PoleType)).optional(),
@@ -14,8 +18,6 @@ const moveFiltersSchema = z.object({
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().max(100).optional(),
 });
-
-import type { MoveWithTags } from './types';
 
 const ALL_POLE_TYPES = Object.values(PoleType);
 
@@ -28,47 +30,55 @@ function buildPoleTypeConditions(selected: PoleType[]): Prisma.MoveWhereInput[] 
   ];
 }
 
-function buildTagConditions(tags: string[]): Prisma.MoveWhereInput[] {
-  return tags.map((tag) => ({ tags: { some: { name: tag } } }));
+function buildTagConditions(tags: string[], locale: Locale): Prisma.MoveWhereInput[] {
+  const nameField = locale === 'pl' ? 'name_pl' : 'name_en';
+  return tags.map((tag) => ({ tags: { some: { [nameField]: tag } } }));
 }
 
 export async function getMovesAction(
   filters: MoveFilters = {},
-): Promise<PaginatedResult<MoveWithTags>> {
+  locale: Locale = 'pl',
+): Promise<PaginatedResult<LocalizedMoveWithTags>> {
   const parsed = moveFiltersSchema.safeParse(filters);
   if (!parsed.success) throw new Error('Invalid filters');
   const page = parsed.data.page ?? 1;
   const pageSize = parsed.data.pageSize ?? 12;
 
+  const titleField = locale === 'pl' ? 'title_pl' : 'title_en';
+
   const andConditions = [
     ...buildPoleTypeConditions(parsed.data.poleTypes ?? []),
-    ...buildTagConditions(parsed.data.tags ?? []),
+    ...buildTagConditions(parsed.data.tags ?? [], locale),
   ];
 
   const where = {
     ...(parsed.data.difficulty?.length && { difficulty: { in: parsed.data.difficulty } }),
     ...(parsed.data.search && {
-      title: { contains: parsed.data.search, mode: 'insensitive' as const },
+      [titleField]: { contains: parsed.data.search, mode: 'insensitive' as const },
     }),
     ...(andConditions.length && { AND: andConditions }),
   };
 
-  const [items, total] = await prisma.$transaction([
+  const [rawItems, total] = await prisma.$transaction([
     prisma.move.findMany({
       where,
       include: { tags: true },
-      orderBy: { title: 'asc' },
+      orderBy: { [titleField]: 'asc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
     prisma.move.count({ where }),
   ]);
 
-  return { items: items as MoveWithTags[], total, page, pageSize };
+  const items = rawItems.map((move) => ({
+    ...localizeMove(move as Parameters<typeof localizeMove>[0], locale),
+    tags: move.tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale)),
+  }));
+
+  return { items, total, page, pageSize };
 }
 
-export async function getTagsAction(): Promise<
-  { id: string; name: string; color: string | null }[]
-> {
-  return prisma.tag.findMany({ orderBy: { name: 'asc' } });
+export async function getTagsAction(locale: Locale = 'pl'): Promise<LocalizedTag[]> {
+  const tags = await prisma.tag.findMany({ orderBy: { name_pl: 'asc' } });
+  return tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale));
 }

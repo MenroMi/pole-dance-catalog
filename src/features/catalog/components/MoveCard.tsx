@@ -1,7 +1,7 @@
 import { ImageOff } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 
-import type { MoveWithTags } from '../types';
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCardImage from './MoveCardImage';
 
@@ -16,7 +16,7 @@ const DIFFICULTY_BADGE: Record<string, { className: string; style?: React.CSSPro
   ADVANCED: { className: '', style: { backgroundColor: '#92400e', color: '#fef3c7' } },
 };
 
-export default function MoveCard({ move }: { move: MoveWithTags }) {
+export default function MoveCard({ move }: { move: LocalizedMoveWithTags }) {
   const badge = DIFFICULTY_BADGE[move.difficulty] ?? DIFFICULTY_BADGE.BEGINNER;
 
   const imageSrc: string | null =

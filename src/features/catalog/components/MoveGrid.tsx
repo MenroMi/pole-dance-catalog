@@ -3,19 +3,22 @@ import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 
 import { cardVariants } from '@/shared/lib/motion';
+import type { Locale } from '@/i18n/routing';
 
 import { getMovesAction } from '../actions';
-import type { MoveWithTags, MoveFilters } from '../types';
+import type { MoveFilters } from '@/shared/types';
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCard from './MoveCard';
 
 const PAGE_SIZE = 12;
 
 type MoveGridProps = {
-  initialMoves: MoveWithTags[];
+  initialMoves: LocalizedMoveWithTags[];
   initialHasMore: boolean;
   totalCount: number;
   filters: MoveFilters;
+  locale: Locale;
 };
 
 export default function MoveGrid({
@@ -23,6 +26,7 @@ export default function MoveGrid({
   initialHasMore,
   totalCount,
   filters,
+  locale,
 }: MoveGridProps) {
   const [moves, setMoves] = useState(initialMoves);
   const [loading, setLoading] = useState(false);
@@ -46,7 +50,7 @@ export default function MoveGrid({
 
       try {
         const nextPage = pageRef.current + 1;
-        const result = await getMovesAction({ ...filters, page: nextPage, pageSize: PAGE_SIZE });
+        const result = await getMovesAction({ ...filters, page: nextPage, pageSize: PAGE_SIZE }, locale);
 
         if (cancelled) return;
 

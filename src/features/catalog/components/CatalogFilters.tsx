@@ -14,7 +14,7 @@ import { Input } from '@/shared/components/ui/input';
 import { cn } from '@/shared/lib/utils';
 import { Difficulty, PoleType } from '@/shared/types/enums';
 
-import type { MoveFilters } from '../types';
+import type { MoveFilters } from '@/shared/types';
 
 const POLE_TYPES = Object.values(PoleType);
 const DIFFICULTIES = Object.values(Difficulty);

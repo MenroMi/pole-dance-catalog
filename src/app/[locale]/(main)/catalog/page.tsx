@@ -2,6 +2,7 @@ import { getMovesAction, getTagsAction, CatalogFilters, MoveGrid } from '@/featu
 import PageShell from '@/shared/components/PageShell';
 import type { MoveFilters } from '@/shared/types';
 import { PoleType, Difficulty } from '@/shared/types/enums';
+import type { Locale } from '@/i18n/routing';
 
 type SearchParams = Promise<{
   poleType?: string;
@@ -9,6 +10,11 @@ type SearchParams = Promise<{
   tags?: string;
   search?: string;
 }>;
+
+type Props = {
+  params: Promise<{ locale: Locale }>;
+  searchParams: SearchParams;
+};
 
 const validPoleTypes = new Set<string>(Object.values(PoleType));
 const validDifficulties = new Set<string>(Object.values(Difficulty));
@@ -23,19 +29,20 @@ function parseTagNames(param: string | undefined): string[] {
   return param.split(',').filter(Boolean).map(decodeURIComponent);
 }
 
-export default async function CatalogPage({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams;
+export default async function CatalogPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  const sp = await searchParams;
 
   const filters: MoveFilters = {
-    poleTypes: parseEnumArray<PoleType>(params.poleType, validPoleTypes),
-    difficulty: parseEnumArray<Difficulty>(params.difficulty, validDifficulties),
-    tags: parseTagNames(params.tags),
-    search: params.search || undefined,
+    poleTypes: parseEnumArray<PoleType>(sp.poleType, validPoleTypes),
+    difficulty: parseEnumArray<Difficulty>(sp.difficulty, validDifficulties),
+    tags: parseTagNames(sp.tags),
+    search: sp.search || undefined,
   };
 
   const [result, availableTags] = await Promise.all([
-    getMovesAction({ ...filters, page: 1, pageSize: 12 }),
-    getTagsAction(),
+    getMovesAction({ ...filters, page: 1, pageSize: 12 }, locale),
+    getTagsAction(locale),
   ]);
 
   const initialHasMore = result.total > result.items.length;
@@ -48,6 +55,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
         initialHasMore={initialHasMore}
         totalCount={result.total}
         filters={filters}
+        locale={locale}
       />
     </PageShell>
   );

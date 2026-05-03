@@ -1,10 +1,11 @@
 'use client';
-import type { Difficulty, PoleType, Tag } from '@prisma/client';
+import type { Difficulty, PoleType } from '@prisma/client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import type { LearnStatus } from '@/shared/types';
+import type { LocalizedTag } from '@/shared/lib/localize';
 
 import type { StepItem } from '../types';
 
@@ -35,7 +36,7 @@ type MovePlayerProps = {
   stepsData: StepItem[];
   difficulty: Difficulty;
   description: string | null;
-  tags: Tag[];
+  tags: LocalizedTag[];
   poleTypes: PoleType[];
   moveId: string;
   isFavourited: boolean;
