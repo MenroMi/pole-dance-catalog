@@ -26,7 +26,7 @@ export function getProtectedRedirect(
   if (isAuthenticated && authPaths.includes(pathWithoutLocale)) {
     return new URL(`/${locale}/catalog`, requestUrl);
   }
-  const isProtected = protectedPaths.some((p) => pathWithoutLocale.startsWith(p));
+  const isProtected = protectedPaths.some((p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + '/'));
   if (isProtected && !isAuthenticated) {
     const callbackUrl = encodeURIComponent(pathname + search);
     return new URL(`/${locale}/login?callbackUrl=${callbackUrl}`, requestUrl);
