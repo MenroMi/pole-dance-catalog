@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server';
 import { AuthError } from 'next-auth';
 import { z } from 'zod';
 
+import type { Locale } from '@/i18n/routing';
 import { signIn } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
 import { signupRatelimit, resendRatelimit, forgotPasswordRatelimit } from '@/shared/lib/ratelimit';
@@ -34,6 +35,8 @@ export async function signupAction(data: SignupFormData) {
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) return { error: 'Email already in use' };
 
+  const locale = (await getLocale()) as Locale;
+
   const hashed = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.create({
     data: {
@@ -46,17 +49,16 @@ export async function signupAction(data: SignupFormData) {
     },
   });
 
-  const token = await generateVerificationToken(parsed.data.email);
+  const token = await generateVerificationToken(parsed.data.email, locale);
 
   try {
-    await sendVerificationEmail(parsed.data.email, token);
+    await sendVerificationEmail(parsed.data.email, token, locale);
   } catch {
     await deleteUserTokens(parsed.data.email);
     await prisma.user.delete({ where: { email: parsed.data.email } });
     return { error: 'Failed to send email, please try again' };
   }
 
-  const locale = await getLocale();
   redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(parsed.data.email)}`);
 }
 
@@ -82,7 +84,7 @@ export async function loginAction(data: LoginFormData) {
 
 export async function resendVerificationAction(email: string) {
   const { success: withinLimit } = await resendRatelimit.limit(email);
-  const locale = await getLocale();
+  const locale = (await getLocale()) as Locale;
   if (!withinLimit) redirect(`/${locale}/verify-email?error=rate-limited`);
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -98,10 +100,10 @@ export async function resendVerificationAction(email: string) {
   }
 
   await deleteUserTokens(email);
-  const token = await generateVerificationToken(email);
+  const token = await generateVerificationToken(email, locale);
 
   try {
-    await sendVerificationEmail(email, token);
+    await sendVerificationEmail(email, token, locale);
   } catch {
     await deleteUserTokens(email);
     redirect(`/${locale}/verify-email?error=send-failed&email=${encodeURIComponent(email)}`);
@@ -143,11 +145,13 @@ export async function forgotPasswordAction(
 
   if (!user || user.password === null) return { sent: true };
 
+  const locale = (await getLocale()) as Locale;
+
   await deleteResetTokensByEmail(email);
-  const token = await generateResetToken(email);
+  const token = await generateResetToken(email, locale);
 
   try {
-    await sendPasswordResetEmail(email, token);
+    await sendPasswordResetEmail(email, token, locale);
   } catch (err) {
     console.error('[forgotPasswordAction] email send failed:', err);
     await deleteResetToken(token);
@@ -160,7 +164,7 @@ export async function forgotPasswordAction(
 export async function resetPasswordAction(
   token: string,
   newPassword: string,
-): Promise<{ success: true } | { error: string }> {
+): Promise<{ error: string }> {
   const passwordResult = resetPasswordSchema.safeParse(newPassword);
   if (!passwordResult.success) return { error: 'Invalid password' };
 
@@ -168,9 +172,11 @@ export async function resetPasswordAction(
   if (!record) return { error: 'invalid' };
   if (record.expiresAt < new Date()) return { error: 'expired' };
 
+  const tokenLocale = (record.locale ?? 'pl') as Locale;
+
   const hashed = await bcrypt.hash(newPassword, 10);
   await prisma.user.update({ where: { email: record.email }, data: { password: hashed } });
   await deleteResetToken(token);
 
-  return { success: true };
+  redirect(`/${tokenLocale}/login?reset=true`);
 }

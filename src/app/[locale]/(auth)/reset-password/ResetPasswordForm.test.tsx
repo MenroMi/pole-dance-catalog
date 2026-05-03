@@ -45,7 +45,7 @@ describe('ResetPasswordForm', () => {
   });
 
   it('calls resetPasswordAction with token and password on valid submit', async () => {
-    mockAction.mockResolvedValue({ success: true });
+    mockAction.mockResolvedValue(undefined);
     const user = userEvent.setup();
     render(<ResetPasswordForm token="valid-token" />);
 

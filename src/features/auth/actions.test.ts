@@ -157,8 +157,8 @@ describe('signupAction', () => {
         }),
       }),
     );
-    expect(mockGenToken).toHaveBeenCalledWith('alice@example.com');
-    expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', 'mock-token');
+    expect(mockGenToken).toHaveBeenCalledWith('alice@example.com', 'pl');
+    expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', 'mock-token', 'pl');
     expect(mockRedirect).toHaveBeenCalledWith(
       '/pl/verify-email?sent=true&email=alice%40example.com',
     );
@@ -256,8 +256,8 @@ describe('resendVerificationAction', () => {
     await expect(resendVerificationAction('alice@example.com')).rejects.toThrow('NEXT_REDIRECT');
 
     expect(mockDeleteTokens).toHaveBeenCalledWith('alice@example.com');
-    expect(mockGenToken).toHaveBeenCalledWith('alice@example.com');
-    expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', 'mock-token');
+    expect(mockGenToken).toHaveBeenCalledWith('alice@example.com', 'pl');
+    expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', 'mock-token', 'pl');
     expect(mockRedirect).toHaveBeenCalledWith(
       '/pl/verify-email?sent=true&email=alice%40example.com',
     );
@@ -391,8 +391,8 @@ describe('forgotPasswordAction', () => {
     const result = await forgotPasswordAction('user@example.com');
 
     expect(mockDeleteResetTokensByEmail).toHaveBeenCalledWith('user@example.com');
-    expect(mockGenResetToken).toHaveBeenCalledWith('user@example.com');
-    expect(mockSendResetEmail).toHaveBeenCalledWith('user@example.com', 'reset-token-uuid');
+    expect(mockGenResetToken).toHaveBeenCalledWith('user@example.com', 'pl');
+    expect(mockSendResetEmail).toHaveBeenCalledWith('user@example.com', 'reset-token-uuid', 'pl');
     expect(result).toEqual({ sent: true });
   });
 
@@ -451,22 +451,23 @@ describe('resetPasswordAction', () => {
     expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
-  it('updates password, deletes token, returns { success: true } on valid input', async () => {
+  it('updates password, deletes token, and redirects to locale login on valid input', async () => {
     mockFindResetToken.mockResolvedValue({
       id: '1',
       email: 'user@example.com',
       token: 'valid-token',
       expiresAt: new Date(Date.now() + 60_000),
+      locale: 'pl',
     });
     mockUserUpdate.mockResolvedValue({});
 
-    const result = await resetPasswordAction('valid-token', 'NewPass1!');
+    await expect(resetPasswordAction('valid-token', 'NewPass1!')).rejects.toThrow('NEXT_REDIRECT');
 
     expect(mockUserUpdate).toHaveBeenCalledWith({
       where: { email: 'user@example.com' },
       data: { password: 'hashed_pw' },
     });
     expect(mockDeleteResetToken).toHaveBeenCalledWith('valid-token');
-    expect(result).toEqual({ success: true });
+    expect(mockRedirect).toHaveBeenCalledWith('/pl/login?reset=true');
   });
 });

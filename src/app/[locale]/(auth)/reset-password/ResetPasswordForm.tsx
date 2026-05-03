@@ -1,6 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -26,7 +26,6 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export default function ResetPasswordForm({ token }: { token: string }) {
-  const router = useRouter();
   const [actionError, setActionError] = useState<'expired' | 'invalid' | null>(null);
 
   const {
@@ -38,11 +37,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
   const onSubmit = async (data: FormData) => {
     setActionError(null);
     const result = await resetPasswordAction(token, data.password);
-    if ('error' in result) {
+    if (result?.error) {
       setActionError(result.error as 'expired' | 'invalid');
-      return;
     }
-    router.push('/login?reset=true');
   };
 
   return (

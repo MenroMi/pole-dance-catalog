@@ -11,30 +11,63 @@ vi.mock('resend', () => {
   };
 });
 
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn().mockResolvedValue((key: string) => `[${key}]`),
+}));
+
 import { sendPasswordResetEmail } from './reset-email';
+import { getTranslations } from 'next-intl/server';
 
 const mockSend = (resendModule as unknown as { __mockSend: Mock }).__mockSend;
 
-beforeEach(() => mockSend.mockClear());
+beforeEach(() => {
+  mockSend.mockClear();
+  vi.mocked(getTranslations).mockResolvedValue(((key: string) => `[${key}]`) as never);
+});
 
 describe('sendPasswordResetEmail', () => {
-  it('calls Resend with correct to, subject, and token URL', async () => {
+  it('calls Resend with correct to and token URL', async () => {
     mockSend.mockResolvedValue({ data: { id: 'email-id' }, error: null });
 
-    await sendPasswordResetEmail('user@example.com', 'test-token-123');
+    await sendPasswordResetEmail('user@example.com', 'test-token-123', 'pl');
 
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@example.com',
-        subject: expect.stringContaining('reset'),
         html: expect.stringContaining('test-token-123'),
       }),
+    );
+  });
+
+  it('sends Polish subject when locale is pl', async () => {
+    vi.mocked(getTranslations).mockResolvedValue(
+      ((key: string) => (key === 'subject' ? 'Resetowanie hasła — Pole Space' : `[${key}]`)) as never,
+    );
+    mockSend.mockResolvedValue({ data: { id: 'x' }, error: null });
+
+    await sendPasswordResetEmail('u@e.com', 'tok', 'pl');
+
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.objectContaining({ subject: 'Resetowanie hasła — Pole Space' }),
+    );
+  });
+
+  it('sends English subject when locale is en', async () => {
+    vi.mocked(getTranslations).mockResolvedValue(
+      ((key: string) => (key === 'subject' ? 'Password reset — Pole Space' : `[${key}]`)) as never,
+    );
+    mockSend.mockResolvedValue({ data: { id: 'x' }, error: null });
+
+    await sendPasswordResetEmail('u@e.com', 'tok', 'en');
+
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.objectContaining({ subject: 'Password reset — Pole Space' }),
     );
   });
 
   it('throws if Resend returns an error', async () => {
     mockSend.mockResolvedValue({ data: null, error: { message: 'API error' } });
 
-    await expect(sendPasswordResetEmail('user@example.com', 'token')).rejects.toThrow();
+    await expect(sendPasswordResetEmail('user@example.com', 'token', 'pl')).rejects.toThrow();
   });
 });
