@@ -313,10 +313,15 @@ Worktree: `.worktrees/error-boundaries`
 - Оригинальный `Cache-Control: no-store` паттерн `/settings(.*)` не совпадал ни с одним реальным роутом (settings живёт на `/profile/settings`, покрыт правилом `/profile/(.*)`)
 - Удалён при исправлении паттернов для i18n. Если появится отдельный роут `/settings`, добавить `/:locale([a-z]{2})/settings(.*)` обратно
 
-**`getRelatedMovesAction` — `orderBy: { title: 'asc' }` сломан** (2026-05-03, см. ниже в Design System)
+~~**`getRelatedMovesAction` — `orderBy: { title: 'asc' }` сломан**~~ ✅ Resolved (Task 7, 2026-05-03)
 
-- После переименования колонки `title` → `title_pl`/`title_en` этот orderBy упадёт в рантайме
-- Fix: заменить на `orderBy: { title_pl: 'asc' }` или `title_en: 'asc'` (покрывается Task 7)
+- Реализация заменена на `select`-проекцию только нужных полей + ручная локализация; `orderBy` убран (related moves — небольшой лимит 4 элемента, порядок несущественен)
+
+**`localizeMove`/`localizeTag` — хрупкие `as Parameters<typeof ...>[0]` касты** (2026-05-03)
+
+- 7 мест в `catalog/actions.ts` и `moves/actions.ts` используют `move as Parameters<typeof localizeMove>[0]`
+- Причина: Prisma генерирует enum-типы (`Difficulty`, `PoleType`), а `RawMove` изначально имел `string`/`string[]`; после Fix 1 Task 7 типы выровнены, но `stepsData: JsonValue` vs `unknown` всё ещё требует каста
+- Fix: типизировать `RawMove.stepsData` как `Prisma.JsonValue` вместо `unknown`, тогда Prisma-объект структурно совместим и каст исчезнет
 
 ## Database
 
