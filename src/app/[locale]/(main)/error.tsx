@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -44,7 +44,7 @@ export default function MainError({ error, unstable_retry }: Props) {
               href="/catalog"
               className="bg-surface-container-high hover:bg-surface-container-highest block rounded-md border border-outline-variant/20 px-10 py-4 text-center text-xs font-bold tracking-widest text-on-surface uppercase transition-all duration-200 active:scale-[0.97]"
             >
-              back to catalog
+              {t('backToCatalog')}
             </Link>
           </div>
         </div>

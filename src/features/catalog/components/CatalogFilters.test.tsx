@@ -163,12 +163,12 @@ describe('CatalogFilters', () => {
 
   it('Clear filters button is visible when any filter is active', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'clearFilters' })).toBeInTheDocument();
   });
 
   it('Clear filters button is hidden when no filters are active', () => {
     render(<CatalogFilters filters={{}} availableTags={[]} />);
-    expect(screen.queryByRole('button', { name: /clear filters/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'clearFilters' })).not.toBeInTheDocument();
   });
 
   it('Clear filters resets all filters and navigates to /catalog', () => {
@@ -178,7 +178,7 @@ describe('CatalogFilters', () => {
         availableTags={mockTags}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /clear filters/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'clearFilters' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog');
   });
 
@@ -186,7 +186,7 @@ describe('CatalogFilters', () => {
     render(<CatalogFilters filters={{ search: 'jade' }} availableTags={[]} />);
     const input = screen.getByRole('textbox', { name: /search/i }) as HTMLInputElement;
     expect(input.value).toBe('jade');
-    fireEvent.click(screen.getByRole('button', { name: /clear filters/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'clearFilters' }));
     expect(input.value).toBe('');
   });
 
@@ -194,12 +194,12 @@ describe('CatalogFilters', () => {
 
   it('search clear button hidden when search is empty', () => {
     render(<CatalogFilters filters={{}} availableTags={[]} />);
-    expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'clearSearch' })).not.toBeInTheDocument();
   });
 
   it('search clear button visible when search has value', () => {
     render(<CatalogFilters filters={{ search: 'jade' }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: /clear search/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'clearSearch' })).toBeInTheDocument();
   });
 
   it('search clear button clears input and removes search from URL, keeps other filters', () => {
@@ -208,7 +208,7 @@ describe('CatalogFilters', () => {
     );
     const input = screen.getByRole('textbox', { name: /search/i }) as HTMLInputElement;
     expect(input.value).toBe('jade');
-    fireEvent.click(screen.getByRole('button', { name: /clear search/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'clearSearch' }));
     expect(input.value).toBe('');
     expect(mockReplace).toHaveBeenCalledWith('/catalog?poleType=STATIC');
   });

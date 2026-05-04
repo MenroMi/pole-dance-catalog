@@ -93,7 +93,9 @@
       "difficulty": "Difficulty",
       "tags": "Tags",
       "search": "search moves...",
-      "searchLabel": "Search"
+      "searchLabel": "Search",
+      "clearSearch": "Clear search",
+      "clearFilters": "Clear filters"
     }
   },
   "moves": {
@@ -156,7 +158,8 @@
     "unexpected": {
       "heading": "something went wrong.",
       "message": "an unexpected error occurred. try refreshing the page.",
-      "retry": "try again"
+      "retry": "try again",
+      "backToCatalog": "back to catalog"
     }
   },
   "emails": {

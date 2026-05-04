@@ -125,7 +125,7 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
         {searchValue && (
           <button
             type="button"
-            aria-label="Clear search"
+            aria-label={t('clearSearch')}
             onClick={() => navigate({ resetSearch: true })}
             className="absolute top-1/2 right-2 inline-flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
@@ -277,7 +277,7 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
           className="w-full"
         >
           <X className="h-4 w-4" />
-          Clear filters
+          {t('clearFilters')}
         </Button>
       )}
     </div>

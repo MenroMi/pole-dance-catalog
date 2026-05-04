@@ -93,7 +93,9 @@
       "difficulty": "Poziom trudności",
       "tags": "Tagi",
       "search": "szukaj ruchów...",
-      "searchLabel": "Szukaj"
+      "searchLabel": "Szukaj",
+      "clearSearch": "Wyczyść wyszukiwanie",
+      "clearFilters": "Wyczyść filtry"
     }
   },
   "moves": {
@@ -156,7 +158,8 @@
     "unexpected": {
       "heading": "coś poszło nie tak.",
       "message": "wystąpił nieoczekiwany błąd. spróbuj odświeżyć stronę.",
-      "retry": "spróbuj ponownie"
+      "retry": "spróbuj ponownie",
+      "backToCatalog": "wróć do katalogu"
     }
   },
   "emails": {
