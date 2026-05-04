@@ -3,6 +3,7 @@ import { Globe } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useRouter, usePathname } from '@/i18n/navigation';
+import { locales, defaultLocale } from '@/i18n/routing';
 import type { Locale } from '@/i18n/routing';
 import {
   DropdownMenu,
@@ -18,7 +19,8 @@ const LANGUAGES: { locale: Locale; label: string }[] = [
 
 export default function LocaleSwitcher() {
   const t = useTranslations('nav');
-  const locale = useLocale() as Locale;
+  const raw = useLocale();
+  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
   const router = useRouter();
   const pathname = usePathname();
 
