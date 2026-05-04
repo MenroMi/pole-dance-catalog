@@ -1,6 +1,7 @@
 'use client';
 import { Check, Gauge, RotateCw, Search, Tag, X } from 'lucide-react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import {
@@ -19,8 +20,6 @@ import type { LocalizedTag } from '@/shared/lib/localize';
 
 const POLE_TYPES = Object.values(PoleType);
 const DIFFICULTIES = Object.values(Difficulty);
-
-const capitalize = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 
 function buildQuery(
   poleType: PoleType[],
@@ -43,6 +42,8 @@ type CatalogFiltersProps = {
 };
 
 export default function CatalogFilters({ filters, availableTags }: CatalogFiltersProps) {
+  const t = useTranslations('catalog.filters');
+  const te = useTranslations('enums');
   const router = useRouter();
   const [searchValue, setSearchValue] = useState(filters.search ?? '');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,8 +116,8 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          aria-label="Search moves"
-          placeholder="Search moves..."
+          aria-label={t('searchLabel')}
+          placeholder={t('search')}
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pr-9 pl-9"
@@ -148,18 +149,19 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
           >
             <span className="flex items-center gap-2">
               <RotateCw className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
-              Pole state
+              {t('poleState')}
             </span>
           </AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-col gap-0.5 pt-3">
               {POLE_TYPES.map((type) => {
                 const active = selectedPoleTypes.includes(type);
+                const label = te(`poleType.${type}`);
                 return (
                   <button
                     key={type}
                     type="button"
-                    aria-label={capitalize(type)}
+                    aria-label={label}
                     aria-pressed={active}
                     onClick={() => togglePoleType(type)}
                     className={cn(
@@ -173,7 +175,7 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
                         active ? 'opacity-100' : 'opacity-0',
                       )}
                     />
-                    {capitalize(type)}
+                    {label}
                   </button>
                 );
               })}
@@ -190,18 +192,19 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
           >
             <span className="flex items-center gap-2">
               <Gauge className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-              Difficulty
+              {t('difficulty')}
             </span>
           </AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-col gap-0.5 pt-3">
               {DIFFICULTIES.map((diff) => {
                 const active = selectedDifficulties.includes(diff);
+                const label = te(`difficulty.${diff}`);
                 return (
                   <button
                     key={diff}
                     type="button"
-                    aria-label={capitalize(diff)}
+                    aria-label={label}
                     aria-pressed={active}
                     onClick={() => toggleDifficulty(diff)}
                     className={cn(
@@ -215,7 +218,7 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
                         active ? 'opacity-100' : 'opacity-0',
                       )}
                     />
-                    {capitalize(diff)}
+                    {label}
                   </button>
                 );
               })}
@@ -233,7 +236,7 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
             >
               <span className="flex items-center gap-2">
                 <Tag className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12" />
-                Tags
+                {t('tags')}
               </span>
             </AccordionTrigger>
             <AccordionContent>

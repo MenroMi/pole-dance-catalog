@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { signOut } from 'next-auth/react';
 import React, { useState } from 'react';
 
@@ -27,14 +28,16 @@ type UserMenuProps = {
   user: { name: string | null; image: string | null } | null;
 };
 
-const NAV_ITEMS = [
-  { label: 'Profile', href: '/profile' },
-  { label: 'Settings', href: '/profile/settings' },
-];
-
 export default function UserMenu({ user }: UserMenuProps) {
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [signOutError, setSignOutError] = useState<boolean>(false);
+
+  const NAV_ITEMS = [
+    { label: t('profile'), href: '/profile' },
+    { label: t('settings'), href: '/profile/settings' },
+  ];
 
   const handleDialogOpenChange = (open: boolean) => {
     setConfirmOpen(open);
@@ -47,7 +50,7 @@ export default function UserMenu({ user }: UserMenuProps) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Account menu"
+            aria-label={t('accountMenu')}
             className="text-on-surface-variant transition-colors hover:text-on-surface"
           >
             <svg
@@ -107,11 +110,11 @@ export default function UserMenu({ user }: UserMenuProps) {
               className="text-destructive focus:text-destructive"
               onSelect={() => setConfirmOpen(true)}
             >
-              Log out
+              {t('logOut')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem asChild>
-              <Link href="/login">Log in</Link>
+              <Link href="/login">{t('logIn')}</Link>
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -120,13 +123,11 @@ export default function UserMenu({ user }: UserMenuProps) {
       <AlertDialog open={confirmOpen} onOpenChange={handleDialogOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Log out?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You&rsquo;ll need to sign back in to access your profile.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('logOutConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('logOutConfirmDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async (e: React.MouseEvent) => {
                 e.preventDefault();
@@ -137,13 +138,11 @@ export default function UserMenu({ user }: UserMenuProps) {
                 }
               }}
             >
-              Log out
+              {t('logOutConfirmAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
           {signOutError && (
-            <p className="mt-2 text-center text-sm text-destructive">
-              Something went wrong. Please try again.
-            </p>
+            <p className="mt-2 text-center text-sm text-destructive">{t('logOutError')}</p>
           )}
         </AlertDialogContent>
       </AlertDialog>

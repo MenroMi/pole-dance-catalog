@@ -1,6 +1,6 @@
 'use client';
-
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   error: Error & { digest?: string };
@@ -8,6 +8,8 @@ type Props = {
 };
 
 export default function MainError({ error, unstable_retry }: Props) {
+  const t = useTranslations('errors.unexpected');
+
   return (
     <div className="relative flex flex-1 items-center overflow-hidden px-8 py-16">
       <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary-container/20 blur-3xl" />
@@ -22,11 +24,11 @@ export default function MainError({ error, unstable_retry }: Props) {
           </div>
 
           <h1 className="font-display text-3xl font-medium tracking-tight text-on-surface lowercase md:text-5xl">
-            unexpected error.
+            {t('heading')}
           </h1>
 
           <p className="text-base leading-relaxed text-on-surface-variant md:text-lg">
-            something broke on our end. try again — if it keeps happening, come back later.
+            {t('message')}
           </p>
 
           {error.digest && <p className="font-mono text-xs text-outline">ref: {error.digest}</p>}
@@ -36,7 +38,7 @@ export default function MainError({ error, unstable_retry }: Props) {
               onClick={unstable_retry}
               className="kinetic-gradient block rounded-md px-10 py-4 text-center text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] transition-all duration-200 hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97]"
             >
-              try again
+              {t('retry')}
             </button>
             <Link
               href="/catalog"

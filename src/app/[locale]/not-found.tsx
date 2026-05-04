@@ -1,8 +1,11 @@
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 
 import Header from '@/shared/components/Header';
 
-export default function NotFound() {
+export default async function NotFound() {
+  const t = await getTranslations('errors.notFound');
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-surface">
       <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary-container/20 blur-3xl" />
@@ -29,23 +32,23 @@ export default function NotFound() {
                 </span>
               </div>
               <h2 className="font-display text-3xl font-medium tracking-tight text-on-surface lowercase md:text-5xl">
-                lost your momentum?
+                {t('heading')}
               </h2>
               <p className="text-base leading-relaxed text-on-surface-variant md:text-lg">
-                this move doesn&apos;t exist in our catalog yet, or the link has lost its grip.
+                {t('message')}
               </p>
               <div className="flex flex-col gap-3 pt-6 sm:flex-row">
                 <Link
                   href="/catalog"
                   className="kinetic-gradient block rounded-md px-10 py-4 text-center text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] transition-all duration-200 hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97]"
                 >
-                  back to gallery
+                  {t('backToGallery')}
                 </Link>
                 <Link
                   href="/"
                   className="bg-surface-container-high hover:bg-surface-container-highest block rounded-md border border-outline-variant/20 px-10 py-4 text-center text-xs font-bold tracking-widest text-on-surface uppercase transition-all duration-200 active:scale-[0.97]"
                 >
-                  go home
+                  {t('goHome')}
                 </Link>
               </div>
             </div>

@@ -95,16 +95,16 @@ beforeEach(() => {
 describe('UserMenu — unauthenticated (user=null)', () => {
   it('renders the account icon trigger', () => {
     render(<UserMenu user={null} />);
-    expect(screen.getByRole('button', { name: /account menu/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'accountMenu' })).toBeInTheDocument();
   });
 
   it('renders Profile and Settings as disabled', () => {
     render(<UserMenu user={null} />);
-    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveAttribute(
+    expect(screen.getByRole('menuitem', { name: 'profile' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    expect(screen.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
+    expect(screen.getByRole('menuitem', { name: 'settings' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
@@ -112,13 +112,13 @@ describe('UserMenu — unauthenticated (user=null)', () => {
 
   it('renders Log in as active (not disabled)', () => {
     render(<UserMenu user={null} />);
-    const logIn = screen.getByRole('menuitem', { name: 'Log in' });
+    const logIn = screen.getByRole('menuitem', { name: 'logIn' });
     expect(logIn).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   it('does not render Log out', () => {
     render(<UserMenu user={null} />);
-    expect(screen.queryByRole('menuitem', { name: 'Log out' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'logOut' })).not.toBeInTheDocument();
   });
 });
 
@@ -132,11 +132,11 @@ describe('UserMenu — authenticated (user provided)', () => {
 
   it('renders Profile and Settings as active (not disabled)', () => {
     render(<UserMenu user={user} />);
-    expect(screen.getByRole('menuitem', { name: 'Profile' })).not.toHaveAttribute(
+    expect(screen.getByRole('menuitem', { name: 'profile' })).not.toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    expect(screen.getByRole('menuitem', { name: 'Settings' })).not.toHaveAttribute(
+    expect(screen.getByRole('menuitem', { name: 'settings' })).not.toHaveAttribute(
       'aria-disabled',
       'true',
     );
@@ -144,8 +144,8 @@ describe('UserMenu — authenticated (user provided)', () => {
 
   it('renders Log out and not Log in', () => {
     render(<UserMenu user={user} />);
-    expect(screen.getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Log in' })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'logOut' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'logIn' })).not.toBeInTheDocument();
   });
 
   it('shows avatar image when user has an image', () => {
@@ -165,16 +165,16 @@ describe('UserMenu — Log out confirmation', () => {
   it('clicking Log out opens confirmation dialog', async () => {
     const u = userEvent.setup();
     render(<UserMenu user={user} />);
-    await u.click(screen.getByRole('menuitem', { name: 'Log out' }));
+    await u.click(screen.getByRole('menuitem', { name: 'logOut' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('Log out?')).toBeInTheDocument();
+    expect(screen.getByText('logOutConfirmTitle')).toBeInTheDocument();
   });
 
   it('clicking Cancel closes the dialog without calling signOut', async () => {
     const u = userEvent.setup();
     render(<UserMenu user={user} />);
-    await u.click(screen.getByRole('menuitem', { name: 'Log out' }));
-    await u.click(screen.getByRole('button', { name: 'Cancel' }));
+    await u.click(screen.getByRole('menuitem', { name: 'logOut' }));
+    await u.click(screen.getByRole('button', { name: 'cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(mockSignOut).not.toHaveBeenCalled();
   });
@@ -182,8 +182,8 @@ describe('UserMenu — Log out confirmation', () => {
   it('clicking Log out in dialog calls signOut', async () => {
     const u = userEvent.setup();
     render(<UserMenu user={user} />);
-    await u.click(screen.getByRole('menuitem', { name: 'Log out' }));
-    await u.click(screen.getByRole('button', { name: 'Log out' }));
+    await u.click(screen.getByRole('menuitem', { name: 'logOut' }));
+    await u.click(screen.getByRole('button', { name: 'logOutConfirmAction' }));
     expect(mockSignOut).toHaveBeenCalledTimes(1);
   });
 
@@ -191,8 +191,8 @@ describe('UserMenu — Log out confirmation', () => {
     mockSignOut.mockRejectedValue(new Error('network'));
     const u = userEvent.setup();
     render(<UserMenu user={user} />);
-    await u.click(screen.getByRole('menuitem', { name: 'Log out' }));
-    await u.click(screen.getByRole('button', { name: 'Log out' }));
-    expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument();
+    await u.click(screen.getByRole('menuitem', { name: 'logOut' }));
+    await u.click(screen.getByRole('button', { name: 'logOutConfirmAction' }));
+    expect(await screen.findByText('logOutError')).toBeInTheDocument();
   });
 });

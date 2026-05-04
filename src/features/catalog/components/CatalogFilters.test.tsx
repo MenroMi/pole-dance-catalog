@@ -43,68 +43,68 @@ describe('CatalogFilters', () => {
 
   it('renders Static and Spin buttons', () => {
     render(<CatalogFilters filters={{}} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'Static' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Spin' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'poleType.STATIC' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'poleType.SPIN' })).toBeInTheDocument();
   });
 
   it('clicking Static adds poleType=STATIC to URL', () => {
     render(<CatalogFilters filters={{}} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Static' }));
+    fireEvent.click(screen.getByRole('button', { name: 'poleType.STATIC' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog?poleType=STATIC');
   });
 
   it('clicking Static then Spin adds both to URL (multi-select)', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Spin' }));
+    fireEvent.click(screen.getByRole('button', { name: 'poleType.SPIN' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog?poleType=STATIC,SPIN');
   });
 
   it('clicking active Static removes it from URL', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Static' }));
+    fireEvent.click(screen.getByRole('button', { name: 'poleType.STATIC' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog');
   });
 
   it('active pole type button has text-primary class', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'Static' }).className).toContain('text-primary');
+    expect(screen.getByRole('button', { name: 'poleType.STATIC' }).className).toContain('text-primary');
   });
 
   it('inactive pole type button does not have text-primary class', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'Spin' }).className).not.toContain('text-primary');
+    expect(screen.getByRole('button', { name: 'poleType.SPIN' }).className).not.toContain('text-primary');
   });
 
   // --- Difficulty ---
 
   it('renders Beginner, Intermediate, Advanced buttons', () => {
     render(<CatalogFilters filters={{}} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'Beginner' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Intermediate' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Advanced' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'difficulty.BEGINNER' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'difficulty.INTERMEDIATE' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'difficulty.ADVANCED' })).toBeInTheDocument();
   });
 
   it('clicking Beginner adds difficulty=BEGINNER to URL', () => {
     render(<CatalogFilters filters={{}} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Beginner' }));
+    fireEvent.click(screen.getByRole('button', { name: 'difficulty.BEGINNER' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog?difficulty=BEGINNER');
   });
 
   it('clicking Beginner then Intermediate adds both (multi-select)', () => {
     render(<CatalogFilters filters={{ difficulty: ['BEGINNER'] }} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Intermediate' }));
+    fireEvent.click(screen.getByRole('button', { name: 'difficulty.INTERMEDIATE' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog?difficulty=BEGINNER,INTERMEDIATE');
   });
 
   it('clicking active Beginner removes it from URL', () => {
     render(<CatalogFilters filters={{ difficulty: ['BEGINNER'] }} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Beginner' }));
+    fireEvent.click(screen.getByRole('button', { name: 'difficulty.BEGINNER' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog');
   });
 
   it('active difficulty button has text-primary class', () => {
     render(<CatalogFilters filters={{ difficulty: ['BEGINNER'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'Beginner' }).className).toContain('text-primary');
+    expect(screen.getByRole('button', { name: 'difficulty.BEGINNER' }).className).toContain('text-primary');
   });
 
   // --- Tags ---
@@ -149,7 +149,7 @@ describe('CatalogFilters', () => {
 
   it('clicking difficulty preserves active poleType in URL', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Beginner' }));
+    fireEvent.click(screen.getByRole('button', { name: 'difficulty.BEGINNER' }));
     expect(mockReplace).toHaveBeenCalledWith('/catalog?poleType=STATIC&difficulty=BEGINNER');
   });
 
@@ -237,7 +237,7 @@ describe('CatalogFilters', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /search/i }), {
       target: { value: 'jade' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Static' }));
+    fireEvent.click(screen.getByRole('button', { name: 'poleType.STATIC' }));
     mockReplace.mockClear();
     act(() => vi.advanceTimersByTime(500));
     expect(mockReplace).not.toHaveBeenCalled();
