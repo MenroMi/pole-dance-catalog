@@ -12,8 +12,14 @@ vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   redirect: vi.fn(),
@@ -82,6 +88,6 @@ describe('LoginForm', () => {
     await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
-    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(await screen.findByText('invalidCredentials')).toBeInTheDocument();
   });
 });

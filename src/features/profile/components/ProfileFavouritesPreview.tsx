@@ -1,9 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { extractVideoId } from '@/features/moves/lib/youtube';
+import { Link } from '@/i18n/navigation';
 
 import type { FavouriteWithMove } from '../types';
 
@@ -41,25 +42,26 @@ function ThumbPlaceholder({ title }: { title: string }) {
 }
 
 export default function ProfileFavouritesPreview({ favourites }: ProfileFavouritesPreviewProps) {
+  const t = useTranslations('profile');
   return (
     <div className="flex-1 rounded-xl border border-outline-variant/20 bg-surface-container p-6">
       <div className="mb-[18px] flex items-baseline justify-between">
         <span className="font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-          Favourites
+          {t('favourites')}
         </span>
         <Link
           href="/profile/favourite-moves"
           className="font-sans text-xs text-primary/80 transition-colors hover:text-primary"
         >
-          View all →
+          {t('viewAll')}
         </Link>
       </div>
 
       {favourites.length === 0 ? (
         <p className="font-sans text-sm text-on-surface-variant">
-          No favourites yet.{' '}
+          {t('emptyFavourites')}{' '}
           <Link href="/catalog" className="text-primary hover:underline">
-            Browse the catalog →
+            {t('browseCatalog')}
           </Link>
         </p>
       ) : (

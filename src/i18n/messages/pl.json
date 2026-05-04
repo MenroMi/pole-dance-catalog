@@ -84,6 +84,14 @@
       "submit": "zapisz hasło",
       "submitting": "zapisywanie...",
       "invalidToken": "link do resetowania hasła jest nieprawidłowy lub wygasł."
+    },
+    "errors": {
+      "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
+      "verifyEmailFirst": "Najpierw zweryfikuj swój adres e-mail.",
+      "tooManyRequests": "Zbyt wiele prób. Spróbuj ponownie później.",
+      "invalidInput": "Nieprawidłowe dane.",
+      "emailAlreadyInUse": "Ten adres e-mail jest już zarejestrowany.",
+      "sendEmailFailed": "Nie udało się wysłać e-maila. Spróbuj ponownie."
     }
   },
   "catalog": {
@@ -117,7 +125,10 @@
     "safety": "Bezpieczeństwo",
     "comingSoon": "Wkrótce",
     "loginToTrack": "Zaloguj się, by śledzić postępy",
-    "seekTo": "Przejdź do {time}"
+    "seekTo": "Przejdź do {time}",
+    "saveFavourite": "Zapisz",
+    "addToFavourites": "Dodaj do ulubionych",
+    "removeFromFavourites": "Usuń z ulubionych"
   },
   "profile": {
     "overview": "Przegląd",
@@ -165,7 +176,23 @@
     "emptyFavouritesHint": "Otwórz dowolny ruch w katalogu i naciśnij serce, aby zapisać go tutaj.",
     "savedLabel": "Zapisane",
     "saving": "zapisywanie…",
-    "addedDate": "Dodano {date}"
+    "addedDate": "Dodano {date}",
+    "heroSettingsLabel": "Ustawienia profilu",
+    "joinedYear": "Dołączono w {year}",
+    "journeyHeading": "twoja",
+    "journeyHighlight": "podróż",
+    "journeySubtitle": "Śledź naukę i świętuj opanowane ruchy.",
+    "savedHighlight": "wykonania",
+    "savedSubtitle": "Twoja kurowana galeria — ruchy, do których ciągle wracasz.",
+    "countSaved": "{count} zapisanych"
+  },
+  "landing": {
+    "eyebrow": "Mały katalog",
+    "heading": "Spokojne miejsce na ruchy, nad którymi pracujesz.",
+    "description": "Mały, staranny katalog ruchów pole — pisany przez tancerzy, których znamy, fotografowany w studiach, które odwiedzamy. Bez feedu, bez streków. Tylko ruchy i twoje notatki.",
+    "createAccount": "Utwórz konto →",
+    "browseCatalog": "Przeglądaj katalog",
+    "hint": "Za darmo. Bez zaproszenia."
   },
   "admin": {
     "title": "Panel admina",

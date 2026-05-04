@@ -84,6 +84,14 @@
       "submit": "save password",
       "submitting": "saving...",
       "invalidToken": "the password reset link is invalid or has expired."
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "verifyEmailFirst": "Please verify your email first.",
+      "tooManyRequests": "Too many attempts. Please try again later.",
+      "invalidInput": "Invalid input.",
+      "emailAlreadyInUse": "This email is already registered.",
+      "sendEmailFailed": "Failed to send email. Please try again."
     }
   },
   "catalog": {
@@ -117,7 +125,10 @@
     "safety": "Safety",
     "comingSoon": "Coming soon",
     "loginToTrack": "Log in to track progress",
-    "seekTo": "Seek to {time}"
+    "seekTo": "Seek to {time}",
+    "saveFavourite": "Save",
+    "addToFavourites": "Add to favourites",
+    "removeFromFavourites": "Remove from favourites"
   },
   "profile": {
     "overview": "Overview",
@@ -165,7 +176,23 @@
     "emptyFavouritesHint": "Open any move in the catalog and tap the heart to save it here.",
     "savedLabel": "Saved",
     "saving": "saving…",
-    "addedDate": "Added {date}"
+    "addedDate": "Added {date}",
+    "heroSettingsLabel": "Profile settings",
+    "joinedYear": "Joined {year}",
+    "journeyHeading": "your",
+    "journeyHighlight": "journey",
+    "journeySubtitle": "Track what you're learning and celebrate what you've mastered.",
+    "savedHighlight": "performances",
+    "savedSubtitle": "Your curated gallery — moves you keep coming back to.",
+    "countSaved": "{count} saved"
+  },
+  "landing": {
+    "eyebrow": "A small catalog",
+    "heading": "A quiet place to keep the moves you're working on.",
+    "description": "A small, careful catalog of pole moves — written by performers we know, photographed in studios we visit. No feed, no streaks. Just the moves and your notes.",
+    "createAccount": "Create an account →",
+    "browseCatalog": "Browse the catalog",
+    "hint": "Free. No invite needed."
   },
   "admin": {
     "title": "Admin Dashboard",

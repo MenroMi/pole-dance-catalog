@@ -9,8 +9,14 @@ vi.mock('@/features/auth/actions', () => ({
   signupAction: vi.fn(),
 }));
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   redirect: vi.fn(),
@@ -140,6 +146,6 @@ describe('SignupForm', () => {
     await user.type(screen.getByPlaceholderText('••••••••'), 'Password1!');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
-    expect(await screen.findByText('Email already in use')).toBeInTheDocument();
+    expect(await screen.findByText('emailAlreadyInUse')).toBeInTheDocument();
   });
 });

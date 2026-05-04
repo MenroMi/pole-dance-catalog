@@ -1,16 +1,25 @@
 'use server';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { getLocale } from 'next-intl/server';
 import { z } from 'zod';
 
 import { applyPasswordComplexity } from '@/features/auth/lib/validation';
+import { locales, defaultLocale } from '@/i18n/routing';
+import type { Locale } from '@/i18n/routing';
 import { auth } from '@/shared/lib/auth';
 import { cloudinary } from '@/shared/lib/cloudinary';
+import { localizeMove, localizeTag } from '@/shared/lib/localize';
 import { prisma } from '@/shared/lib/prisma';
 import type { LearnStatus } from '@/shared/types';
 
 import { profileSchema } from './lib/validation';
 import type { FavouriteWithMove, ProgressWithMove } from './types';
+
+async function getCheckedLocale(): Promise<Locale> {
+  const raw = await getLocale();
+  return (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+}
 
 async function requireAuth() {
   const session = await auth();
@@ -26,11 +35,15 @@ const changePasswordSchema = z.object({
 });
 
 export async function getUserProgressAction(status?: LearnStatus): Promise<ProgressWithMove[]> {
-  const userId = await requireAuth();
-  return prisma.userProgress.findMany({
+  const [userId, locale] = await Promise.all([requireAuth(), getCheckedLocale()]);
+  const results = await prisma.userProgress.findMany({
     where: { userId, ...(status ? { status } : {}) },
     include: { move: true },
   });
+  return results.map((p) => ({
+    ...p,
+    move: localizeMove(p.move as Parameters<typeof localizeMove>[0], locale),
+  }));
 }
 
 export async function updateProgressAction(moveId: string, status: LearnStatus) {
@@ -144,12 +157,19 @@ export async function removeFavouriteAction(moveId: string) {
 }
 
 export async function getUserFavouritesAction(): Promise<FavouriteWithMove[]> {
-  const userId = await requireAuth();
-  return prisma.userFavourite.findMany({
+  const [userId, locale] = await Promise.all([requireAuth(), getCheckedLocale()]);
+  const results = await prisma.userFavourite.findMany({
     where: { userId },
     include: { move: { include: { tags: true } } },
     orderBy: { createdAt: 'desc' },
   });
+  return results.map((f) => ({
+    ...f,
+    move: {
+      ...localizeMove(f.move as Parameters<typeof localizeMove>[0], locale),
+      tags: f.move.tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale)),
+    },
+  }));
 }
 
 export async function getProfileUserAction() {
@@ -188,7 +208,7 @@ export async function getProfileStatsAction() {
 }
 
 export async function getProfileOverviewAction() {
-  const userId = await requireAuth();
+  const [userId, locale] = await Promise.all([requireAuth(), getCheckedLocale()]);
   const [progressGroups, currentlyLearning, favouritesPreview, favouritesCount, user] =
     await Promise.all([
       prisma.userProgress.groupBy({ by: ['status'], where: { userId }, _count: true }),
@@ -232,9 +252,23 @@ export async function getProfileOverviewAction() {
       favouritesCount,
     },
     breakdown,
-    currentlyLearning: currentlyLearning as (ProgressWithMove & {
-      move: { tags: { id: string; name: string }[] };
-    })[],
-    favouritesPreview: favouritesPreview as FavouriteWithMove[],
+    currentlyLearning: currentlyLearning.map((p) => ({
+      ...p,
+      move: {
+        ...localizeMove(p.move as Parameters<typeof localizeMove>[0], locale),
+        tags: p.move.tags.map((tag) =>
+          localizeTag(tag as Parameters<typeof localizeTag>[0], locale),
+        ),
+      },
+    })),
+    favouritesPreview: favouritesPreview.map((f) => ({
+      ...f,
+      move: {
+        ...localizeMove(f.move as Parameters<typeof localizeMove>[0], locale),
+        tags: f.move.tags.map((tag) =>
+          localizeTag(tag as Parameters<typeof localizeTag>[0], locale),
+        ),
+      },
+    })),
   };
 }

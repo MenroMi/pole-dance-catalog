@@ -11,8 +11,14 @@ vi.mock('@/features/profile/actions', () => ({
 
 const mockPush = vi.fn();
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: mockPush }),
   redirect: vi.fn(),
@@ -26,14 +32,14 @@ const mockRemove = vi.mocked(removeFavouriteAction);
 beforeEach(() => vi.clearAllMocks());
 
 describe('MoveFavouriteButton', () => {
-  it('has aria-label "Remove from favourites" when already favourited', () => {
+  it('has aria-label "removeFromFavourites" when already favourited', () => {
     render(<MoveFavouriteButton moveId="m1" isFavourited={true} isAuthenticated={true} />);
-    expect(screen.getByRole('button', { name: 'Remove from favourites' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'removeFromFavourites' })).toBeInTheDocument();
   });
 
-  it('has aria-label "Add to favourites" when not favourited', () => {
+  it('has aria-label "addToFavourites" when not favourited', () => {
     render(<MoveFavouriteButton moveId="m1" isFavourited={false} isAuthenticated={true} />);
-    expect(screen.getByRole('button', { name: 'Add to favourites' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'addToFavourites' })).toBeInTheDocument();
   });
 
   it('redirects to /login when unauthenticated', async () => {

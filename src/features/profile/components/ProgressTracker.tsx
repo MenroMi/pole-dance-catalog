@@ -2,9 +2,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/navigation';
 import { useMemo, useOptimistic, useState, useTransition } from 'react';
 
+import { Link, useRouter } from '@/i18n/navigation';
 import { cardVariants, tabContentVariants } from '@/shared/lib/motion';
 import type { LearnStatus } from '@/shared/types';
 
@@ -40,7 +40,10 @@ function EmptyTab({ tab }: { tab: Tab }) {
   if (tab === 'in_progress')
     return (
       <div className="flex flex-col items-center rounded-xl border border-dashed border-outline-variant/40 px-6 py-20 text-center">
-        <p className="font-display text-[22px] text-on-surface" style={{ letterSpacing: '-0.01em' }}>
+        <p
+          className="font-display text-[22px] text-on-surface"
+          style={{ letterSpacing: '-0.01em' }}
+        >
           {t('emptyInProgress')}
         </p>
         <p className="mt-1.5 max-w-xs font-sans text-sm text-on-surface-variant">
@@ -55,7 +58,10 @@ function EmptyTab({ tab }: { tab: Tab }) {
   if (tab === 'want_to_learn')
     return (
       <div className="flex flex-col items-center rounded-xl border border-dashed border-outline-variant/40 px-6 py-20 text-center">
-        <p className="font-display text-[22px] text-on-surface" style={{ letterSpacing: '-0.01em' }}>
+        <p
+          className="font-display text-[22px] text-on-surface"
+          style={{ letterSpacing: '-0.01em' }}
+        >
           {t('emptyWantToLearn')}
         </p>
         <p className="mt-1.5 max-w-xs font-sans text-sm text-on-surface-variant">
@@ -143,20 +149,24 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
           {t('overview')}
         </Link>
         <ChevronRight className="h-3 w-3 opacity-50" />
-        <span className="font-semibold tracking-[0.1em] text-primary uppercase">{t('progress')}</span>
+        <span className="font-semibold tracking-[0.1em] text-primary uppercase">
+          {t('progress')}
+        </span>
       </div>
 
       {/* Page header */}
       <div className="mt-5 flex flex-col gap-8">
         <div>
           <p className="mb-3 font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-            {optimisticProgress.length} {t('tracked')}{userName ? ` · ${userName}` : ''}
+            {optimisticProgress.length} {t('tracked')}
+            {userName ? ` · ${userName}` : ''}
           </p>
           <h1 className="font-display text-5xl leading-[0.95] font-semibold tracking-[-0.04em] text-on-surface lowercase md:text-[64px]">
-            your <em className="font-medium text-primary italic not-italic">journey</em>
+            {t('journeyHeading')}{' '}
+            <em className="font-medium text-primary italic not-italic">{t('journeyHighlight')}</em>
           </h1>
           <p className="mt-3.5 max-w-[460px] font-sans text-base leading-relaxed text-on-surface-variant">
-            Track what you&apos;re learning and celebrate what you&apos;ve mastered.
+            {t('journeySubtitle')}
           </p>
         </div>
 
@@ -205,8 +215,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
                     : 'bg-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                {te(`learnStatus.${TAB_STATUS[id]}`)}
-                {' '}
+                {te(`learnStatus.${TAB_STATUS[id]}`)}{' '}
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-[9px] ${
                     tab === id

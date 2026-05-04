@@ -1,10 +1,10 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
 import { signupAction } from '../actions';
@@ -15,6 +15,7 @@ import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
 export function SignupForm() {
   const t = useTranslations('auth.signup');
+  const te = useTranslations('auth.errors');
   const [detectedLocation, setDetectedLocation] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -197,7 +198,14 @@ export function SignupForm() {
                 clipRule="evenodd"
               />
             </svg>
-            {errors.root.message}
+            {(
+              {
+                'Too many requests': te('tooManyRequests'),
+                'Invalid input': te('invalidInput'),
+                'Email already in use': te('emailAlreadyInUse'),
+                'Failed to send email, please try again': te('sendEmailFailed'),
+              } as Record<string, string>
+            )[errors.root.message] ?? errors.root.message}
           </div>
         )}
 

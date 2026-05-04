@@ -1,11 +1,11 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
 import { loginAction } from '../actions';
@@ -16,6 +16,7 @@ import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
 export function LoginForm() {
   const t = useTranslations('auth.login');
+  const te = useTranslations('auth.errors');
   const searchParams = useSearchParams();
   const showResetBanner = searchParams.get('reset') === 'true';
   const showVerifiedBanner = searchParams.get('verified') === 'true';
@@ -150,7 +151,12 @@ export function LoginForm() {
               />
             </svg>
             <span>
-              {errors.root.message}
+              {(
+                {
+                  'Invalid credentials': te('invalidCredentials'),
+                  'Please verify your email first': te('verifyEmailFirst'),
+                } as Record<string, string>
+              )[errors.root.message] ?? errors.root.message}
               {unverifiedEmail && (
                 <>
                   {' — '}

@@ -6,8 +6,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import HomePage from './page';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   redirect: vi.fn(),
@@ -32,27 +38,27 @@ describe('HomePage', () => {
   it('renders landing content when unauthenticated', async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
     render(await HomePage(mockParams));
-    expect(screen.getByText(/quiet place/i)).toBeInTheDocument();
+    expect(screen.getByText('heading')).toBeInTheDocument();
   });
 
   it('shows "Create an account" link pointing to /signup', async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
     render(await HomePage(mockParams));
-    const link = screen.getByRole('link', { name: /create an account/i });
+    const link = screen.getByRole('link', { name: 'createAccount' });
     expect(link).toHaveAttribute('href', '/signup');
   });
 
   it('shows "Browse the catalog" link pointing to /catalog', async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
     render(await HomePage(mockParams));
-    const link = screen.getByRole('link', { name: /browse the catalog/i });
+    const link = screen.getByRole('link', { name: 'browseCatalog' });
     expect(link).toHaveAttribute('href', '/catalog');
   });
 
-  it('shows "Free. No invite needed." hint', async () => {
+  it('shows hint text', async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
     render(await HomePage(mockParams));
-    expect(screen.getByText(/free\. no invite needed\./i)).toBeInTheDocument();
+    expect(screen.getByText('hint')).toBeInTheDocument();
   });
 
   it('brand span has aria-label "pole space"', async () => {

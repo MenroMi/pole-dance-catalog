@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, Heart, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
 import { useCallback, useMemo, useOptimistic, useState, useTransition } from 'react';
 
 import { extractVideoId } from '@/features/moves/lib/youtube';
+import { Link } from '@/i18n/navigation';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -310,7 +310,9 @@ export default function FavouriteMovesGallery({
             {t('overview')}
           </Link>
           <ChevronRight className="h-3 w-3 opacity-50" />
-          <span className="font-semibold tracking-[0.1em] text-primary uppercase">{t('savedLabel')}</span>
+          <span className="font-semibold tracking-[0.1em] text-primary uppercase">
+            {t('savedLabel')}
+          </span>
         </div>
 
         {/* Page header */}
@@ -318,13 +320,17 @@ export default function FavouriteMovesGallery({
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p className="mb-3 font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-                {optimisticFavs.length} saved{userName ? ` · ${userName}` : ''}
+                {t('countSaved', { count: optimisticFavs.length })}
+                {userName ? ` · ${userName}` : ''}
               </p>
               <h1 className="font-display text-5xl leading-[0.95] font-semibold tracking-[-0.04em] text-on-surface lowercase md:text-[64px]">
-                saved <em className="font-medium text-primary italic not-italic">performances</em>
+                {t('savedLabel')}{' '}
+                <em className="font-medium text-primary italic not-italic">
+                  {t('savedHighlight')}
+                </em>
               </h1>
               <p className="mt-3.5 max-w-[460px] font-sans text-base leading-relaxed text-on-surface-variant">
-                Your curated gallery — moves you keep coming back to.
+                {t('savedSubtitle')}
               </p>
             </div>
           </div>

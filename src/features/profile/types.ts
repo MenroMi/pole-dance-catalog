@@ -1,7 +1,9 @@
-import type { UserProgress, UserFavourite, Move, Tag } from '@prisma/client';
+import type { UserProgress, UserFavourite } from '@prisma/client';
 
-export type ProgressWithMove = UserProgress & { move: Move };
-export type FavouriteWithMove = UserFavourite & { move: Move & { tags: Tag[] } };
+import type { LocalizedMove, LocalizedTag } from '@/shared/lib/localize';
+
+export type ProgressWithMove = UserProgress & { move: LocalizedMove };
+export type FavouriteWithMove = UserFavourite & { move: LocalizedMove & { tags: LocalizedTag[] } };
 
 export type ProfileFormValues = {
   name: string;
