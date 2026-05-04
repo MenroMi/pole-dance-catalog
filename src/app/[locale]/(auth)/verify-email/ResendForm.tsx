@@ -1,5 +1,6 @@
 'use client';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -7,6 +8,7 @@ import { RESEND_COOLDOWN_S } from '@/features/auth';
 import { checkEmailVerifiedAction } from '@/features/auth/actions';
 
 function SubmitButton({ remaining }: { remaining: number }) {
+  const t = useTranslations('auth.verifyEmail');
   const { pending } = useFormStatus();
   const blocked = pending || remaining > 0;
 
@@ -17,10 +19,10 @@ function SubmitButton({ remaining }: { remaining: number }) {
       className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
     >
       {pending
-        ? 'sending...'
+        ? t('sending')
         : remaining > 0
-          ? `resend in ${remaining}s`
-          : 'resend verification email'}
+          ? t('resendWait', { seconds: remaining })
+          : t('resendSubmit')}
     </button>
   );
 }

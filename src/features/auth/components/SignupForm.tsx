@@ -1,6 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -13,6 +14,7 @@ import type { SignupFormData } from '../lib/validation';
 import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
 export function SignupForm() {
+  const t = useTranslations('auth.signup');
   const [detectedLocation, setDetectedLocation] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -51,9 +53,9 @@ export function SignupForm() {
     <div className="w-full max-w-sm animate-fade-in-up space-y-10">
       <div className="space-y-1.5">
         <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-          join pole space.
+          {t('title')}
         </h2>
-        <p className="text-sm text-on-surface-variant">create your account to start tracking.</p>
+        <p className="text-sm text-on-surface-variant">{t('subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -64,7 +66,7 @@ export function SignupForm() {
               htmlFor="firstName"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              first name
+              {t('firstNameLabel')}
             </label>
             <div className="relative">
               <input
@@ -95,7 +97,7 @@ export function SignupForm() {
               htmlFor="lastName"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              last name
+              {t('lastNameLabel')}
             </label>
             <div className="relative">
               <input
@@ -126,7 +128,7 @@ export function SignupForm() {
               htmlFor="email"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              email address
+              {t('emailLabel')}
             </label>
             <div className="relative">
               <input
@@ -157,7 +159,7 @@ export function SignupForm() {
               htmlFor="password"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              password
+              {t('passwordLabel')}
             </label>
             <PasswordInput
               id="password"
@@ -204,7 +206,7 @@ export function SignupForm() {
           disabled={isSubmitting}
           className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {isSubmitting ? 'creating account...' : 'create account'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
 
@@ -212,7 +214,7 @@ export function SignupForm() {
         <div className="relative flex items-center">
           <div className="h-px grow bg-outline-variant/20" />
           <span className="mx-4 shrink text-[10px] tracking-widest text-outline-variant uppercase">
-            or continue with
+            {t('orContinueWith')}
           </span>
           <div className="h-px grow bg-outline-variant/20" />
         </div>
@@ -236,12 +238,12 @@ export function SignupForm() {
       </div>
 
       <p className="text-center text-xs text-on-surface-variant">
-        already a member?{' '}
+        {t('hasAccount')}{' '}
         <Link
           href="/login"
           className="ml-1 font-bold text-primary decoration-2 underline-offset-4 hover:underline"
         >
-          sign in
+          {t('signIn')}
         </Link>
       </p>
     </div>

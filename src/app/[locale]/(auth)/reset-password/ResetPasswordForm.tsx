@@ -1,6 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -26,6 +27,7 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export default function ResetPasswordForm({ token }: { token: string }) {
+  const t = useTranslations('auth.resetPassword');
   const [actionError, setActionError] = useState<'expired' | 'invalid' | null>(null);
 
   const {
@@ -46,7 +48,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
     <div className="w-full max-w-sm animate-fade-in-up space-y-10">
       <div className="space-y-1.5">
         <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-          new password.
+          {t('heading')}
         </h2>
         <p className="text-sm text-on-surface-variant">
           choose a strong password for your account.
@@ -60,7 +62,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
               htmlFor="password"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              new password
+              {t('passwordLabel')}
             </label>
             <PasswordInput
               id="password"
@@ -106,17 +108,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
           </div>
         </div>
 
-        {actionError === 'expired' && (
+        {actionError && (
           <p role="alert" className="text-sm text-red-400">
-            that link has expired.{' '}
-            <Link href="/forgot-password" className="underline hover:text-red-300">
-              request a new one
-            </Link>
-          </p>
-        )}
-        {actionError === 'invalid' && (
-          <p role="alert" className="text-sm text-red-400">
-            this link is invalid or already used.{' '}
+            {t('invalidToken')}{' '}
             <Link href="/forgot-password" className="underline hover:text-red-300">
               request a new one
             </Link>
@@ -128,7 +122,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
           disabled={isSubmitting}
           className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {isSubmitting ? 'resetting...' : 'reset password'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
 

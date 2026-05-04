@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 
@@ -60,6 +61,7 @@ async function requireUnverifiedUser(email: string | undefined): Promise<string>
 
 export default async function VerifyEmailPage({ searchParams }: Props) {
   const { sent, error, email } = await searchParams;
+  const t = await getTranslations('auth.verifyEmail');
 
   if (sent) {
     const validEmail = await requireUnverifiedUser(email);
@@ -84,11 +86,9 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           </div>
           <div className="space-y-1.5">
             <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-              check your inbox.
+              {t('sentHeading')}
             </h2>
-            <p className="text-sm leading-relaxed text-on-surface-variant">
-              we sent a verification link to your email. it expires in 24 hours.
-            </p>
+            <p className="text-sm leading-relaxed text-on-surface-variant">{t('sentBody')}</p>
           </div>
         </div>
 
@@ -102,14 +102,12 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
             href="/login"
             className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
           >
-            back to sign in
+            {t('backToSignIn')}
           </Link>
         </div>
 
         <div className="border-t border-outline-variant/15 pt-2">
-          <p className="text-[10px] tracking-widest text-outline uppercase">
-            didn&apos;t get an email? check your spam folder
-          </p>
+          <p className="text-[10px] tracking-widest text-outline uppercase">{t('spamNote')}</p>
         </div>
       </div>
     );
@@ -124,11 +122,9 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           </div>
           <div className="space-y-1.5">
             <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-              link expired.
+              {t('expiredHeading')}
             </h2>
-            <p className="text-sm leading-relaxed text-on-surface-variant">
-              your verification link has expired. enter your email to get a new one.
-            </p>
+            <p className="text-sm leading-relaxed text-on-surface-variant">{t('expiredBody')}</p>
           </div>
         </div>
 
@@ -138,7 +134,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           href="/login"
           className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
         >
-          back to sign in
+          {t('backToSignIn')}
         </Link>
       </div>
     );
@@ -160,10 +156,10 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           </div>
           <div className="space-y-1.5">
             <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-              couldn&apos;t send email.
+              {t('sendFailedHeading')}
             </h2>
             <p className="text-sm leading-relaxed text-on-surface-variant">
-              we failed to deliver your verification email. please try again.
+              {t('sendFailedBody')}
             </p>
           </div>
         </div>
@@ -175,7 +171,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
             href="/signup"
             className="kinetic-gradient block w-full cursor-pointer rounded-md py-4 text-center text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97]"
           >
-            back to sign up
+            {t('backToSignUp')}
           </Link>
         )}
 
@@ -183,18 +179,15 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           href="/login"
           className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
         >
-          back to sign in
+          {t('backToSignIn')}
         </Link>
       </div>
     );
   }
 
   if (error === 'invalid' || error === 'server') {
-    const heading = error === 'server' ? 'something went wrong.' : 'invalid link.';
-    const message =
-      error === 'server'
-        ? 'we could not verify your email. please try again later.'
-        : 'this verification link is invalid. please sign up again.';
+    const heading = error === 'server' ? t('serverHeading') : t('invalidHeading');
+    const message = error === 'server' ? t('serverBody') : t('invalidBody');
 
     return (
       <div className="w-full max-w-sm animate-fade-in-up space-y-10">
@@ -214,14 +207,14 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           href="/signup"
           className="kinetic-gradient block w-full cursor-pointer rounded-md py-4 text-center text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97]"
         >
-          back to sign up
+          {t('backToSignUp')}
         </Link>
 
         <Link
           href="/login"
           className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
         >
-          already have an account? sign in
+          {t('backToSignIn')}
         </Link>
       </div>
     );

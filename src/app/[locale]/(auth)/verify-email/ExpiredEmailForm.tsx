@@ -1,9 +1,11 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useTransition } from 'react';
 
 import { resendVerificationAction } from '@/features/auth';
 
 export function ExpiredEmailForm() {
+  const t = useTranslations('auth.verifyEmail');
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -20,7 +22,7 @@ export function ExpiredEmailForm() {
         type="email"
         name="email"
         required
-        placeholder="your@email.com"
+        placeholder={t('emailPlaceholder')}
         disabled={isPending}
         className="w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-ring focus:outline-none disabled:opacity-60"
       />
@@ -29,7 +31,7 @@ export function ExpiredEmailForm() {
         disabled={isPending}
         className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
       >
-        {isPending ? 'sending...' : 'resend verification email'}
+        {isPending ? t('sending') : t('resendSubmit')}
       </button>
     </form>
   );

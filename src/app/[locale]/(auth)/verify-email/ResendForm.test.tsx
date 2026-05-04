@@ -85,7 +85,7 @@ describe('ResendForm — handleAction', () => {
       expect(mockReplace).toHaveBeenCalledWith('/catalog');
     });
     expect(mockAction).not.toHaveBeenCalled();
-    expect(getByRole('button')).toHaveTextContent('resend verification email');
+    expect(getByRole('button')).toHaveTextContent('resendSubmit');
   });
 
   it('calls action() and starts countdown when email is not yet verified', async () => {
@@ -104,7 +104,7 @@ describe('ResendForm — handleAction', () => {
       expect(mockAction).toHaveBeenCalled();
     });
     expect(mockReplace).not.toHaveBeenCalled();
-    expect(getByRole('button')).toHaveTextContent(/resend in \d+s/);
+    expect(getByRole('button')).toHaveTextContent('resendWait');
   });
 });
 

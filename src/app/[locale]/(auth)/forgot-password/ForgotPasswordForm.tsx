@@ -1,6 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -15,6 +16,7 @@ type ForgotPasswordFormProps = {
 };
 
 export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordFormProps) {
+  const t = useTranslations('auth.forgotPassword');
   const router = useRouter();
   const {
     register,
@@ -34,17 +36,15 @@ export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordForm
       <div className="w-full max-w-sm animate-fade-in-up space-y-10">
         <div className="space-y-1.5">
           <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-            check your inbox.
+            {t('successHeading')}
           </h2>
-          <p className="text-sm leading-relaxed text-on-surface-variant">
-            if that address is registered, a reset link is on its way. it expires in 1 hour.
-          </p>
+          <p className="text-sm leading-relaxed text-on-surface-variant">{t('successBody')}</p>
         </div>
         <Link
           href="/login"
           className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
         >
-          back to sign in
+          {t('backToSignIn')}
         </Link>
       </div>
     );
@@ -54,11 +54,9 @@ export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordForm
     <div className="w-full max-w-sm animate-fade-in-up space-y-10">
       <div className="space-y-1.5">
         <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-          forgot password.
+          {t('heading')}
         </h2>
-        <p className="text-sm text-on-surface-variant">
-          enter your email and we&apos;ll send you a reset link.
-        </p>
+        <p className="text-sm text-on-surface-variant">{t('body')}</p>
       </div>
 
       {expired && (
@@ -73,7 +71,7 @@ export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordForm
             htmlFor="email"
             className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
           >
-            email address
+            {t('emailLabel')}
           </label>
           <div className="relative">
             <input
@@ -103,7 +101,7 @@ export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordForm
           disabled={isSubmitting}
           className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {isSubmitting ? 'sending...' : 'send reset link'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
 
@@ -111,7 +109,7 @@ export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordForm
         href="/login"
         className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
       >
-        back to sign in
+        {t('backToSignIn')}
       </Link>
     </div>
   );
