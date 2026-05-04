@@ -22,7 +22,7 @@ export default function LocaleSwitcher() {
   const pathname = usePathname();
 
   function switchLocale(next: Locale) {
-    router.replace(pathname, { locale: next });
+    if (next !== locale) router.replace(pathname, { locale: next });
   }
 
   return (
@@ -38,10 +38,11 @@ export default function LocaleSwitcher() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end">
+        <div role="group" aria-label="Language">
         {LANGUAGES.map(({ locale: l, label }) => (
           <DropdownMenuItem
             key={l}
-            role="menuitem"
+            role="menuitemradio"
             aria-checked={locale === l}
             onSelect={() => switchLocale(l)}
             className="flex items-center gap-2"
@@ -55,6 +56,7 @@ export default function LocaleSwitcher() {
             {label}
           </DropdownMenuItem>
         ))}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
