@@ -42,28 +42,32 @@ describe('sendPasswordResetEmail', () => {
   });
 
   it('sends Polish subject when locale is pl', async () => {
-    vi.mocked(getTranslations).mockResolvedValue(
-      ((key: string) => (key === 'subject' ? 'Resetowanie hasła — Pole Space' : `[${key}]`)) as never,
-    );
+    vi.mocked(getTranslations).mockResolvedValue(((key: string) =>
+      key === 'subject' ? 'Resetowanie hasła — Pole Space' : `[${key}]`) as never);
     mockSend.mockResolvedValue({ data: { id: 'x' }, error: null });
 
     await sendPasswordResetEmail('u@e.com', 'tok', 'pl');
 
-    expect(getTranslations).toHaveBeenCalledWith({ locale: 'pl', namespace: 'emails.passwordReset' });
+    expect(getTranslations).toHaveBeenCalledWith({
+      locale: 'pl',
+      namespace: 'emails.passwordReset',
+    });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Resetowanie hasła — Pole Space' }),
     );
   });
 
   it('sends English subject when locale is en', async () => {
-    vi.mocked(getTranslations).mockResolvedValue(
-      ((key: string) => (key === 'subject' ? 'Password reset — Pole Space' : `[${key}]`)) as never,
-    );
+    vi.mocked(getTranslations).mockResolvedValue(((key: string) =>
+      key === 'subject' ? 'Password reset — Pole Space' : `[${key}]`) as never);
     mockSend.mockResolvedValue({ data: { id: 'x' }, error: null });
 
     await sendPasswordResetEmail('u@e.com', 'tok', 'en');
 
-    expect(getTranslations).toHaveBeenCalledWith({ locale: 'en', namespace: 'emails.passwordReset' });
+    expect(getTranslations).toHaveBeenCalledWith({
+      locale: 'en',
+      namespace: 'emails.passwordReset',
+    });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Password reset — Pole Space' }),
     );

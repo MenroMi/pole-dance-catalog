@@ -1,9 +1,8 @@
 import { getTranslations } from 'next-intl/server';
-import { redirect } from '@/i18n/navigation';
-import { Link } from '@/i18n/navigation';
 
 import { resendVerificationAction } from '@/features/auth';
 import { getResendCooldownRemaining } from '@/features/auth/lib/cooldown';
+import { redirect, Link } from '@/i18n/navigation';
 import { prisma } from '@/shared/lib/prisma';
 
 import { ExpiredEmailForm } from './ExpiredEmailForm';
@@ -158,9 +157,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
             <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
               {t('sendFailedHeading')}
             </h2>
-            <p className="text-sm leading-relaxed text-on-surface-variant">
-              {t('sendFailedBody')}
-            </p>
+            <p className="text-sm leading-relaxed text-on-surface-variant">{t('sendFailedBody')}</p>
           </div>
         </div>
 

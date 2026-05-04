@@ -1,11 +1,15 @@
 'use server';
-import { prisma } from '@/shared/lib/prisma';
-import { localizeMove, localizeTag } from '@/shared/lib/localize';
 import type { Locale } from '@/i18n/routing';
+import { localizeMove, localizeTag } from '@/shared/lib/localize';
+import { prisma } from '@/shared/lib/prisma';
 
 import type { MoveDetail, StepItem } from './types';
 
-export async function getMoveByIdAction(id: string, locale: Locale, userId?: string): Promise<MoveDetail | null> {
+export async function getMoveByIdAction(
+  id: string,
+  locale: Locale,
+  userId?: string,
+): Promise<MoveDetail | null> {
   const move = await prisma.move.findUnique({
     where: { id },
     include: { tags: true },

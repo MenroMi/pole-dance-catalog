@@ -6,8 +6,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import CatalogFilters from './CatalogFilters';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: vi.fn(),
   redirect: vi.fn(),
@@ -67,12 +73,16 @@ describe('CatalogFilters', () => {
 
   it('active pole type button has text-primary class', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'poleType.STATIC' }).className).toContain('text-primary');
+    expect(screen.getByRole('button', { name: 'poleType.STATIC' }).className).toContain(
+      'text-primary',
+    );
   });
 
   it('inactive pole type button does not have text-primary class', () => {
     render(<CatalogFilters filters={{ poleTypes: ['STATIC'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'poleType.SPIN' }).className).not.toContain('text-primary');
+    expect(screen.getByRole('button', { name: 'poleType.SPIN' }).className).not.toContain(
+      'text-primary',
+    );
   });
 
   // --- Difficulty ---
@@ -104,7 +114,9 @@ describe('CatalogFilters', () => {
 
   it('active difficulty button has text-primary class', () => {
     render(<CatalogFilters filters={{ difficulty: ['BEGINNER'] }} availableTags={[]} />);
-    expect(screen.getByRole('button', { name: 'difficulty.BEGINNER' }).className).toContain('text-primary');
+    expect(screen.getByRole('button', { name: 'difficulty.BEGINNER' }).className).toContain(
+      'text-primary',
+    );
   });
 
   // --- Tags ---

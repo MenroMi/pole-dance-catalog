@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
     });
 
     if (!verificationToken) {
-      return NextResponse.redirect(new URL(`/${defaultLocale}/verify-email?error=invalid`, req.url));
+      return NextResponse.redirect(
+        new URL(`/${defaultLocale}/verify-email?error=invalid`, req.url),
+      );
     }
 
     const tokenLocale = verificationToken.locale ?? defaultLocale;

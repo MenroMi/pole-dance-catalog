@@ -20,7 +20,9 @@ const LANGUAGES: { locale: Locale; label: string }[] = [
 export default function LocaleSwitcher() {
   const t = useTranslations('nav');
   const raw = useLocale();
-  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+  const locale: Locale = (locales as readonly string[]).includes(raw)
+    ? (raw as Locale)
+    : defaultLocale;
   const router = useRouter();
   const pathname = usePathname();
 
@@ -34,7 +36,7 @@ export default function LocaleSwitcher() {
         <button
           type="button"
           aria-label={t('changeLanguage')}
-          className="text-on-surface-variant transition-colors hover:text-on-surface"
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-transparent transition-colors hover:border-primary/20 hover:bg-primary/[0.06]"
         >
           <Globe size={18} aria-hidden="true" />
         </button>
@@ -42,23 +44,29 @@ export default function LocaleSwitcher() {
 
       <DropdownMenuContent align="end">
         <div role="group" aria-label="Language">
-        {LANGUAGES.map(({ locale: l, label }) => (
-          <DropdownMenuItem
-            key={l}
-            role="menuitemradio"
-            aria-checked={locale === l}
-            onSelect={() => switchLocale(l)}
-            className="flex items-center gap-2"
-          >
-            {locale === l && (
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-                <path d="M10.28 2.28L4 8.56 1.72 6.28a1 1 0 00-1.44 1.44l3 3a1 1 0 001.44 0l7-7a1 1 0 00-1.44-1.44z" />
-              </svg>
-            )}
-            {locale !== l && <span className="w-3" />}
-            {label}
-          </DropdownMenuItem>
-        ))}
+          {LANGUAGES.map(({ locale: l, label }) => (
+            <DropdownMenuItem
+              key={l}
+              role="menuitemradio"
+              aria-checked={locale === l}
+              onSelect={() => switchLocale(l)}
+              className="flex items-center gap-2"
+            >
+              {locale === l && (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M10.28 2.28L4 8.56 1.72 6.28a1 1 0 00-1.44 1.44l3 3a1 1 0 001.44 0l7-7a1 1 0 00-1.44-1.44z" />
+                </svg>
+              )}
+              {locale !== l && <span className="w-3" />}
+              {label}
+            </DropdownMenuItem>
+          ))}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

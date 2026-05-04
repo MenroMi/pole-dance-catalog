@@ -36,12 +36,18 @@ export type RawTag = {
 
 export type LocalizedMove = Omit<
   RawMove,
-  | 'title_pl' | 'title_en'
-  | 'description_pl' | 'description_en'
-  | 'stepsData_pl' | 'stepsData_en'
-  | 'gripType_pl' | 'gripType_en'
-  | 'entry_pl' | 'entry_en'
-  | 'coachNote_pl' | 'coachNote_en'
+  | 'title_pl'
+  | 'title_en'
+  | 'description_pl'
+  | 'description_en'
+  | 'stepsData_pl'
+  | 'stepsData_en'
+  | 'gripType_pl'
+  | 'gripType_en'
+  | 'entry_pl'
+  | 'entry_en'
+  | 'coachNote_pl'
+  | 'coachNote_en'
 > & {
   title: string;
   description: string | null;
@@ -56,12 +62,18 @@ export type LocalizedTag = Omit<RawTag, 'name_pl' | 'name_en'> & { name: string 
 export function localizeMove(move: RawMove, locale: Locale): LocalizedMove {
   const pl = locale === 'pl';
   const {
-    title_pl, title_en,
-    description_pl, description_en,
-    stepsData_pl, stepsData_en,
-    gripType_pl, gripType_en,
-    entry_pl, entry_en,
-    coachNote_pl, coachNote_en,
+    title_pl,
+    title_en,
+    description_pl,
+    description_en,
+    stepsData_pl,
+    stepsData_en,
+    gripType_pl,
+    gripType_en,
+    entry_pl,
+    entry_en,
+    coachNote_pl,
+    coachNote_en,
     ...rest
   } = move;
   return {

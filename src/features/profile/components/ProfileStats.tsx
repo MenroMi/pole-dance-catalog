@@ -55,7 +55,11 @@ export default async function ProfileStats({
         value={favouritesCount}
         label={t('favourites')}
       />
-      <StatCard icon={<Award size={32} aria-hidden="true" />} value="—" label={t('trainingSessions')} />
+      <StatCard
+        icon={<Award size={32} aria-hidden="true" />}
+        value="—"
+        label={t('trainingSessions')}
+      />
     </div>
   );
 }

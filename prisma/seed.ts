@@ -17,8 +17,10 @@ const moves = [
   {
     title_pl: 'Spin Strażaka',
     title_en: 'Fireman Spin',
-    description_pl: 'Podstawowy spin. Obie ręce, zewnętrzna noga owija, wewnętrzna wyciąga — pierwszy spin każdej tancerki.',
-    description_en: 'Foundational spin. Two hands, outside leg wraps, inside leg extends — the first spin every dancer learns.',
+    description_pl:
+      'Podstawowy spin. Obie ręce, zewnętrzna noga owija, wewnętrzna wyciąga — pierwszy spin każdej tancerki.',
+    description_en:
+      'Foundational spin. Two hands, outside leg wraps, inside leg extends — the first spin every dancer learns.',
     difficulty: 'BEGINNER' as const,
     category: 'SPINS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=firemanspi01',
@@ -28,8 +30,10 @@ const moves = [
   {
     title_pl: 'Spin na Krześle',
     title_en: 'Chair Spin',
-    description_pl: 'Spin w pozycji krzesła — kolana razem, palce wyciągnięte, ciało lekko odchylone.',
-    description_en: 'Seated-pose spin — knees together, toes pointed, body leaning back like a chair in motion.',
+    description_pl:
+      'Spin w pozycji krzesła — kolana razem, palce wyciągnięte, ciało lekko odchylone.',
+    description_en:
+      'Seated-pose spin — knees together, toes pointed, body leaning back like a chair in motion.',
     difficulty: 'BEGINNER' as const,
     category: 'SPINS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=chairspin001',
@@ -40,7 +44,8 @@ const moves = [
     title_pl: 'Spin na Tylnym Haku',
     title_en: 'Back Hook Spin',
     description_pl: 'Spin na impulsie z tylnym hakiem nogi. Dobra rozgrzewka.',
-    description_en: 'Momentum-driven spin where the back leg hooks the pole behind you. Great warm-up spin.',
+    description_en:
+      'Momentum-driven spin where the back leg hooks the pole behind you. Great warm-up spin.',
     difficulty: 'BEGINNER' as const,
     category: 'SPINS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=backhooksp01',
@@ -50,8 +55,10 @@ const moves = [
   {
     title_pl: 'Spin w Attitude',
     title_en: 'Attitude Spin',
-    description_pl: 'Elegancki spin z nogą w pozycji attitude — zgiętą pod kątem 90°, stopą z tyłu.',
-    description_en: 'Elegant spin with one leg in attitude position — bent at 90 degrees, foot flexed behind.',
+    description_pl:
+      'Elegancki spin z nogą w pozycji attitude — zgiętą pod kątem 90°, stopą z tyłu.',
+    description_en:
+      'Elegant spin with one leg in attitude position — bent at 90 degrees, foot flexed behind.',
     difficulty: 'INTERMEDIATE' as const,
     category: 'SPINS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=attitudespn1',
@@ -62,7 +69,8 @@ const moves = [
     title_pl: 'Spin Karuzelowy',
     title_en: 'Carousel Spin',
     description_pl: 'Horyzontalny spin z ciałem równoległym do podłogi. Wymaga zaangażowania core.',
-    description_en: 'Horizontal spin with body parallel to the floor, one hand high, one low. Needs core engagement.',
+    description_en:
+      'Horizontal spin with body parallel to the floor, one hand high, one low. Needs core engagement.',
     difficulty: 'INTERMEDIATE' as const,
     category: 'SPINS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=carouselsp01',
@@ -85,7 +93,8 @@ const moves = [
     title_pl: 'Siedzenie na Słupie',
     title_en: 'Pole Sit',
     description_pl: 'Skrzyżuj uda wokół słupa podczas wspinaczki do siedzenia bez rąk.',
-    description_en: 'Cross the thighs around the pole while climbing to hands-free seated position.',
+    description_en:
+      'Cross the thighs around the pole while climbing to hands-free seated position.',
     difficulty: 'BEGINNER' as const,
     category: 'CLIMBS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=polesit00001',
@@ -95,8 +104,10 @@ const moves = [
   {
     title_pl: 'Zwis na Wewnętrznej Nodze',
     title_en: 'Inside Leg Hang',
-    description_pl: 'Zwis odwrócony na wewnętrznej nodze. Pierwszy zwis na samych nogach, którego uczą się tancerki.',
-    description_en: 'Hang inverted from the inside leg grip. First leg-only hold most dancers learn.',
+    description_pl:
+      'Zwis odwrócony na wewnętrznej nodze. Pierwszy zwis na samych nogach, którego uczą się tancerki.',
+    description_en:
+      'Hang inverted from the inside leg grip. First leg-only hold most dancers learn.',
     difficulty: 'INTERMEDIATE' as const,
     category: 'CLIMBS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=insidelegh01',
@@ -106,8 +117,10 @@ const moves = [
   {
     title_pl: 'Zwis Krzyżowy z Kolanem',
     title_en: 'Cross Knee Release',
-    description_pl: 'Zaawansowane combo wspinaczka-hold. Skrzyżowane kolana wokół słupa, zwolnienie rąk. Wymaga zaufania do chwytu.',
-    description_en: 'Advanced climb-to-hold combo. Cross knees around the pole, release hands. Requires trust in grip.',
+    description_pl:
+      'Zaawansowane combo wspinaczka-hold. Skrzyżowane kolana wokół słupa, zwolnienie rąk. Wymaga zaufania do chwytu.',
+    description_en:
+      'Advanced climb-to-hold combo. Cross knees around the pole, release hands. Requires trust in grip.',
     difficulty: 'ADVANCED' as const,
     category: 'CLIMBS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=crosskneeR1',
@@ -118,8 +131,10 @@ const moves = [
   {
     title_pl: 'Superman',
     title_en: 'Superman',
-    description_pl: 'Horyzontalna pozycja przodem — jedna noga hookuje, ciało wyciąga się prosto jak do lotu. Niezbędne core i chwyt.',
-    description_en: 'Horizontal prone hold — one leg hooks, body extends straight like flying. Core and grip essential.',
+    description_pl:
+      'Horyzontalna pozycja przodem — jedna noga hookuje, ciało wyciąga się prosto jak do lotu. Niezbędne core i chwyt.',
+    description_en:
+      'Horizontal prone hold — one leg hooks, body extends straight like flying. Core and grip essential.',
     difficulty: 'INTERMEDIATE' as const,
     category: 'HOLDS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=supermanhld1',
@@ -129,8 +144,10 @@ const moves = [
   {
     title_pl: 'Pozycja Iguany',
     title_en: 'Iguana Mount',
-    description_pl: 'Odwróć się, wygnij plecy, chwyć słup rękami i kostkami — sylwetka jak jaszczurka.',
-    description_en: 'Invert, arch back, grip pole with hands and ankles — named for the lizard-like silhouette.',
+    description_pl:
+      'Odwróć się, wygnij plecy, chwyć słup rękami i kostkami — sylwetka jak jaszczurka.',
+    description_en:
+      'Invert, arch back, grip pole with hands and ankles — named for the lizard-like silhouette.',
     difficulty: 'INTERMEDIATE' as const,
     category: 'HOLDS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=iguanamount1',
@@ -140,8 +157,10 @@ const moves = [
   {
     title_pl: 'Flaga',
     title_en: 'Flag',
-    description_pl: 'Horyzontalny hold z montem na ramieniu. Ciało prostopadle do słupa. Wymagana duża siła ramion.',
-    description_en: 'Horizontal shoulder-mount hold. Body juts out perpendicular to the pole. Significant shoulder strength.',
+    description_pl:
+      'Horyzontalny hold z montem na ramieniu. Ciało prostopadle do słupa. Wymagana duża siła ramion.',
+    description_en:
+      'Horizontal shoulder-mount hold. Body juts out perpendicular to the pole. Significant shoulder strength.',
     difficulty: 'ADVANCED' as const,
     category: 'HOLDS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=flagmove0001',
@@ -151,8 +170,10 @@ const moves = [
   {
     title_pl: 'Handspring',
     title_en: 'Handspring',
-    description_pl: 'Stójka na słupie z rozłożonymi nogami. Jeden z najtrudniejszych holdów — wymaga mobilności nadgarstków i ramion.',
-    description_en: 'Handstand on the pole with legs split. One of the hardest holds — demands wrist and shoulder mobility.',
+    description_pl:
+      'Stójka na słupie z rozłożonymi nogami. Jeden z najtrudniejszych holdów — wymaga mobilności nadgarstków i ramion.',
+    description_en:
+      'Handstand on the pole with legs split. One of the hardest holds — demands wrist and shoulder mobility.',
     difficulty: 'ADVANCED' as const,
     category: 'HOLDS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=handspring01',
@@ -161,10 +182,12 @@ const moves = [
   },
   // COMBOS
   {
-    title_pl: 'Z Motyla do Jade\'a',
+    title_pl: "Z Motyla do Jade'a",
     title_en: 'Butterfly to Jade',
-    description_pl: 'Przejście z inversji butterfly do jade split. Klasyczny flow średniozaawansowany.',
-    description_en: 'Transition from butterfly inversion into a jade split. Classic intermediate flow.',
+    description_pl:
+      'Przejście z inversji butterfly do jade split. Klasyczny flow średniozaawansowany.',
+    description_en:
+      'Transition from butterfly inversion into a jade split. Classic intermediate flow.',
     difficulty: 'INTERMEDIATE' as const,
     category: 'COMBOS' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=buttertojd01',
@@ -174,7 +197,8 @@ const moves = [
   {
     title_pl: 'Z Ayesha do Supermana',
     title_en: 'Ayesha to Superman',
-    description_pl: 'Hold straddle-handspring (Ayesha) przechodzący w Supermana. Combo na poziomie zaawansowanym.',
+    description_pl:
+      'Hold straddle-handspring (Ayesha) przechodzący w Supermana. Combo na poziomie zaawansowanym.',
     description_en: 'Straddle-hold handspring (Ayesha) descending into Superman. High-level combo.',
     difficulty: 'ADVANCED' as const,
     category: 'COMBOS' as const,
@@ -198,7 +222,8 @@ const moves = [
     title_pl: 'Czołganie przy Słupie',
     title_en: 'Pole Crawl',
     description_pl: 'Niskie czołganie na czworakach wokół słupa — nadaje ton rutynie podłogowej.',
-    description_en: 'Low prowl on all fours circling the pole — sets the tone for a floor-focused routine.',
+    description_en:
+      'Low prowl on all fours circling the pole — sets the tone for a floor-focused routine.',
     difficulty: 'BEGINNER' as const,
     category: 'FLOORWORK' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=polecrawl001',
@@ -208,8 +233,10 @@ const moves = [
   {
     title_pl: 'Spin Podłogowy',
     title_en: 'Floor Spin',
-    description_pl: 'Spin siedzący iniciowany z podłogi — jedna ręka chwyta słup, ciało zakręca się wokół jego podstawy.',
-    description_en: 'Seated spin initiated from the floor — one hand grabs the pole, body spirals around its base.',
+    description_pl:
+      'Spin siedzący iniciowany z podłogi — jedna ręka chwyta słup, ciało zakręca się wokół jego podstawy.',
+    description_en:
+      'Seated spin initiated from the floor — one hand grabs the pole, body spirals around its base.',
     difficulty: 'BEGINNER' as const,
     category: 'FLOORWORK' as const,
     youtubeUrl: 'https://www.youtube.com/watch?v=floorspin001',

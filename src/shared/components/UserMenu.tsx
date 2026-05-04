@@ -1,10 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
 import { signOut } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
+import { Link } from '@/i18n/navigation';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,7 +51,7 @@ export default function UserMenu({ user }: UserMenuProps) {
           <button
             type="button"
             aria-label={t('accountMenu')}
-            className="text-on-surface-variant transition-colors hover:text-on-surface"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-transparent transition-colors hover:border-primary/20 hover:bg-primary/[0.06]"
           >
             <svg
               width="20"

@@ -1,12 +1,12 @@
 'use client';
 import type { Difficulty, PoleType } from '@prisma/client';
-import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import type { LearnStatus } from '@/shared/types';
+import { Link } from '@/i18n/navigation';
 import type { LocalizedTag } from '@/shared/lib/localize';
+import type { LearnStatus } from '@/shared/types';
 
 import type { StepItem } from '../types';
 
@@ -22,7 +22,6 @@ const DIFFICULTY_BADGE: Record<Difficulty, { className: string; style?: CSSPrope
   INTERMEDIATE: { className: 'bg-primary-container text-on-surface' },
   ADVANCED: { className: '', style: { backgroundColor: '#92400e', color: '#fef3c7' } },
 };
-
 
 type MovePlayerProps = {
   title: string;

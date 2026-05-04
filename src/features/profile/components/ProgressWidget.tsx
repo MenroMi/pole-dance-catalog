@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+
 import { Link } from '@/i18n/navigation';
 
 import { getUserProgressAction } from '../actions';
@@ -11,7 +12,9 @@ export default async function ProgressWidget() {
   return (
     <div className="flex flex-col gap-4 rounded-xl bg-surface-container p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-display font-semibold text-on-surface">{te('learnStatus.IN_PROGRESS')}</h2>
+        <h2 className="font-display font-semibold text-on-surface">
+          {te('learnStatus.IN_PROGRESS')}
+        </h2>
         <Link href="/profile/progress" className="text-sm text-primary hover:underline">
           {t('viewAll')}
         </Link>

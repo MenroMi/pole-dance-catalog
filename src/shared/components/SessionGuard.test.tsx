@@ -5,8 +5,14 @@ import { useSession } from 'next-auth/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: vi.fn(),
   redirect: vi.fn(),

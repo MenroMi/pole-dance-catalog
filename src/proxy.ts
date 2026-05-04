@@ -1,9 +1,9 @@
-import createIntlMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import NextAuth from 'next-auth';
+import createIntlMiddleware from 'next-intl/middleware';
 
-import { authBaseConfig } from '@/shared/lib/auth.config';
 import { routing } from '@/i18n/routing';
+import { authBaseConfig } from '@/shared/lib/auth.config';
 
 const { auth } = NextAuth(authBaseConfig);
 
@@ -26,7 +26,9 @@ export function getProtectedRedirect(
   if (isAuthenticated && authPaths.includes(pathWithoutLocale)) {
     return new URL(`/${locale}/catalog`, requestUrl);
   }
-  const isProtected = protectedPaths.some((p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + '/'));
+  const isProtected = protectedPaths.some(
+    (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(p + '/'),
+  );
   if (isProtected && !isAuthenticated) {
     const callbackUrl = encodeURIComponent(pathname + search);
     return new URL(`/${locale}/login?callbackUrl=${callbackUrl}`, requestUrl);

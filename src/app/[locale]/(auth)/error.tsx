@@ -12,9 +12,7 @@ export default function AuthError({ error, unstable_retry }: Props) {
   return (
     <div className="w-full max-w-sm space-y-6 text-center">
       <div className="space-y-2">
-        <p className="text-[10px] font-bold tracking-widest text-outline uppercase">
-          {t('badge')}
-        </p>
+        <p className="text-[10px] font-bold tracking-widest text-outline uppercase">{t('badge')}</p>
         <h1 className="font-display text-2xl font-medium tracking-tight text-on-surface lowercase">
           {t('heading')}
         </h1>

@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 
-import { cardVariants } from '@/shared/lib/motion';
 import type { Locale } from '@/i18n/routing';
+import { cardVariants } from '@/shared/lib/motion';
+import type { MoveFilters } from '@/shared/types';
 
 import { getMovesAction } from '../actions';
-import type { MoveFilters } from '@/shared/types';
 import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCard from './MoveCard';
@@ -52,7 +52,10 @@ export default function MoveGrid({
 
       try {
         const nextPage = pageRef.current + 1;
-        const result = await getMovesAction({ ...filters, page: nextPage, pageSize: PAGE_SIZE }, locale);
+        const result = await getMovesAction(
+          { ...filters, page: nextPage, pageSize: PAGE_SIZE },
+          locale,
+        );
 
         if (cancelled) return;
 
@@ -81,7 +84,8 @@ export default function MoveGrid({
         {t('moveCount', { count: totalCount })}
       </p>
       <h1 className="font-display text-4xl font-bold tracking-tight text-on-surface lowercase md:text-5xl">
-        {t('tagline')} <em className="font-medium text-primary not-italic">{t('taglineHighlight')}</em>
+        {t('tagline')}{' '}
+        <em className="font-medium text-primary not-italic">{t('taglineHighlight')}</em>
       </h1>
     </div>
   );

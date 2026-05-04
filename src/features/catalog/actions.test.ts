@@ -52,7 +52,9 @@ beforeEach(() => vi.clearAllMocks());
 
 describe('getMovesAction', () => {
   it('throws when search exceeds 100 characters', async () => {
-    await expect(getMovesAction({ search: 'a'.repeat(101) }, 'pl')).rejects.toThrow('Invalid filters');
+    await expect(getMovesAction({ search: 'a'.repeat(101) }, 'pl')).rejects.toThrow(
+      'Invalid filters',
+    );
   });
 
   it('throws when difficulty contains invalid enum value', async () => {
@@ -176,9 +178,7 @@ describe('getMovesAction', () => {
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          AND: expect.arrayContaining([
-            { tags: { some: { name_en: 'aerial' } } },
-          ]),
+          AND: expect.arrayContaining([{ tags: { some: { name_en: 'aerial' } } }]),
         }),
       }),
     );

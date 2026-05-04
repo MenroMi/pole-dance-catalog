@@ -71,13 +71,17 @@ describe('MoveDetailPage', () => {
 
 describe('generateMetadata', () => {
   it('returns title and description from move data', async () => {
-    const meta = await generateMetadata({ params: Promise.resolve({ id: 'move-1', locale: 'pl' }) });
+    const meta = await generateMetadata({
+      params: Promise.resolve({ id: 'move-1', locale: 'pl' }),
+    });
     expect(meta.title).toBe('Fireman Spin | Pole Dance Catalog');
     expect(meta.description).toBe('A graceful move.');
   });
 
   it('falls back to YouTube thumbnail for og:image when imageUrl is null', async () => {
-    const meta = await generateMetadata({ params: Promise.resolve({ id: 'move-1', locale: 'pl' }) });
+    const meta = await generateMetadata({
+      params: Promise.resolve({ id: 'move-1', locale: 'pl' }),
+    });
     expect((meta.openGraph as { images?: { url: string }[] })?.images?.[0]?.url).toBe(
       'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
     );
@@ -85,7 +89,9 @@ describe('generateMetadata', () => {
 
   it('returns empty metadata when move does not exist', async () => {
     mockGetMove.mockResolvedValueOnce(null);
-    const meta = await generateMetadata({ params: Promise.resolve({ id: 'bad-id', locale: 'pl' }) });
+    const meta = await generateMetadata({
+      params: Promise.resolve({ id: 'bad-id', locale: 'pl' }),
+    });
     expect(meta).toEqual({});
   });
 });

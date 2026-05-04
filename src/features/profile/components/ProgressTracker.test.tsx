@@ -12,8 +12,14 @@ vi.mock('../actions', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
   redirect: vi.fn(),

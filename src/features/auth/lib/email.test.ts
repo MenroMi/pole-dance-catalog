@@ -40,28 +40,32 @@ describe('sendVerificationEmail', () => {
   });
 
   it('sends Polish subject when locale is pl', async () => {
-    vi.mocked(getTranslations).mockResolvedValue(
-      ((key: string) => (key === 'subject' ? 'Zweryfikuj swój e-mail — Pole Space' : `[${key}]`)) as never,
-    );
+    vi.mocked(getTranslations).mockResolvedValue(((key: string) =>
+      key === 'subject' ? 'Zweryfikuj swój e-mail — Pole Space' : `[${key}]`) as never);
     mockSend.mockResolvedValue({ data: { id: 'x' }, error: null });
 
     await sendVerificationEmail('u@e.com', 'tok', 'pl');
 
-    expect(getTranslations).toHaveBeenCalledWith({ locale: 'pl', namespace: 'emails.verification' });
+    expect(getTranslations).toHaveBeenCalledWith({
+      locale: 'pl',
+      namespace: 'emails.verification',
+    });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Zweryfikuj swój e-mail — Pole Space' }),
     );
   });
 
   it('sends English subject when locale is en', async () => {
-    vi.mocked(getTranslations).mockResolvedValue(
-      ((key: string) => (key === 'subject' ? 'Verify your email — Pole Space' : `[${key}]`)) as never,
-    );
+    vi.mocked(getTranslations).mockResolvedValue(((key: string) =>
+      key === 'subject' ? 'Verify your email — Pole Space' : `[${key}]`) as never);
     mockSend.mockResolvedValue({ data: { id: 'x' }, error: null });
 
     await sendVerificationEmail('u@e.com', 'tok', 'en');
 
-    expect(getTranslations).toHaveBeenCalledWith({ locale: 'en', namespace: 'emails.verification' });
+    expect(getTranslations).toHaveBeenCalledWith({
+      locale: 'en',
+      namespace: 'emails.verification',
+    });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Verify your email — Pole Space' }),
     );
@@ -70,6 +74,8 @@ describe('sendVerificationEmail', () => {
   it('throws if Resend returns an error', async () => {
     mockSend.mockResolvedValue({ data: null, error: { message: 'API error' } });
 
-    await expect(sendVerificationEmail('user@example.com', 'abc-token-123', 'pl')).rejects.toThrow();
+    await expect(
+      sendVerificationEmail('user@example.com', 'abc-token-123', 'pl'),
+    ).rejects.toThrow();
   });
 });
