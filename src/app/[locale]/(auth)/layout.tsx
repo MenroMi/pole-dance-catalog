@@ -1,6 +1,9 @@
+import { getTranslations } from 'next-intl/server';
+
 import { Link } from '@/i18n/navigation';
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const t = await getTranslations('auth.layout');
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Editorial side */}
@@ -33,17 +36,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Editorial body */}
         <div className="relative z-10 max-w-xl space-y-5">
           <p className="text-[10px] font-semibold tracking-[0.18em] text-outline uppercase">
-            v.0.1 — kinetic gallery
+            {t('version')}
           </p>
           <h1 className="font-display text-7xl leading-[0.95] font-bold tracking-tighter text-on-surface lowercase">
-            A catalog of <em className="font-medium text-primary not-italic">every</em>&nbsp;move
-            you&apos;ve ever wanted to learn.
+            {t.rich('tagline', {
+              em: (chunks) => <em className="font-medium text-primary not-italic">{chunks}</em>,
+            })}
           </h1>
         </div>
 
         {/* Footer */}
         <p className="relative z-10 text-[10px] font-semibold tracking-[0.18em] text-outline-variant uppercase">
-          © 2026 pole space — for the kinetic gallery
+          {t('footer')}
         </p>
       </div>
 

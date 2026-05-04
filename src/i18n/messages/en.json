@@ -47,7 +47,9 @@
       "submitting": "signing up...",
       "hasAccount": "already have an account?",
       "signIn": "sign in",
-      "orContinueWith": "or continue with"
+      "orContinueWith": "or continue with",
+      "firstNamePlaceholder": "your first name",
+      "lastNamePlaceholder": "your last name"
     },
     "verifyEmail": {
       "sentHeading": "check your inbox.",
@@ -92,6 +94,11 @@
       "invalidInput": "Invalid input.",
       "emailAlreadyInUse": "This email is already registered.",
       "sendEmailFailed": "Failed to send email. Please try again."
+    },
+    "layout": {
+      "version": "v.0.1 — kinetic gallery",
+      "tagline": "A catalog of <em>every</em> move you've ever wanted to learn.",
+      "footer": "© 2026 pole space — for the kinetic gallery"
     }
   },
   "catalog": {
@@ -177,6 +184,29 @@
     "savedLabel": "Saved",
     "saving": "saving…",
     "addedDate": "Added {date}",
+    "settingsHeading": "settings",
+    "settingsSubtitle": "Manage your athlete profile and preferences.",
+    "eliteMember": "Elite Member",
+    "personalInfo": "Personal Information",
+    "settingsFirstNameLabel": "First Name",
+    "settingsLastNameLabel": "Last Name",
+    "settingsLocationLabel": "Location",
+    "settingsFirstNamePlaceholder": "Your first name",
+    "settingsLastNamePlaceholder": "Your last name",
+    "settingsLocationPlaceholder": "Not set",
+    "settingsLocationHint": "Auto-detected at sign-up. Cannot be changed.",
+    "securitySection": "Security",
+    "currentPasswordLabel": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "currentPasswordPlaceholder": "Current password",
+    "newPasswordPlaceholder": "New password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "discardButton": "discard",
+    "capsLockOn": "Caps Lock is on",
+    "genericError": "Something went wrong. Please try again.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "heroSettingsLabel": "Profile settings",
     "joinedYear": "Joined {year}",
     "journeyHeading": "your",

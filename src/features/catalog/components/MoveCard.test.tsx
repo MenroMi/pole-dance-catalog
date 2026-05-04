@@ -11,8 +11,14 @@ vi.mock('next/image', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   redirect: vi.fn(),
@@ -51,7 +57,7 @@ describe('MoveCard', () => {
 
   it('renders difficulty badge', () => {
     render(<MoveCard move={baseMove} />);
-    expect(screen.getByText('BEGINNER')).toBeInTheDocument();
+    expect(screen.getByText('difficulty.BEGINNER')).toBeInTheDocument();
   });
 
   it('falls back to YouTube thumbnail when imageUrl is null', () => {
@@ -115,7 +121,7 @@ describe('MoveCard', () => {
   it('renders INTERMEDIATE badge with primary-container styling', () => {
     const move = { ...baseMove, difficulty: 'INTERMEDIATE' as const };
     render(<MoveCard move={move} />);
-    const badge = screen.getByText('INTERMEDIATE');
+    const badge = screen.getByText('difficulty.INTERMEDIATE');
     expect(badge.className).toContain('bg-primary-container');
     expect(badge.className).toContain('text-on-surface');
   });

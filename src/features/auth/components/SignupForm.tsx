@@ -73,7 +73,7 @@ export function SignupForm() {
               <input
                 id="firstName"
                 type="text"
-                placeholder="your first name"
+                placeholder={t('firstNamePlaceholder')}
                 className="w-full border-b border-outline-variant bg-transparent px-0 py-3 text-on-surface placeholder:text-outline-variant/40 focus:outline-none"
                 aria-describedby={errors.firstName ? 'firstName-error' : undefined}
                 aria-invalid={!!errors.firstName}
@@ -104,7 +104,7 @@ export function SignupForm() {
               <input
                 id="lastName"
                 type="text"
-                placeholder="your last name"
+                placeholder={t('lastNamePlaceholder')}
                 className="w-full border-b border-outline-variant bg-transparent px-0 py-3 text-on-surface placeholder:text-outline-variant/40 focus:outline-none"
                 aria-describedby={errors.lastName ? 'lastName-error' : undefined}
                 aria-invalid={!!errors.lastName}

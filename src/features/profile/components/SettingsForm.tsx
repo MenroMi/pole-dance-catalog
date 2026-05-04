@@ -1,13 +1,13 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BadgeCheck, Lock, User } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { forwardRef, useState } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { useRouter } from '@/i18n/navigation';
 import { Input } from '@/shared/components/ui/input';
 
 import { changePasswordAction, updateProfileAction } from '../actions';
@@ -60,6 +60,7 @@ type PasswordFieldProps = InputHTMLAttributes<HTMLInputElement> & { error?: stri
 
 const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
   ({ onKeyDown, onKeyUp, onBlur, error, type: _type, id, ...props }, ref) => {
+    const t = useTranslations('profile');
     const [show, setShow] = useState(false);
     const [capsLock, setCapsLock] = useState(false);
     const errorId = id ? `${id}-error` : undefined;
@@ -90,7 +91,7 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
           />
           <button
             type="button"
-            aria-label={show ? 'Hide password' : 'Show password'}
+            aria-label={show ? t('hidePassword') : t('showPassword')}
             aria-pressed={show}
             onClick={() => setShow((s) => !s)}
             className="absolute top-1/2 right-2 -translate-y-1/2 text-outline-variant transition-colors hover:text-on-surface focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
@@ -100,7 +101,7 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
         </div>
         {capsLock && (
           <p role="status" className="mt-1.5 text-xs tracking-wide text-primary/70">
-            Caps Lock is on
+            {t('capsLockOn')}
           </p>
         )}
         {error && (
@@ -187,7 +188,7 @@ export default function SettingsForm({
       await update({ name: newName });
       router.push('/profile');
     } catch {
-      setProfileError('Something went wrong. Please try again.');
+      setProfileError(t('genericError'));
     } finally {
       setIsPending(false);
     }
@@ -201,11 +202,9 @@ export default function SettingsForm({
     <form onSubmit={handleSave} className="space-y-8 p-6 md:p-12">
       <div className="space-y-2">
         <h1 className="font-display text-4xl tracking-tight text-primary lowercase md:text-5xl">
-          settings
+          {t('settingsHeading')}
         </h1>
-        <p className="text-lg text-on-surface-variant">
-          Manage your athlete profile and preferences.
-        </p>
+        <p className="text-lg text-on-surface-variant">{t('settingsSubtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -217,7 +216,7 @@ export default function SettingsForm({
             {email && <p className="text-sm text-on-surface-variant">{email}</p>}
             <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-secondary-container/50 px-3 py-1.5 text-xs tracking-widest text-on-secondary-container uppercase ring-1 ring-outline-variant/15">
               <BadgeCheck size={14} aria-hidden="true" />
-              Elite Member
+              {t('eliteMember')}
             </div>
           </div>
         </section>
@@ -226,7 +225,7 @@ export default function SettingsForm({
         <section className="col-span-12 space-y-6 rounded-2xl bg-surface-low p-8 lg:col-span-8">
           <div className="flex items-center gap-3 border-b border-outline-variant/20 pb-4">
             <User size={20} className="text-primary" aria-hidden="true" />
-            <h2 className="font-display text-lg text-on-surface">Personal Information</h2>
+            <h2 className="font-display text-lg text-on-surface">{t('personalInfo')}</h2>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex flex-col gap-1">
@@ -234,12 +233,12 @@ export default function SettingsForm({
                 htmlFor="firstName"
                 className="text-xs tracking-widest text-on-surface-variant uppercase"
               >
-                First Name
+                {t('settingsFirstNameLabel')}
               </label>
               <Input
                 id="firstName"
                 {...profileForm.register('firstName')}
-                placeholder="Your first name"
+                placeholder={t('settingsFirstNamePlaceholder')}
                 aria-invalid={!!profileForm.formState.errors.firstName}
                 aria-describedby={
                   profileForm.formState.errors.firstName ? 'firstName-error' : undefined
@@ -257,12 +256,12 @@ export default function SettingsForm({
                 htmlFor="lastName"
                 className="text-xs tracking-widest text-on-surface-variant uppercase"
               >
-                Last Name
+                {t('settingsLastNameLabel')}
               </label>
               <Input
                 id="lastName"
                 {...profileForm.register('lastName')}
-                placeholder="Your last name"
+                placeholder={t('settingsLastNamePlaceholder')}
                 aria-invalid={!!profileForm.formState.errors.lastName}
                 aria-describedby={
                   profileForm.formState.errors.lastName ? 'lastName-error' : undefined
@@ -280,18 +279,18 @@ export default function SettingsForm({
                 htmlFor="location"
                 className="text-xs tracking-widest text-on-surface-variant uppercase"
               >
-                Location
+                {t('settingsLocationLabel')}
               </label>
               <Input
                 id="location"
                 readOnly
                 value={location ?? ''}
-                placeholder="Not set"
+                placeholder={t('settingsLocationPlaceholder')}
                 aria-describedby="location-hint"
                 className="cursor-default opacity-50 placeholder:text-on-surface-variant/40"
               />
               <p id="location-hint" className="text-xs text-on-surface-variant/60">
-                Auto-detected at sign-up. Cannot be changed.
+                {t('settingsLocationHint')}
               </p>
             </div>
           </div>
@@ -307,7 +306,7 @@ export default function SettingsForm({
           <section className="col-span-12 space-y-6 rounded-2xl bg-surface-low p-8">
             <div className="flex items-center gap-3 border-b border-outline-variant/20 pb-4">
               <Lock size={20} className="text-primary" aria-hidden="true" />
-              <h2 className="font-display text-lg text-on-surface">Security</h2>
+              <h2 className="font-display text-lg text-on-surface">{t('securitySection')}</h2>
             </div>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <div className="flex flex-col gap-1">
@@ -315,12 +314,12 @@ export default function SettingsForm({
                   htmlFor="currentPassword"
                   className="text-xs tracking-widest text-on-surface-variant uppercase"
                 >
-                  Current Password
+                  {t('currentPasswordLabel')}
                 </label>
                 <PasswordField
                   id="currentPassword"
                   {...passwordForm.register('currentPassword')}
-                  placeholder="Current password"
+                  placeholder={t('currentPasswordPlaceholder')}
                   error={passwordForm.formState.errors.currentPassword?.message}
                 />
               </div>
@@ -329,12 +328,12 @@ export default function SettingsForm({
                   htmlFor="newPassword"
                   className="text-xs tracking-widest text-on-surface-variant uppercase"
                 >
-                  New Password
+                  {t('newPasswordLabel')}
                 </label>
                 <PasswordField
                   id="newPassword"
                   {...passwordForm.register('newPassword')}
-                  placeholder="New password"
+                  placeholder={t('newPasswordPlaceholder')}
                   error={passwordForm.formState.errors.newPassword?.message}
                 />
               </div>
@@ -343,12 +342,12 @@ export default function SettingsForm({
                   htmlFor="confirmPassword"
                   className="text-xs tracking-widest text-on-surface-variant uppercase"
                 >
-                  Confirm Password
+                  {t('confirmPasswordLabel')}
                 </label>
                 <PasswordField
                   id="confirmPassword"
                   {...passwordForm.register('confirmPassword')}
-                  placeholder="Confirm new password"
+                  placeholder={t('confirmPasswordPlaceholder')}
                   error={passwordForm.formState.errors.confirmPassword?.message}
                 />
               </div>
@@ -363,7 +362,7 @@ export default function SettingsForm({
             onClick={handleDiscard}
             className="order-1 cursor-pointer rounded-lg border border-outline-variant/20 px-8 py-3 font-display font-bold text-primary lowercase transition-all duration-200 hover:bg-surface-container hover:text-on-surface active:scale-95 lg:order-first"
           >
-            discard
+            {t('discardButton')}
           </button>
           <button
             type="submit"

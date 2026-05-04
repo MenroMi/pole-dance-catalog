@@ -47,7 +47,9 @@
       "submitting": "rejestrowanie...",
       "hasAccount": "masz już konto?",
       "signIn": "zaloguj się",
-      "orContinueWith": "lub kontynuuj przez"
+      "orContinueWith": "lub kontynuuj przez",
+      "firstNamePlaceholder": "twoje imię",
+      "lastNamePlaceholder": "twoje nazwisko"
     },
     "verifyEmail": {
       "sentHeading": "sprawdź swoją skrzynkę.",
@@ -92,6 +94,11 @@
       "invalidInput": "Nieprawidłowe dane.",
       "emailAlreadyInUse": "Ten adres e-mail jest już zarejestrowany.",
       "sendEmailFailed": "Nie udało się wysłać e-maila. Spróbuj ponownie."
+    },
+    "layout": {
+      "version": "v.0.1 — galeria kinetyczna",
+      "tagline": "Katalog <em>każdego</em> ruchu, którego kiedykolwiek chciałaś się nauczyć.",
+      "footer": "© 2026 pole space — galeria kinetyczna"
     }
   },
   "catalog": {
@@ -177,6 +184,29 @@
     "savedLabel": "Zapisane",
     "saving": "zapisywanie…",
     "addedDate": "Dodano {date}",
+    "settingsHeading": "ustawienia",
+    "settingsSubtitle": "Zarządzaj swoim profilem i preferencjami.",
+    "eliteMember": "Członek Elite",
+    "personalInfo": "Dane osobowe",
+    "settingsFirstNameLabel": "Imię",
+    "settingsLastNameLabel": "Nazwisko",
+    "settingsLocationLabel": "Lokalizacja",
+    "settingsFirstNamePlaceholder": "Twoje imię",
+    "settingsLastNamePlaceholder": "Twoje nazwisko",
+    "settingsLocationPlaceholder": "Nie ustawiono",
+    "settingsLocationHint": "Wykryta automatycznie przy rejestracji. Nie można zmienić.",
+    "securitySection": "Bezpieczeństwo",
+    "currentPasswordLabel": "Aktualne hasło",
+    "newPasswordLabel": "Nowe hasło",
+    "confirmPasswordLabel": "Potwierdź hasło",
+    "currentPasswordPlaceholder": "Aktualne hasło",
+    "newPasswordPlaceholder": "Nowe hasło",
+    "confirmPasswordPlaceholder": "Potwierdź nowe hasło",
+    "discardButton": "anuluj",
+    "capsLockOn": "Caps Lock jest włączony",
+    "genericError": "Coś poszło nie tak. Spróbuj ponownie.",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
     "heroSettingsLabel": "Ustawienia profilu",
     "joinedYear": "Dołączono w {year}",
     "journeyHeading": "twoja",
