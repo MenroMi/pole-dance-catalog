@@ -1,6 +1,7 @@
 'use client';
 import type { Difficulty, PoleType } from '@prisma/client';
 import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
@@ -22,12 +23,6 @@ const DIFFICULTY_BADGE: Record<Difficulty, { className: string; style?: CSSPrope
   ADVANCED: { className: '', style: { backgroundColor: '#92400e', color: '#fef3c7' } },
 };
 
-function formatLabel(value: string) {
-  return value
-    .split('_')
-    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-    .join(' ');
-}
 
 type MovePlayerProps = {
   title: string;
@@ -68,6 +63,8 @@ export default function MovePlayer({
   coachNote,
   coachNoteAuthor,
 }: MovePlayerProps) {
+  const t = useTranslations('moves');
+  const te = useTranslations('enums');
   const [seekRequest, setSeekRequest] = useState<{ seconds: number } | null>(null);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -89,7 +86,7 @@ export default function MovePlayer({
   }
 
   const badge = DIFFICULTY_BADGE[difficulty];
-  const difficultyLabel = formatLabel(difficulty);
+  const difficultyLabel = te(`difficulty.${difficulty}`);
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-8">
@@ -161,7 +158,7 @@ export default function MovePlayer({
                 href="/login"
                 className="h-full flex-1 rounded-lg border border-outline-variant/20 px-3 py-3 text-center font-sans text-xs font-semibold text-on-surface-variant transition-colors hover:border-outline-variant/40 hover:text-on-surface"
               >
-                Log in to track progress
+                {t('loginToTrack')}
               </Link>
             )}
           </div>

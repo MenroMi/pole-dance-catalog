@@ -1,22 +1,24 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 type Tab = 'breakdown' | 'muscles' | 'safety';
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'breakdown', label: 'Breakdown' },
-  { id: 'muscles', label: 'Muscles' },
-  { id: 'safety', label: 'Safety' },
-];
-
 export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
+  const t = useTranslations('moves');
   const [active, setActive] = useState<Tab>('breakdown');
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'breakdown', label: t('breakdown') },
+    { id: 'muscles', label: t('muscles') },
+    { id: 'safety', label: t('safety') },
+  ];
+
   useLayoutEffect(() => {
-    const activeIndex = TABS.findIndex((t) => t.id === active);
+    const activeIndex = TABS.findIndex((tab) => tab.id === active);
     const el = tabRefs.current[activeIndex];
     if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
   }, [active]);
@@ -41,7 +43,7 @@ export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
             onClick={() => setActive(id)}
             onKeyDown={(e) => {
               const count = TABS.length;
-              const activeIndex = TABS.findIndex((t) => t.id === active);
+              const activeIndex = TABS.findIndex((tab) => tab.id === active);
               if (e.key === 'ArrowRight') {
                 const nextIndex = (activeIndex + 1) % count;
                 setActive(TABS[nextIndex].id);
@@ -73,7 +75,7 @@ export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
           {active === 'breakdown' && breakdown}
           {(active === 'muscles' || active === 'safety') && (
             <p className="py-12 text-center font-display text-xs font-bold tracking-[0.3em] text-on-surface-variant uppercase">
-              Coming soon
+              {t('comingSoon')}
             </p>
           )}
         </div>

@@ -104,10 +104,17 @@
     "specs": "Specs",
     "relatedMoves": "Related moves",
     "steps": "Steps",
-    "gripType": "Grip",
+    "gripType": "Grip Type",
     "entry": "Entry",
-    "coachNote": "Coach note",
-    "noRelated": "No related moves."
+    "duration": "Duration",
+    "poleSetting": "Pole Setting",
+    "coachNote": "Coach's Note",
+    "noRelated": "No related moves.",
+    "breakdown": "Breakdown",
+    "muscles": "Muscles",
+    "safety": "Safety",
+    "comingSoon": "Coming soon",
+    "loginToTrack": "Log in to track progress"
   },
   "profile": {
     "overview": "Overview",

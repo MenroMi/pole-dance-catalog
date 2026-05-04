@@ -1,5 +1,6 @@
 'use client';
 import { Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { StepItem } from '../types';
 
@@ -20,6 +21,8 @@ export default function MoveBreakdown({
   coachNote: string | null;
   coachNoteAuthor: string | null;
 }) {
+  const t = useTranslations('moves');
+
   if (stepsData.length === 0) return null;
 
   return (
@@ -58,7 +61,7 @@ export default function MoveBreakdown({
               data-testid="coach-note-label"
               className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-primary uppercase"
             >
-              Coach&apos;s Note
+              {t('coachNote')}
             </p>
             <p className="text-sm leading-relaxed text-on-surface-variant">
               &ldquo;{coachNote}&rdquo;

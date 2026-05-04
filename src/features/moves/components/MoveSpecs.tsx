@@ -1,4 +1,6 @@
+'use client';
 import type { Move } from '@prisma/client';
+import { useTranslations } from 'next-intl';
 
 import { formatPoleTypes } from '../utils';
 
@@ -17,11 +19,13 @@ function SpecCard({ label, value }: SpecItem) {
 }
 
 export default function MoveSpecs({ gripType, entry, duration, poleTypes }: MoveSpecsProps) {
+  const t = useTranslations('moves');
+
   const raw: { label: string; value: string | null | undefined }[] = [
-    { label: 'Grip Type', value: gripType },
-    { label: 'Entry', value: entry },
-    { label: 'Duration', value: duration },
-    { label: 'Pole Setting', value: formatPoleTypes(poleTypes) },
+    { label: t('gripType'), value: gripType },
+    { label: t('entry'), value: entry },
+    { label: t('duration'), value: duration },
+    { label: t('poleSetting'), value: formatPoleTypes(poleTypes) },
   ];
   const specs: SpecItem[] = raw.filter((s): s is SpecItem => s.value != null);
 
@@ -30,7 +34,7 @@ export default function MoveSpecs({ gripType, entry, duration, poleTypes }: Move
   return (
     <section aria-label="Move specs" className="mt-8 pb-4">
       <p className="mb-3 font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-        Specs
+        {t('specs')}
       </p>
       <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {specs.map(({ label, value }) => (

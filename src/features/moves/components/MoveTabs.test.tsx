@@ -9,26 +9,26 @@ const noop = () => {};
 describe('MoveTabs', () => {
   it('renders three tab buttons', () => {
     render(<MoveTabs breakdown={null} />);
-    expect(screen.getByRole('tab', { name: 'Breakdown' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Muscles' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Safety' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'breakdown' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'muscles' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'safety' })).toBeInTheDocument();
   });
 
   it('shows Breakdown tab content by default', () => {
     render(<MoveTabs breakdown={<span>Step one</span>} />);
     expect(screen.getByText('Step one')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Breakdown' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'Muscles' })).toHaveAttribute('aria-selected', 'false');
-    expect(screen.getByRole('tab', { name: 'Safety' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: 'breakdown' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'muscles' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: 'safety' })).toHaveAttribute('aria-selected', 'false');
   });
 
   it('switches to Muscles coming soon on click', async () => {
     const user = userEvent.setup();
     render(<MoveTabs breakdown={null} />);
-    await user.click(screen.getByRole('tab', { name: 'Muscles' }));
-    expect(screen.getByText('Coming soon')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Muscles' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'Breakdown' })).toHaveAttribute(
+    await user.click(screen.getByRole('tab', { name: 'muscles' }));
+    expect(screen.getByText('comingSoon')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'muscles' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'breakdown' })).toHaveAttribute(
       'aria-selected',
       'false',
     );
@@ -37,10 +37,10 @@ describe('MoveTabs', () => {
   it('switches to Safety coming soon on click', async () => {
     const user = userEvent.setup();
     render(<MoveTabs breakdown={null} />);
-    await user.click(screen.getByRole('tab', { name: 'Safety' }));
-    expect(screen.getByText('Coming soon')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Safety' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: 'Breakdown' })).toHaveAttribute(
+    await user.click(screen.getByRole('tab', { name: 'safety' }));
+    expect(screen.getByText('comingSoon')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'safety' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'breakdown' })).toHaveAttribute(
       'aria-selected',
       'false',
     );
@@ -70,16 +70,16 @@ describe('MoveTabs', () => {
   it('navigates to next tab with ArrowRight', async () => {
     const user = userEvent.setup();
     render(<MoveTabs breakdown={null} />);
-    screen.getByRole('tab', { name: 'Breakdown' }).focus();
+    screen.getByRole('tab', { name: 'breakdown' }).focus();
     await user.keyboard('{ArrowRight}');
-    expect(screen.getByRole('tab', { name: 'Muscles' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'muscles' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('wraps around to last tab with ArrowLeft from first', async () => {
     const user = userEvent.setup();
     render(<MoveTabs breakdown={null} />);
-    screen.getByRole('tab', { name: 'Breakdown' }).focus();
+    screen.getByRole('tab', { name: 'breakdown' }).focus();
     await user.keyboard('{ArrowLeft}');
-    expect(screen.getByRole('tab', { name: 'Safety' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'safety' })).toHaveAttribute('aria-selected', 'true');
   });
 });

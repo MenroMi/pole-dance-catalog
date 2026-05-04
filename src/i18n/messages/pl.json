@@ -104,10 +104,17 @@
     "specs": "Specyfikacja",
     "relatedMoves": "Podobne ruchy",
     "steps": "Kroki",
-    "gripType": "Chwyt",
+    "gripType": "Rodzaj chwytu",
     "entry": "Wejście",
+    "duration": "Czas trwania",
+    "poleSetting": "Ustawienie słupa",
     "coachNote": "Notatka trenera",
-    "noRelated": "Brak podobnych ruchów."
+    "noRelated": "Brak podobnych ruchów.",
+    "breakdown": "Rozkład",
+    "muscles": "Mięśnie",
+    "safety": "Bezpieczeństwo",
+    "comingSoon": "Wkrótce",
+    "loginToTrack": "Zaloguj się, by śledzić postępy"
   },
   "profile": {
     "overview": "Przegląd",

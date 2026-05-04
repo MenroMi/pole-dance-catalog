@@ -13,18 +13,18 @@ vi.mock('@/i18n/navigation', () => ({
 import MoveBreadcrumb from './MoveBreadcrumb';
 
 describe('MoveBreadcrumb', () => {
-  it('renders Catalog link to /catalog', () => {
-    render(<MoveBreadcrumb category="SPINS" moveName="Fireman Spin" />);
-    expect(screen.getByRole('link', { name: 'Catalog' })).toHaveAttribute('href', '/catalog');
+  it('renders Catalog link to /catalog', async () => {
+    render(await MoveBreadcrumb({ category: 'SPINS', moveName: 'Fireman Spin' }));
+    expect(screen.getByRole('link', { name: 'breadcrumb' })).toHaveAttribute('href', '/catalog');
   });
 
-  it('renders category label', () => {
-    render(<MoveBreadcrumb category="SPINS" moveName="Fireman Spin" />);
+  it('renders category label', async () => {
+    render(await MoveBreadcrumb({ category: 'SPINS', moveName: 'Fireman Spin' }));
     expect(screen.getByText('SPINS')).toBeInTheDocument();
   });
 
-  it('renders move name', () => {
-    render(<MoveBreadcrumb category="SPINS" moveName="Fireman Spin" />);
+  it('renders move name', async () => {
+    render(await MoveBreadcrumb({ category: 'SPINS', moveName: 'Fireman Spin' }));
     expect(screen.getByText('Fireman Spin')).toBeInTheDocument();
   });
 });
