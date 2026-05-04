@@ -288,23 +288,40 @@ Worktree: `.worktrees/error-boundaries`
 - Old single-select category accordion removed; replaced with Pole state + Tags
 - Remaining open question: mobile UX (bottom-sheet vs sidebar collapse) — deferred until mobile layout pass
 
-## i18n (feat/i18n — в работе, прогресс 8/12 задач)
+~~**i18n (feat/i18n)**~~ ✅ Done (2026-05-04) — все 12 задач завершены
 
-**Выполнено (Tasks 1–8):**
-- next-intl 4.11.0 установлен, routing config, message files (pl/en)
-- Middleware `proxy.ts` заменён на `src/middleware.ts` (createMiddleware + createNavigation)
-- Prisma schema: bilingual `_pl`/`_en` columns на Move и Tag, `locale` field на токенах
+- next-intl 4.11.0, routing config (`pl` default, `en` second), 133 ключа в en.json/pl.json
+- Middleware `proxy.ts` → `src/middleware.ts` (createMiddleware + createNavigation)
+- Prisma schema: `_pl`/`_en` columns на Move и Tag, `locale` field на токенах
 - `localizeMove`/`localizeTag` helpers (TDD, 8 тестов)
-- App directory перенесён под `src/app/[locale]/`
-- Navigation imports → `@/i18n/navigation`
-- Catalog + moves actions принимают `locale` param, применяют localize helpers
-- Email localization: `sendVerificationEmail`/`sendPasswordResetEmail` принимают `locale`, используют `getTranslations`; токены хранят locale в БД; `verify/route.ts` использует `token.locale` для редиректов
+- App directory под `src/app/[locale]/`, navigation imports → `@/i18n/navigation`
+- Catalog + moves actions принимают `locale` param
+- Email localization: locale-aware subjects, токены хранят locale, `verify/route.ts` редиректит по `token.locale`
+- Task 9: `LocaleSwitcher` — Globe dropdown, `router.replace(pathname, { locale })`, мок Radix для тестов
+- Task 10: Auth UI strings — LoginForm, SignupForm, verifyEmail, forgotPassword, resetPassword через `useTranslations`
+- Task 11: Nav + filters + errors — HeaderNav, UserMenu, CatalogFilters, not-found, error boundaries, admin через `useTranslations`/`getTranslations`
+- Task 12: Валидация структуры en/pl (133 ключа, расхождений нет); e2e кейсы ниже
 
-**Осталось (Tasks 9–12):**
-- Task 9: LocaleSwitcher component (TDD)
-- Task 10: Static translations — auth components
-- Task 11: Static translations — nav + main + errors
-- Task 12: Final validation + e2e checklist
+**Manual e2e — i18n (feat/i18n)**
+
+*Positive:*
+- [ ] Открыть `/` — редирект на `/pl/catalog`, весь UI на польском (заголовки фильтров, кнопки навигации)
+- [ ] Открыть `/en/catalog` напрямую — UI на английском без переключателя
+- [ ] В LocaleSwitcher нажать «English» — URL меняется на `/en/catalog`, UI переключается на английский; «English» отмечен галочкой (aria-checked=true)
+- [ ] Переключиться обратно на «Polski» — URL `/pl/catalog`, UI на польском; «Polski» отмечен
+- [ ] На `/pl/moves/[slug]` переключить locale — переход на `/en/moves/[slug]`, тот же элемент, язык изменён
+- [ ] Фильтры каталога (Pole state / Difficulty / Tags) отображают переводы: pl=«Stan słupa / Poziom trudności / Tagi», en=«Pole state / Difficulty / Tags»
+- [ ] Enum-значения в фильтрах: pl=«Statyczny / Wirujący», en=«Static / Spin»; аналогично Difficulty
+- [ ] Auth: страница `/pl/login` — все лейблы на польском; `/en/login` — на английском
+- [ ] Forgot password / reset password — форма отображает переводы под текущей локалью
+- [ ] Ошибка верификации email — страница `/pl/verify-email?error=expired` показывает польский текст
+- [ ] 404 страница (`/pl/unknown-path`) — «straciłeś momentum?» на польском
+- [ ] Admin: `/pl/admin` при ADMIN-роли показывает польский заголовок дашборда
+
+*Negative:*
+- [ ] Переключение locale сохраняет путь: `/pl/catalog?poleType=STATIC` → `/en/catalog?poleType=STATIC` (query не теряется)
+- [ ] `/invalid-locale/catalog` — должен вернуть 404 или редирект на `/pl/catalog`
+- [ ] Переключение locale на залогиненном пользователе не разлогинивает (сессия сохраняется)
 
 **`Move.title_en` — отсутствует `@unique` constraint** (2026-05-03)
 
