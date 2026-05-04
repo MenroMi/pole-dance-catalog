@@ -293,9 +293,9 @@ Worktree: `.worktrees/error-boundaries`
 - Old single-select category accordion removed; replaced with Pole state + Tags
 - Remaining open question: mobile UX (bottom-sheet vs sidebar collapse) — deferred until mobile layout pass
 
-~~**i18n (feat/i18n)**~~ ✅ Done (2026-05-04) — все 12 задач завершены
+~~**i18n (feat/i18n)**~~ ✅ Done (2026-05-04) — все 12 задач + post-launch fixes завершены
 
-- next-intl 4.11.0, routing config (`pl` default, `en` second), 133 ключа в en.json/pl.json
+- next-intl 4.11.0, routing config (`pl` default, `en` second), ~150 ключей в en.json/pl.json
 - Middleware `proxy.ts` → `src/middleware.ts` (createMiddleware + createNavigation)
 - Prisma schema: `_pl`/`_en` columns на Move и Tag, `locale` field на токенах
 - `localizeMove`/`localizeTag` helpers (TDD, 8 тестов)
@@ -305,7 +305,13 @@ Worktree: `.worktrees/error-boundaries`
 - Task 9: `LocaleSwitcher` — Globe dropdown, `router.replace(pathname, { locale })`, мок Radix для тестов
 - Task 10: Auth UI strings — LoginForm, SignupForm, verifyEmail, forgotPassword, resetPassword через `useTranslations`
 - Task 11: Nav + filters + errors — HeaderNav, UserMenu, CatalogFilters, not-found, error boundaries, admin через `useTranslations`/`getTranslations`
-- Task 12: Валидация структуры en/pl (133 ключа, расхождений нет); e2e кейсы ниже
+- Task 12: Валидация структуры en/pl; e2e кейсы ниже
+- Post-launch: SettingsForm, AvatarUpload, MoveCard difficulty badges, FavouriteMovesGallery дата, auth layout, SignupForm placeholders полностью переведены
+- Post-launch: `PasswordInput`, `FavouritesButton`, `MoveHero`, `ProfileAside`, `ProfileHero` — aria-labels и fallback-строки переведены
+- Post-launch: `ResetPasswordForm` — Zod-сообщения через `t()`, схема внутри компонента
+- Post-launch: `SignupForm` геолокация — `timeout: 5000`, `enableHighAccuracy: false` (фикс гонки submit vs detectedLocation)
+- Финальный аудит: структура en/pl синхронизирована, битых ключей нет, 469/469 тестов
+- `global-error.tsx` — намеренно оставлен на английском (вне `[locale]` роутинга)
 
 **Manual e2e — i18n (feat/i18n)**
 
