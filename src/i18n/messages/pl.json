@@ -17,7 +17,8 @@
     "logOutConfirmTitle": "Wylogować się?",
     "logOutConfirmDescription": "Będziesz musiał zalogować się ponownie, aby uzyskać dostęp do profilu.",
     "logOutConfirmAction": "Wyloguj się",
-    "logOutError": "Coś poszło nie tak. Spróbuj ponownie."
+    "logOutError": "Coś poszło nie tak. Spróbuj ponownie.",
+    "changeLanguage": "Zmień język"
   },
   "auth": {
     "login": {
@@ -153,13 +154,15 @@
       "heading": "straciłeś momentum?",
       "message": "ten ruch nie istnieje jeszcze w naszym katalogu, albo link stracił uchwyt.",
       "backToGallery": "wróć do galerii",
-      "goHome": "strona główna"
+      "goHome": "strona główna",
+      "badge": "nie znaleziono"
     },
     "unexpected": {
       "heading": "coś poszło nie tak.",
       "message": "wystąpił nieoczekiwany błąd. spróbuj odświeżyć stronę.",
       "retry": "spróbuj ponownie",
-      "backToCatalog": "wróć do katalogu"
+      "backToCatalog": "wróć do katalogu",
+      "badge": "coś poszło nie tak"
     }
   },
   "emails": {

@@ -54,26 +54,26 @@ beforeEach(() => {
 describe('LocaleSwitcher', () => {
   it('renders globe trigger button', () => {
     render(<LocaleSwitcher />);
-    expect(screen.getByRole('button', { name: /language/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'changeLanguage' })).toBeInTheDocument();
   });
 
   it('shows Polski and English in dropdown', () => {
     render(<LocaleSwitcher />);
-    fireEvent.click(screen.getByRole('button', { name: /language/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'changeLanguage' }));
     expect(screen.getByText('Polski')).toBeInTheDocument();
     expect(screen.getByText('English')).toBeInTheDocument();
   });
 
   it('marks Polski as active when locale is pl', () => {
     render(<LocaleSwitcher />);
-    fireEvent.click(screen.getByRole('button', { name: /language/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'changeLanguage' }));
     const polskiItem = screen.getByText('Polski').closest('[role="menuitemradio"]');
     expect(polskiItem).toHaveAttribute('aria-checked', 'true');
   });
 
   it('calls router.replace with en locale when English is clicked', () => {
     render(<LocaleSwitcher />);
-    fireEvent.click(screen.getByRole('button', { name: /language/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'changeLanguage' }));
     fireEvent.click(screen.getByText('English'));
     expect(mockReplace).toHaveBeenCalledWith(mockPathname, { locale: 'en' });
   });

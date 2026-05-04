@@ -206,7 +206,7 @@ describe('MoveGrid', () => {
 
   it('shows empty state text when initialMoves is empty', () => {
     render(<MoveGrid initialMoves={[]} initialHasMore={false} totalCount={0} filters={{}} locale="pl" />);
-    expect(screen.getByText('No moves match these filters.')).toBeInTheDocument();
+    expect(screen.getByText('empty')).toBeInTheDocument();
   });
 
   it('does not render move cards when initialMoves is empty', () => {

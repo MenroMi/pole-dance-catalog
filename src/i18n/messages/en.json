@@ -17,7 +17,8 @@
     "logOutConfirmTitle": "Log out?",
     "logOutConfirmDescription": "You'll need to sign back in to access your profile.",
     "logOutConfirmAction": "Log out",
-    "logOutError": "Something went wrong. Please try again."
+    "logOutError": "Something went wrong. Please try again.",
+    "changeLanguage": "Change language"
   },
   "auth": {
     "login": {
@@ -153,13 +154,15 @@
       "heading": "lost your momentum?",
       "message": "this move doesn't exist in our catalog yet, or the link has lost its grip.",
       "backToGallery": "back to gallery",
-      "goHome": "go home"
+      "goHome": "go home",
+      "badge": "not found"
     },
     "unexpected": {
       "heading": "something went wrong.",
       "message": "an unexpected error occurred. try refreshing the page.",
       "retry": "try again",
-      "backToCatalog": "back to catalog"
+      "backToCatalog": "back to catalog",
+      "badge": "something went wrong"
     }
   },
   "emails": {

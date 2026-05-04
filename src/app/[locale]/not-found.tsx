@@ -28,7 +28,7 @@ export default async function NotFound() {
             <div className="max-w-md space-y-5">
               <div className="inline-block rounded-full border border-outline-variant/15 bg-secondary-container/30 px-4 py-1">
                 <span className="text-[10px] font-bold tracking-widest text-on-secondary-container uppercase">
-                  not found
+                  {t('badge')}
                 </span>
               </div>
               <h2 className="font-display text-3xl font-medium tracking-tight text-on-surface lowercase md:text-5xl">

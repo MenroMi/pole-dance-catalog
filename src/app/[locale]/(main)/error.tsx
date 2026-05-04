@@ -19,7 +19,7 @@ export default function MainError({ error, unstable_retry }: Props) {
         <div className="max-w-md space-y-5">
           <div className="inline-block rounded-full border border-outline-variant/15 bg-secondary-container/30 px-4 py-1">
             <span className="text-[10px] font-bold tracking-widest text-on-secondary-container uppercase">
-              something went wrong
+              {t('badge')}
             </span>
           </div>
 

@@ -1,5 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 
 import { cardVariants } from '@/shared/lib/motion';
@@ -28,6 +29,7 @@ export default function MoveGrid({
   filters,
   locale,
 }: MoveGridProps) {
+  const t = useTranslations('catalog');
   const [moves, setMoves] = useState(initialMoves);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -89,7 +91,7 @@ export default function MoveGrid({
       <div className="flex h-full flex-col p-6">
         {header}
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-on-surface-variant">No moves match these filters.</p>
+          <p className="text-sm text-on-surface-variant">{t('empty')}</p>
         </div>
       </div>
     );
