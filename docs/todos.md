@@ -343,6 +343,18 @@ _Negative:_
 - Если кто-то напишет новый seed без этого — получит тихий P2011
 - Fix: создать дополнительную миграцию с `ALTER TABLE "Move" ALTER COLUMN "poleTypes" SET DEFAULT '{}'`; после проверки — убрать workaround
 
+**i18n — orphan-ключи в messages** (2026-05-04)
+
+Выявлены при финальном аудите. Ключи присутствуют в `en.json`/`pl.json`, но не используются ни в одном компоненте:
+
+- `nav.admin` — Admin-ссылка в навигации не реализована; HeaderNav и UserMenu этот ключ не читают
+- `profile.noProgress` — заменён более специфичными `profile.emptyInProgress` / `emptyInProgressHint`
+- `profile.noFavourites` — заменён `profile.emptyFavourites` / `emptyFavouritesHint`
+- `profile.editAvatar` — кнопка смены аватара не использует этот ключ; AvatarUpload управляет своими строками напрямую
+- `profile.inProgress` — строка «In Progress» используется как data-ключ в `ProfileProgressBreakdown`, не как перевод через `t()`
+
+Fix: удалить 5 ключей из обоих файлов messages, убедиться что тесты зелёные.
+
 **Контентные вопросы — подтвердить** (2026-05-03)
 
 - `gripType_pl: 'Split grip'` у Chair Spin и Carousel Spin — оставлен на английском (все остальные переведены). Уточнить: это принятый польский термин или пропуск?
