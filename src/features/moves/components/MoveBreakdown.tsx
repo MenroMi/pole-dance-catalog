@@ -43,7 +43,7 @@ export default function MoveBreakdown({
                   <button
                     type="button"
                     onClick={() => onSeek(step.timestamp!)}
-                    aria-label={`Seek to ${formatTimestamp(step.timestamp)}`}
+                    aria-label={t('seekTo', { time: formatTimestamp(step.timestamp) })}
                     className="flex shrink-0 cursor-pointer items-center gap-1 rounded px-2 py-1 font-sans text-xs text-on-surface-variant transition-all hover:bg-surface-container hover:text-on-surface active:scale-95"
                   >
                     <Play size={10} fill="currentColor" aria-hidden="true" />

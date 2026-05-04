@@ -137,7 +137,7 @@ export default function CatalogFilters({ filters, availableTags }: CatalogFilter
       <Accordion
         type="multiple"
         defaultValue={['pole-state', 'difficulty', 'tags']}
-        aria-label="Catalog filters"
+        aria-label={t('label')}
         className="w-full"
       >
         <AccordionItem value="pole-state">

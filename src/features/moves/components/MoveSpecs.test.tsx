@@ -18,23 +18,23 @@ describe('MoveSpecs', () => {
     expect(screen.queryByText('poleSetting')).not.toBeInTheDocument();
   });
 
-  it('renders SPIN as "Spin"', () => {
+  it('renders SPIN as translated key', () => {
     render(<MoveSpecs gripType={null} entry={null} duration={null} poleTypes={['SPIN']} />);
-    expect(screen.getByText('Spin')).toBeInTheDocument();
+    expect(screen.getByText('poleType.SPIN')).toBeInTheDocument();
     expect(screen.getByText('poleSetting')).toBeInTheDocument();
   });
 
-  it('renders STATIC as "Static"', () => {
+  it('renders STATIC as translated key', () => {
     render(<MoveSpecs gripType={null} entry={null} duration={null} poleTypes={['STATIC']} />);
-    expect(screen.getByText('Static')).toBeInTheDocument();
+    expect(screen.getByText('poleType.STATIC')).toBeInTheDocument();
     expect(screen.getByText('poleSetting')).toBeInTheDocument();
   });
 
-  it('renders STATIC+SPIN as "Static & Spin"', () => {
+  it('renders STATIC+SPIN as combined translated keys', () => {
     render(
       <MoveSpecs gripType={null} entry={null} duration={null} poleTypes={['STATIC', 'SPIN']} />,
     );
-    expect(screen.getByText('Static & Spin')).toBeInTheDocument();
+    expect(screen.getByText('poleType.STATIC & poleType.SPIN')).toBeInTheDocument();
     expect(screen.getByText('poleSetting')).toBeInTheDocument();
   });
 

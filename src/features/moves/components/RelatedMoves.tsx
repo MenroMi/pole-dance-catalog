@@ -27,6 +27,7 @@ export default async function RelatedMoves({ moves }: RelatedMovesProps) {
   if (moves.length === 0) return null;
 
   const t = await getTranslations('moves');
+  const te = await getTranslations('enums');
 
   return (
     <section className="mx-auto max-w-[1280px] px-4 pb-16 sm:px-8">
@@ -57,7 +58,7 @@ export default async function RelatedMoves({ moves }: RelatedMovesProps) {
                 <p
                   className={`mt-1 text-[10px] font-semibold tracking-widest uppercase ${levelColor}`}
                 >
-                  {move.difficulty}
+                  {te(`difficulty.${move.difficulty}`)}
                 </p>
               </div>
             </Link>

@@ -61,7 +61,7 @@ describe('MoveGrid', () => {
       <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={242} filters={{}} locale="pl" />,
     );
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText(/242 moves/i)).toBeInTheDocument();
+    expect(screen.getByText('moveCount')).toBeInTheDocument();
   });
 
   it('renders all initialMoves', () => {

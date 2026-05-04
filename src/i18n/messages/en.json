@@ -88,8 +88,12 @@
   },
   "catalog": {
     "title": "move gallery",
+    "moveCount": "Catalog · {count} moves",
+    "tagline": "Every move,",
+    "taglineHighlight": "indexed.",
     "empty": "no moves match your filters.",
     "filters": {
+      "label": "Catalog filters",
       "poleState": "Pole state",
       "difficulty": "Difficulty",
       "tags": "Tags",
@@ -114,7 +118,8 @@
     "muscles": "Muscles",
     "safety": "Safety",
     "comingSoon": "Coming soon",
-    "loginToTrack": "Log in to track progress"
+    "loginToTrack": "Log in to track progress",
+    "seekTo": "Seek to {time}"
   },
   "profile": {
     "overview": "Overview",

@@ -78,10 +78,10 @@ export default function MoveGrid({
   const header = (
     <div className="mb-8">
       <p className="mb-3 text-[11px] font-semibold tracking-[0.16em] text-on-surface-variant uppercase">
-        Catalog · {totalCount} moves
+        {t('moveCount', { count: totalCount })}
       </p>
       <h1 className="font-display text-4xl font-bold tracking-tight text-on-surface lowercase md:text-5xl">
-        Every move, <em className="font-medium text-primary not-italic">indexed.</em>
+        {t('tagline')} <em className="font-medium text-primary not-italic">{t('taglineHighlight')}</em>
       </h1>
     </div>
   );

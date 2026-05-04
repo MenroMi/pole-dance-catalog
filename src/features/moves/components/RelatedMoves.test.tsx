@@ -41,9 +41,9 @@ describe('RelatedMoves', () => {
     );
   });
 
-  it('renders difficulty in uppercase', async () => {
+  it('renders difficulty as translated key', async () => {
     render(await RelatedMoves({ moves: [makeMove({ difficulty: 'INTERMEDIATE' })] }));
-    expect(screen.getByText('INTERMEDIATE')).toBeInTheDocument();
+    expect(screen.getByText('difficulty.INTERMEDIATE')).toBeInTheDocument();
   });
 
   it('renders up to 4 moves', async () => {

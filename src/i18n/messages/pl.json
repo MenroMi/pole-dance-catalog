@@ -88,8 +88,12 @@
   },
   "catalog": {
     "title": "galeria ruchów",
+    "moveCount": "Katalog · {count} ruchów",
+    "tagline": "Każdy ruch,",
+    "taglineHighlight": "skatalogowany.",
     "empty": "brak ruchów spełniających kryteria.",
     "filters": {
+      "label": "Filtry katalogu",
       "poleState": "Stan słupa",
       "difficulty": "Poziom trudności",
       "tags": "Tagi",
@@ -114,7 +118,8 @@
     "muscles": "Mięśnie",
     "safety": "Bezpieczeństwo",
     "comingSoon": "Wkrótce",
-    "loginToTrack": "Zaloguj się, by śledzić postępy"
+    "loginToTrack": "Zaloguj się, by śledzić postępy",
+    "seekTo": "Przejdź do {time}"
   },
   "profile": {
     "overview": "Przegląd",
