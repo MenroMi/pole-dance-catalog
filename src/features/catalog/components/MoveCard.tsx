@@ -48,7 +48,7 @@ export default function MoveCard({ move }: MoveCardProps) {
       </div>
       <div className="flex flex-col gap-2 p-4">
         <span
-          className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
+          className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${badge.className}`}
           style={badge.style}
         >
           {te(`difficulty.${move.difficulty}`)}

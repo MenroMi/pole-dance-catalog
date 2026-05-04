@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, Heart, Search, X } from 'lucide-react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useOptimistic, useState, useTransition } from 'react';
 
 import { extractVideoId } from '@/features/moves/lib/youtube';
@@ -36,8 +36,8 @@ const DIFFICULTY_ORDER: Record<string, number> = {
 
 type SortKey = 'recent' | 'name' | 'level';
 
-function formatDate(date: Date | string) {
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function formatDate(date: Date | string, locale: string) {
+  return new Date(date).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
 
 function MovePlaceholder() {
@@ -112,6 +112,7 @@ function FavouriteCard({
 }) {
   const t = useTranslations('profile');
   const te = useTranslations('enums');
+  const locale = useLocale();
   const badge = DIFFICULTY_BADGE[fav.move.difficulty] ?? DIFFICULTY_BADGE.BEGINNER;
   const videoId = extractVideoId(fav.move.youtubeUrl);
   const thumb =
@@ -175,7 +176,7 @@ function FavouriteCard({
           </p>
         )}
         <span className="mt-1.5 font-sans text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">
-          {t('addedDate', { date: formatDate(fav.createdAt) })}
+          {t('addedDate', { date: formatDate(fav.createdAt, locale) })}
         </span>
       </div>
     </Link>

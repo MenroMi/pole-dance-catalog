@@ -45,7 +45,7 @@ export default function MoveFavouriteButton({
       aria-label={optimisticFav ? t('removeFromFavourites') : t('addToFavourites')}
       aria-pressed={optimisticFav}
       className={`inline-flex h-full shrink-0 cursor-pointer items-center gap-1 overflow-hidden rounded-lg border border-outline-variant/15 bg-[#1f1f1f] pl-[10px] transition-[width] duration-300 ease-out active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${
-        optimisticFav ? 'w-10 text-primary' : 'w-[88px] text-on-surface-variant'
+        optimisticFav ? 'w-10 text-primary' : 'w-[100px] text-on-surface-variant'
       }`}
     >
       <Heart
@@ -56,7 +56,7 @@ export default function MoveFavouriteButton({
       />
       <span
         className={`overflow-hidden font-sans text-[11px] leading-[0.9] font-semibold tracking-[0.12em] whitespace-nowrap uppercase transition-all duration-200 ${
-          optimisticFav ? 'max-w-0 opacity-0' : 'ml-2 max-w-[60px] opacity-100'
+          optimisticFav ? 'max-w-0 opacity-0' : 'ml-2 max-w-[72px] opacity-100'
         }`}
       >
         {t('saveFavourite')}
