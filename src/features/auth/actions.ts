@@ -65,11 +65,13 @@ export async function signupAction(data: SignupFormData) {
 }
 
 export async function loginAction(data: LoginFormData) {
+  const raw = await getLocale();
+  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
   try {
     await signIn('credentials', {
       email: data.email,
       password: data.password,
-      redirectTo: '/catalog',
+      redirectTo: `/${locale}/catalog`,
     });
   } catch (error) {
     if (error instanceof AuthError) {

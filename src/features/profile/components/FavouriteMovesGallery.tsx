@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, Heart, Search, X } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useCallback, useMemo, useOptimistic, useState, useTransition } from 'react';
 
 import { extractVideoId } from '@/features/moves/lib/youtube';

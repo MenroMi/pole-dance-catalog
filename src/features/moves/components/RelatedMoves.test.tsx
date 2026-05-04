@@ -1,8 +1,17 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
+}));
+
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: vi.fn(),
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
 import RelatedMoves from './RelatedMoves';

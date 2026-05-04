@@ -1,6 +1,6 @@
 'use client';
 import type { Difficulty, PoleType } from '@prisma/client';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 

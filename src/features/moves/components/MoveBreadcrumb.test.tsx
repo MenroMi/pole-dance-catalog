@@ -1,5 +1,14 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
+    React.createElement('a', { href, ...props }, children),
+  usePathname: vi.fn(),
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
+}));
 
 import MoveBreadcrumb from './MoveBreadcrumb';
 

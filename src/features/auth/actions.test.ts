@@ -191,7 +191,7 @@ describe('signupAction', () => {
 const mockSignIn = signIn as ReturnType<typeof vi.fn>;
 
 describe('loginAction', () => {
-  it('calls signIn with credentials and redirectTo /catalog', async () => {
+  it('calls signIn with credentials and redirectTo /{locale}/catalog', async () => {
     mockSignIn.mockResolvedValue(undefined);
 
     const result = await loginAction({ email: 'a@b.com', password: 'pass' });
@@ -200,7 +200,7 @@ describe('loginAction', () => {
     expect(mockSignIn).toHaveBeenCalledWith('credentials', {
       email: 'a@b.com',
       password: 'pass',
-      redirectTo: '/catalog',
+      redirectTo: '/pl/catalog',
     });
   });
 
