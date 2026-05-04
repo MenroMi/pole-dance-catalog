@@ -4,6 +4,7 @@ import { auth } from '@/shared/lib/auth';
 
 import FavouritesButton from './FavouritesButton';
 import HeaderNav from './HeaderNav';
+import LocaleSwitcher from './LocaleSwitcher';
 import UserMenu from './UserMenu';
 
 export default async function Header() {
@@ -31,6 +32,7 @@ export default async function Header() {
 
         <div className="flex items-center gap-2 justify-self-end">
           <FavouritesButton hasNew={Boolean(user)} />
+          <LocaleSwitcher />
           <UserMenu user={user} />
         </div>
       </div>
