@@ -1,4 +1,5 @@
 import { Award, CheckCircle2, Heart, Rotate3D } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 type ProfileStatsProps = {
@@ -29,29 +30,32 @@ function StatCard({ icon, value, label }: StatCardProps) {
   );
 }
 
-export default function ProfileStats({
+export default async function ProfileStats({
   masteredCount,
   inProgressCount,
   favouritesCount,
 }: ProfileStatsProps) {
+  const t = await getTranslations('profile');
+  const te = await getTranslations('enums');
+
   return (
     <div className="grid grid-cols-2 gap-4 xl:grid-cols-4 xl:gap-6">
       <StatCard
         icon={<CheckCircle2 size={32} aria-hidden="true" />}
         value={masteredCount}
-        label="Moves Mastered"
+        label={t('movesMastered')}
       />
       <StatCard
         icon={<Rotate3D size={32} aria-hidden="true" />}
         value={inProgressCount}
-        label="In Progress"
+        label={te('learnStatus.IN_PROGRESS')}
       />
       <StatCard
         icon={<Heart size={32} aria-hidden="true" />}
         value={favouritesCount}
-        label="Favourites"
+        label={t('favourites')}
       />
-      <StatCard icon={<Award size={32} aria-hidden="true" />} value="—" label="Training Sessions" />
+      <StatCard icon={<Award size={32} aria-hidden="true" />} value="—" label={t('trainingSessions')} />
     </div>
   );
 }

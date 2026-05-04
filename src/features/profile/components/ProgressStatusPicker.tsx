@@ -1,13 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { LearnStatus } from '@/shared/types';
 
-const STATUSES: { value: LearnStatus; label: string }[] = [
-  { value: 'WANT_TO_LEARN', label: 'Want to Learn' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'LEARNED', label: 'Learned' },
-];
+const STATUS_VALUES: LearnStatus[] = ['WANT_TO_LEARN', 'IN_PROGRESS', 'LEARNED'];
 
 type ProgressStatusPickerProps = {
   currentStatus: LearnStatus | null;
@@ -20,7 +17,8 @@ export default function ProgressStatusPicker({
   onStatusChange,
   isPending,
 }: ProgressStatusPickerProps) {
-  const activeIndex = STATUSES.findIndex((s) => s.value === currentStatus);
+  const te = useTranslations('enums');
+  const activeIndex = STATUS_VALUES.indexOf(currentStatus as LearnStatus);
   const hasActive = activeIndex !== -1;
 
   const [prevStatus, setPrevStatus] = useState(currentStatus);
@@ -28,7 +26,6 @@ export default function ProgressStatusPicker({
 
   if (currentStatus !== prevStatus) {
     setPrevStatus(currentStatus);
-    // When status is null, activeIndex is -1 so pillIndex stays put — pill fades out in place.
     if (activeIndex !== -1) setPillIndex(activeIndex);
   }
 
@@ -44,7 +41,7 @@ export default function ProgressStatusPicker({
           transform: `translateX(calc(${pillIndex} * 100%))`,
         }}
       />
-      {STATUSES.map(({ value, label }) => {
+      {STATUS_VALUES.map((value) => {
         const active = currentStatus === value;
         return (
           <button
@@ -57,7 +54,7 @@ export default function ProgressStatusPicker({
               active ? 'text-[#f8ebff]' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            {label}
+            {te(`learnStatus.${value}`)}
           </button>
         );
       })}

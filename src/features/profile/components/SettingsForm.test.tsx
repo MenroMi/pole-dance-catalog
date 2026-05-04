@@ -164,7 +164,7 @@ describe('SettingsForm behavior', () => {
     mockUpdateProfile.mockResolvedValue({ success: true });
     const user = userEvent.setup();
     render(<SettingsForm {...defaultProps} />);
-    await user.click(screen.getByRole('button', { name: /save changes/i }));
+    await user.click(screen.getByRole('button', { name: 'saveChanges' }));
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/profile'));
     expect(mockUpdateProfile).toHaveBeenCalledWith({
       firstName: 'Alice',
@@ -176,7 +176,7 @@ describe('SettingsForm behavior', () => {
     mockUpdateProfile.mockResolvedValue({ success: true });
     const user = userEvent.setup();
     render(<SettingsForm {...defaultProps} hasPassword={true} />);
-    await user.click(screen.getByRole('button', { name: /save changes/i }));
+    await user.click(screen.getByRole('button', { name: 'saveChanges' }));
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/profile'));
     expect(mockChangePassword).not.toHaveBeenCalled();
   });
@@ -189,7 +189,7 @@ describe('SettingsForm behavior', () => {
     await user.type(screen.getByLabelText(/current password/i), 'OldPass123!');
     await user.type(screen.getByLabelText(/new password/i), 'NewPass123!');
     await user.type(screen.getByLabelText(/confirm password/i), 'NewPass123!');
-    await user.click(screen.getByRole('button', { name: /save changes/i }));
+    await user.click(screen.getByRole('button', { name: 'saveChanges' }));
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/profile'));
     expect(mockChangePassword).toHaveBeenCalledWith({
       currentPassword: 'OldPass123!',
@@ -208,7 +208,7 @@ describe('SettingsForm behavior', () => {
     await user.type(screen.getByLabelText(/current password/i), 'WrongPass123!');
     await user.type(screen.getByLabelText(/new password/i), 'NewPass123!');
     await user.type(screen.getByLabelText(/confirm password/i), 'NewPass123!');
-    await user.click(screen.getByRole('button', { name: /save changes/i }));
+    await user.click(screen.getByRole('button', { name: 'saveChanges' }));
     await waitFor(() => expect(mockChangePassword).toHaveBeenCalled());
     expect(mockPush).not.toHaveBeenCalled();
   });
@@ -220,7 +220,7 @@ describe('SettingsForm behavior', () => {
     await user.type(screen.getByLabelText(/current password/i), 'OldPass123!');
     await user.type(screen.getByLabelText(/new password/i), 'NewPass123!');
     await user.type(screen.getByLabelText(/confirm password/i), 'NewPass123!');
-    await user.click(screen.getByRole('button', { name: /save changes/i }));
+    await user.click(screen.getByRole('button', { name: 'saveChanges' }));
     await waitFor(() => expect(mockUpdateProfile).toHaveBeenCalled());
     expect(mockChangePassword).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();

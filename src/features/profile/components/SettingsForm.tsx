@@ -1,6 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BadgeCheck, Lock, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useSession } from 'next-auth/react';
 import { forwardRef, useState } from 'react';
@@ -130,6 +131,7 @@ export default function SettingsForm({
   email,
   hasPassword,
 }: SettingsFormProps) {
+  const t = useTranslations('profile');
   const router = useRouter();
   const { update } = useSession();
   const [isPending, setIsPending] = useState(false);
@@ -368,7 +370,7 @@ export default function SettingsForm({
             disabled={isPending}
             className="kinetic-gradient cursor-pointer rounded-lg px-8 py-3 font-display text-sm font-semibold tracking-wide text-on-primary-container lowercase transition-transform duration-150 active:scale-95 disabled:opacity-50"
           >
-            {isPending ? 'saving…' : 'save changes'}
+            {isPending ? t('saving') : t('saveChanges')}
           </button>
         </div>
       </div>

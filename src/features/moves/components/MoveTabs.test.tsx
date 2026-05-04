@@ -4,8 +4,6 @@ import userEvent from '@testing-library/user-event';
 
 import MoveTabs from './MoveTabs';
 
-const noop = () => {};
-
 describe('MoveTabs', () => {
   it('renders three tab buttons', () => {
     render(<MoveTabs breakdown={null} />);
