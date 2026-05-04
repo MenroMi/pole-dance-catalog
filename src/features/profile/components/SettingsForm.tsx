@@ -196,7 +196,8 @@ export default function SettingsForm({
 
   const watchedFirstName = profileForm.watch('firstName');
   const watchedLastName = profileForm.watch('lastName');
-  const displayName = [watchedFirstName, watchedLastName].filter(Boolean).join(' ') || 'anonymous';
+  const displayName =
+    [watchedFirstName, watchedLastName].filter(Boolean).join(' ') || t('anonymous');
 
   return (
     <form onSubmit={handleSave} className="space-y-8 p-6 md:p-12">

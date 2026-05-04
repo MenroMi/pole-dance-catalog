@@ -4,7 +4,10 @@
     "save": "Zapisz",
     "cancel": "Anuluj",
     "loading": "Ładowanie...",
-    "error": "Błąd"
+    "error": "Błąd",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "capsLockOn": "Caps Lock jest włączony"
   },
   "nav": {
     "catalog": "Katalog",
@@ -18,7 +21,8 @@
     "logOutConfirmDescription": "Będziesz musiał zalogować się ponownie, aby uzyskać dostęp do profilu.",
     "logOutConfirmAction": "Wyloguj się",
     "logOutError": "Coś poszło nie tak. Spróbuj ponownie.",
-    "changeLanguage": "Zmień język"
+    "changeLanguage": "Zmień język",
+    "favouriteMovesLabel": "Ulubione ruchy"
   },
   "auth": {
     "login": {
@@ -82,10 +86,17 @@
     },
     "resetPassword": {
       "heading": "nowe hasło.",
+      "subtitle": "wybierz silne hasło dla swojego konta.",
       "passwordLabel": "nowe hasło",
+      "confirmPasswordLabel": "potwierdź hasło",
       "submit": "zapisz hasło",
       "submitting": "zapisywanie...",
-      "invalidToken": "link do resetowania hasła jest nieprawidłowy lub wygasł."
+      "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków",
+      "passwordsDoNotMatch": "Hasła nie są identyczne",
+      "invalidToken": "link do resetowania hasła jest nieprawidłowy lub wygasł.",
+      "requestNewLink": "poproś o nowy",
+      "backToSignIn": "wróć do logowania",
+      "expiredAlert": "ten link wygasł — podaj e-mail, żeby dostać nowy."
     },
     "errors": {
       "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
@@ -133,6 +144,7 @@
     "comingSoon": "Wkrótce",
     "loginToTrack": "Zaloguj się, by śledzić postępy",
     "seekTo": "Przejdź do {time}",
+    "playMove": "Odtwórz {title}",
     "saveFavourite": "Zapisz",
     "addToFavourites": "Dodaj do ulubionych",
     "removeFromFavourites": "Usuń z ulubionych"
@@ -222,7 +234,9 @@
     "journeySubtitle": "Śledź naukę i świętuj opanowane ruchy.",
     "savedHighlight": "wykonania",
     "savedSubtitle": "Twoja kurowana galeria — ruchy, do których ciągle wracasz.",
-    "countSaved": "{count} zapisanych"
+    "countSaved": "{count} zapisanych",
+    "anonymous": "anonimowy",
+    "comingSoon": "Wkrótce"
   },
   "landing": {
     "eyebrow": "Mały katalog",

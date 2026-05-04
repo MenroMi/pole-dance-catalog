@@ -20,17 +20,23 @@ export function SignupForm() {
 
   useEffect(() => {
     if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      try {
-        const { latitude, longitude } = position.coords;
-        const res = await fetch(`/api/geocode?lat=${latitude}&lon=${longitude}`);
-        if (!res.ok) return;
-        const data = (await res.json()) as { location?: string | null };
-        if (data.location) setDetectedLocation(data.location);
-      } catch {
-        // silent — location is optional
-      }
-    });
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`/api/geocode?lat=${latitude}&lon=${longitude}`);
+          if (!res.ok) return;
+          const data = (await res.json()) as { location?: string | null };
+          if (data.location) setDetectedLocation(data.location);
+        } catch {
+          // silent — location is optional
+        }
+      },
+      () => {
+        // permission denied or unavailable — silent
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
+    );
   }, []);
 
   const {

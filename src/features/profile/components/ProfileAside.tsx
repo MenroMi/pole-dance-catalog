@@ -2,6 +2,7 @@
 import { Heart, LayoutDashboard, TrendingUp } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
 import { Link, usePathname } from '@/i18n/navigation';
 
 type NavItem = {
@@ -13,9 +14,27 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/profile', labelKey: 'overview', icon: LayoutDashboard, matches: ['/profile'], disabled: false },
-  { href: '/profile/favourite-moves', labelKey: 'favourites', icon: Heart, matches: ['/profile/favourite-moves'], disabled: false },
-  { href: '/profile/progress', labelKey: 'progress', icon: TrendingUp, matches: ['/profile/progress'], disabled: false },
+  {
+    href: '/profile',
+    labelKey: 'overview',
+    icon: LayoutDashboard,
+    matches: ['/profile'],
+    disabled: false,
+  },
+  {
+    href: '/profile/favourite-moves',
+    labelKey: 'favourites',
+    icon: Heart,
+    matches: ['/profile/favourite-moves'],
+    disabled: false,
+  },
+  {
+    href: '/profile/progress',
+    labelKey: 'progress',
+    icon: TrendingUp,
+    matches: ['/profile/progress'],
+    disabled: false,
+  },
 ];
 
 const BASE =
@@ -39,7 +58,7 @@ export default function ProfileAside() {
               <Icon size={20} aria-hidden="true" />
               <span className="flex-1">{label}</span>
               <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] tracking-widest text-on-surface-variant">
-                Soon
+                {t('comingSoon')}
               </span>
             </span>
           );

@@ -7,8 +7,14 @@ vi.mock('@/features/auth/actions', () => ({
   forgotPasswordAction: vi.fn(),
 }));
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   redirect: vi.fn(),
@@ -36,7 +42,7 @@ describe('ForgotPasswordForm', () => {
 
   it('shows expired notice above form when expired=true', () => {
     render(<ForgotPasswordForm sent={false} expired={true} />);
-    expect(screen.getByText(/link has expired/i)).toBeInTheDocument();
+    expect(screen.getByText('expiredAlert')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'submit' })).toBeInTheDocument();
   });
 

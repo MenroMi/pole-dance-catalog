@@ -116,6 +116,11 @@ Worktree: `.worktrees/error-boundaries`
 - `EyeIcon` and `EyeOffIcon` are defined both in `SettingsForm.tsx` and `PasswordInput.tsx`
 - Fix: re-export from `PasswordInput.tsx` or move to a shared `icons.tsx`; low priority until a third usage site appears
 
+~~**`src/features/auth/components/SignupForm.tsx` — geolocation timing**~~ ✅ Resolved (2026-05-04)
+
+- `getCurrentPosition` had no options and no error callback — on desktop without GPS it could block for 30+ seconds or never resolve, causing a race condition where the user submits the form before `detectedLocation` is set
+- Fix: added `{ enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }` options (uses fast IP/Wi-Fi positioning, enforces 5s deadline, accepts cached position) and a silent error callback
+
 ~~**`src/features/auth/components/SignupForm.tsx`**~~ ✅ Resolved (2026-04-22)
 
 - ~~`name` field uses Zod defaults (`"String must contain at least 2 character(s)"`) — inconsistent with password field which has a custom message~~
@@ -304,7 +309,8 @@ Worktree: `.worktrees/error-boundaries`
 
 **Manual e2e — i18n (feat/i18n)**
 
-*Positive:*
+_Positive:_
+
 - [ ] Открыть `/` — редирект на `/pl/catalog`, весь UI на польском (заголовки фильтров, кнопки навигации)
 - [ ] Открыть `/en/catalog` напрямую — UI на английском без переключателя
 - [ ] В LocaleSwitcher нажать «English» — URL меняется на `/en/catalog`, UI переключается на английский; «English» отмечен галочкой (aria-checked=true)
@@ -318,7 +324,8 @@ Worktree: `.worktrees/error-boundaries`
 - [ ] 404 страница (`/pl/unknown-path`) — «straciłeś momentum?» на польском
 - [ ] Admin: `/pl/admin` при ADMIN-роли показывает польский заголовок дашборда
 
-*Negative:*
+_Negative:_
+
 - [ ] Переключение locale сохраняет путь: `/pl/catalog?poleType=STATIC` → `/en/catalog?poleType=STATIC` (query не теряется)
 - [ ] `/invalid-locale/catalog` — должен вернуть 404 или редирект на `/pl/catalog`
 - [ ] Переключение locale на залогиненном пользователе не разлогинивает (сессия сохраняется)

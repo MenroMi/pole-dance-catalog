@@ -7,8 +7,14 @@ vi.mock('@/features/auth/actions', () => ({
   resetPasswordAction: vi.fn(),
 }));
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: React.ReactNode }) =>
-    React.createElement('a', { href, ...props }, children),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
   usePathname: () => '/catalog',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   redirect: vi.fn(),
@@ -28,7 +34,7 @@ describe('ResetPasswordForm', () => {
   it('renders new password and confirm password fields', () => {
     render(<ResetPasswordForm token="valid-token" />);
     expect(screen.getByLabelText('passwordLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('confirmPasswordLabel')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'submit' })).toBeInTheDocument();
   });
 
@@ -37,10 +43,10 @@ describe('ResetPasswordForm', () => {
     render(<ResetPasswordForm token="valid-token" />);
 
     await user.type(screen.getByLabelText('passwordLabel'), 'NewPass1!');
-    await user.type(screen.getByLabelText(/confirm password/i), 'Different1!');
+    await user.type(screen.getByLabelText('confirmPasswordLabel'), 'Different1!');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
-    expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
+    expect(await screen.findByText('passwordsDoNotMatch')).toBeInTheDocument();
     expect(mockAction).not.toHaveBeenCalled();
   });
 
@@ -50,7 +56,7 @@ describe('ResetPasswordForm', () => {
     render(<ResetPasswordForm token="valid-token" />);
 
     await user.type(screen.getByLabelText('passwordLabel'), 'NewPass1!');
-    await user.type(screen.getByLabelText(/confirm password/i), 'NewPass1!');
+    await user.type(screen.getByLabelText('confirmPasswordLabel'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
     expect(mockAction).toHaveBeenCalledWith('valid-token', 'NewPass1!');
@@ -62,7 +68,7 @@ describe('ResetPasswordForm', () => {
     render(<ResetPasswordForm token="valid-token" />);
 
     await user.type(screen.getByLabelText('passwordLabel'), 'NewPass1!');
-    await user.type(screen.getByLabelText(/confirm password/i), 'NewPass1!');
+    await user.type(screen.getByLabelText('confirmPasswordLabel'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
     expect(await screen.findByText('invalidToken', { exact: false })).toBeInTheDocument();
@@ -74,7 +80,7 @@ describe('ResetPasswordForm', () => {
     render(<ResetPasswordForm token="valid-token" />);
 
     await user.type(screen.getByLabelText('passwordLabel'), 'NewPass1!');
-    await user.type(screen.getByLabelText(/confirm password/i), 'NewPass1!');
+    await user.type(screen.getByLabelText('confirmPasswordLabel'), 'NewPass1!');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
     expect(await screen.findByText('invalidToken', { exact: false })).toBeInTheDocument();

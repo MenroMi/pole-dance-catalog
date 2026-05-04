@@ -22,7 +22,7 @@ export default async function ProfileHero({
   createdAt,
 }: ProfileHeroProps) {
   const t = await getTranslations('profile');
-  const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'anonymous';
+  const displayName = [firstName, lastName].filter(Boolean).join(' ') || t('anonymous');
   const joinYear = createdAt.getFullYear();
 
   return (

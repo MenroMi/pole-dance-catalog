@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import { forwardRef, useState } from 'react';
 import type { InputHTMLAttributes } from 'react';
 
@@ -6,6 +7,7 @@ import { cn } from '@/shared/lib/utils';
 
 export const PasswordInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ onKeyDown, onKeyUp, onBlur, className, type: _type, ...props }, ref) => {
+    const t = useTranslations('common');
     const [show, setShow] = useState(false);
     const [capsLock, setCapsLock] = useState(false);
 
@@ -36,7 +38,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HT
           <div className="pointer-events-none absolute bottom-0 left-0 h-[1.5px] w-full origin-center scale-x-0 bg-primary transition-transform duration-300 group-focus-within:scale-x-100" />
           <button
             type="button"
-            aria-label={show ? 'Hide password' : 'Show password'}
+            aria-label={show ? t('hidePassword') : t('showPassword')}
             aria-pressed={show}
             onClick={() => setShow((s) => !s)}
             className="absolute top-1/2 right-0 -translate-y-1/2 text-outline-variant transition-colors hover:text-on-surface focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
@@ -46,7 +48,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HT
         </div>
         {capsLock && (
           <p role="status" className="mt-1.5 text-xs tracking-wide text-primary/70">
-            caps lock is on
+            {t('capsLockOn')}
           </p>
         )}
       </>

@@ -1,34 +1,38 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { resetPasswordAction } from '@/features/auth/actions';
 import { applyPasswordComplexity } from '@/features/auth/lib/validation';
+import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
-
-const schema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .max(100)
-      .superRefine(applyPasswordComplexity),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type FormData = z.infer<typeof schema>;
 
 export default function ResetPasswordForm({ token }: { token: string }) {
   const t = useTranslations('auth.resetPassword');
   const [actionError, setActionError] = useState<'expired' | 'invalid' | null>(null);
+
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          password: z
+            .string()
+            .min(8, t('passwordMinLength'))
+            .max(100)
+            .superRefine(applyPasswordComplexity),
+          confirmPassword: z.string(),
+        })
+        .refine((d) => d.password === d.confirmPassword, {
+          message: t('passwordsDoNotMatch'),
+          path: ['confirmPassword'],
+        }),
+    [t],
+  );
+
+  type FormData = z.infer<typeof schema>;
 
   const {
     register,
@@ -50,9 +54,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
           {t('heading')}
         </h2>
-        <p className="text-sm text-on-surface-variant">
-          choose a strong password for your account.
-        </p>
+        <p className="text-sm text-on-surface-variant">{t('subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -87,7 +89,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
               htmlFor="confirmPassword"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              confirm password
+              {t('confirmPasswordLabel')}
             </label>
             <PasswordInput
               id="confirmPassword"
@@ -112,7 +114,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
           <p role="alert" className="text-sm text-red-400">
             {t('invalidToken')}{' '}
             <Link href="/forgot-password" className="underline hover:text-red-300">
-              request a new one
+              {t('requestNewLink')}
             </Link>
           </p>
         )}
@@ -130,7 +132,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         href="/login"
         className="block text-center text-xs text-on-surface-variant transition-colors duration-200 hover:text-on-surface"
       >
-        back to sign in
+        {t('backToSignIn')}
       </Link>
     </div>
   );

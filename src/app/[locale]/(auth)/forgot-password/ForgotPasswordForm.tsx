@@ -1,11 +1,11 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { forgotPasswordAction } from '@/features/auth/actions';
+import { Link, useRouter } from '@/i18n/navigation';
 
 const schema = z.object({ email: z.string().email('Please enter a valid email') });
 type FormData = z.infer<typeof schema>;
@@ -61,7 +61,7 @@ export default function ForgotPasswordForm({ sent, expired }: ForgotPasswordForm
 
       {expired && (
         <p role="alert" className="text-sm text-red-400">
-          that link has expired — enter your email to get a new one.
+          {t('expiredAlert')}
         </p>
       )}
 

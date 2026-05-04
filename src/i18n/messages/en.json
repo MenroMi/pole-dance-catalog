@@ -4,7 +4,10 @@
     "save": "Save",
     "cancel": "Cancel",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "capsLockOn": "Caps Lock is on"
   },
   "nav": {
     "catalog": "Catalog",
@@ -18,7 +21,8 @@
     "logOutConfirmDescription": "You'll need to sign back in to access your profile.",
     "logOutConfirmAction": "Log out",
     "logOutError": "Something went wrong. Please try again.",
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "favouriteMovesLabel": "Favourite moves"
   },
   "auth": {
     "login": {
@@ -82,10 +86,17 @@
     },
     "resetPassword": {
       "heading": "new password.",
+      "subtitle": "choose a strong password for your account.",
       "passwordLabel": "new password",
+      "confirmPasswordLabel": "confirm password",
       "submit": "save password",
       "submitting": "saving...",
-      "invalidToken": "the password reset link is invalid or has expired."
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "invalidToken": "the password reset link is invalid or has expired.",
+      "requestNewLink": "request a new one",
+      "backToSignIn": "back to sign in",
+      "expiredAlert": "that link has expired — enter your email to get a new one."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password.",
@@ -133,6 +144,7 @@
     "comingSoon": "Coming soon",
     "loginToTrack": "Log in to track progress",
     "seekTo": "Seek to {time}",
+    "playMove": "Play {title}",
     "saveFavourite": "Save",
     "addToFavourites": "Add to favourites",
     "removeFromFavourites": "Remove from favourites"
@@ -222,7 +234,9 @@
     "journeySubtitle": "Track what you're learning and celebrate what you've mastered.",
     "savedHighlight": "performances",
     "savedSubtitle": "Your curated gallery — moves you keep coming back to.",
-    "countSaved": "{count} saved"
+    "countSaved": "{count} saved",
+    "anonymous": "anonymous",
+    "comingSoon": "Soon"
   },
   "landing": {
     "eyebrow": "A small catalog",

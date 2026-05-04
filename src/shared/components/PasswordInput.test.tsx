@@ -24,24 +24,24 @@ describe('PasswordInput', () => {
   it('eye button click changes type to "text"', async () => {
     const user = userEvent.setup();
     const input = renderInput();
-    await user.click(screen.getByRole('button', { name: /show password/i }));
+    await user.click(screen.getByRole('button', { name: 'showPassword' }));
     expect(input).toHaveAttribute('type', 'text');
   });
 
   it('second eye button click changes type back to "password"', async () => {
     const user = userEvent.setup();
     const input = renderInput();
-    await user.click(screen.getByRole('button', { name: /show password/i }));
-    await user.click(screen.getByRole('button', { name: /hide password/i }));
+    await user.click(screen.getByRole('button', { name: 'showPassword' }));
+    await user.click(screen.getByRole('button', { name: 'hidePassword' }));
     expect(input).toHaveAttribute('type', 'password');
   });
 
   it('eye button aria-label reflects visibility state', async () => {
     const user = userEvent.setup();
     renderInput();
-    expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Show password' }));
-    expect(screen.getByRole('button', { name: 'Hide password' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'showPassword' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'showPassword' }));
+    expect(screen.getByRole('button', { name: 'hidePassword' })).toBeInTheDocument();
   });
 
   it('shows caps lock warning after keydown with CapsLock active', () => {
@@ -51,7 +51,7 @@ describe('PasswordInput', () => {
       value: (key: string) => key === 'CapsLock',
     });
     fireEvent(input, event);
-    expect(screen.getByRole('status')).toHaveTextContent('caps lock is on');
+    expect(screen.getByRole('status')).toHaveTextContent('capsLockOn');
   });
 
   it('does not show caps lock warning after keydown without CapsLock', () => {
