@@ -5,20 +5,16 @@ import type { ReactNode } from 'react';
 
 type Tab = 'breakdown' | 'muscles' | 'safety';
 
+const TAB_IDS: Tab[] = ['breakdown', 'muscles', 'safety'];
+
 export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
   const t = useTranslations('moves');
   const [active, setActive] = useState<Tab>('breakdown');
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const TABS: { id: Tab; label: string }[] = [
-    { id: 'breakdown', label: t('breakdown') },
-    { id: 'muscles', label: t('muscles') },
-    { id: 'safety', label: t('safety') },
-  ];
-
   useLayoutEffect(() => {
-    const activeIndex = TABS.findIndex((tab) => tab.id === active);
+    const activeIndex = TAB_IDS.indexOf(active);
     const el = tabRefs.current[activeIndex];
     if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
   }, [active]);
@@ -29,7 +25,7 @@ export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
         role="tablist"
         className="relative mb-8 flex gap-8 border-b border-outline-variant/15 pb-4"
       >
-        {TABS.map(({ id, label }, i) => (
+        {TAB_IDS.map((id, i) => (
           <button
             key={id}
             ref={(el) => {
@@ -42,15 +38,15 @@ export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
             tabIndex={active === id ? 0 : -1}
             onClick={() => setActive(id)}
             onKeyDown={(e) => {
-              const count = TABS.length;
-              const activeIndex = TABS.findIndex((tab) => tab.id === active);
+              const count = TAB_IDS.length;
+              const activeIndex = TAB_IDS.indexOf(active);
               if (e.key === 'ArrowRight') {
                 const nextIndex = (activeIndex + 1) % count;
-                setActive(TABS[nextIndex].id);
+                setActive(TAB_IDS[nextIndex]);
                 tabRefs.current[nextIndex]?.focus();
               } else if (e.key === 'ArrowLeft') {
                 const prevIndex = (activeIndex - 1 + count) % count;
-                setActive(TABS[prevIndex].id);
+                setActive(TAB_IDS[prevIndex]);
                 tabRefs.current[prevIndex]?.focus();
               }
             }}
@@ -58,7 +54,7 @@ export default function MoveTabs({ breakdown }: { breakdown: ReactNode }) {
               active === id ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            {label}
+            {t(id)}
           </button>
         ))}
 

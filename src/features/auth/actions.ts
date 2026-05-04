@@ -25,6 +25,11 @@ import { generateVerificationToken, deleteUserTokens } from './lib/tokens';
 import { applyPasswordComplexity, signupSchema } from './lib/validation';
 import type { SignupFormData, LoginFormData } from './lib/validation';
 
+async function getCheckedLocale(): Promise<Locale> {
+  const raw = await getLocale();
+  return (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+}
+
 export async function signupAction(data: SignupFormData) {
   const ip = (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
   const { success: withinLimit } = await signupRatelimit.limit(ip);
@@ -36,8 +41,7 @@ export async function signupAction(data: SignupFormData) {
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) return { error: 'Email already in use' };
 
-  const raw = await getLocale();
-  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+  const locale = await getCheckedLocale();
 
   const hashed = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.create({
@@ -65,8 +69,7 @@ export async function signupAction(data: SignupFormData) {
 }
 
 export async function loginAction(data: LoginFormData) {
-  const raw = await getLocale();
-  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+  const locale = await getCheckedLocale();
   try {
     await signIn('credentials', {
       email: data.email,
@@ -88,8 +91,7 @@ export async function loginAction(data: LoginFormData) {
 
 export async function resendVerificationAction(email: string) {
   const { success: withinLimit } = await resendRatelimit.limit(email);
-  const raw = await getLocale();
-  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+  const locale = await getCheckedLocale();
   if (!withinLimit) redirect(`/${locale}/verify-email?error=rate-limited`);
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -150,8 +152,7 @@ export async function forgotPasswordAction(
 
   if (!user || user.password === null) return { sent: true };
 
-  const raw = await getLocale();
-  const locale: Locale = (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+  const locale = await getCheckedLocale();
 
   await deleteResetTokensByEmail(email);
   const token = await generateResetToken(email, locale);
