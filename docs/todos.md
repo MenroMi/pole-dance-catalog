@@ -390,12 +390,9 @@ _Negative:_
 - Run: `SEED_USER_EMAIL=<email> npx tsx prisma/seed-progress.ts`
 - Script also seeds `UserProgress` (18 records) and `UserFavourite` (5 records) for the given user
 
-**`prisma/schema.prisma` — `UserProgress` relations missing `onDelete: Cascade`**
+~~**`prisma/schema.prisma` — `UserProgress` relations missing `onDelete: Cascade`**~~ ✅ Resolved
 
-- `UserProgress.user` and `UserProgress.move` relations use the default `onDelete: RESTRICT`
-- Deleting a User or Move that has any progress records will fail with a FK violation at DB level
-- Fix: add `onDelete: Cascade` to both relations in `UserProgress` and run a migration
-- Contrast: `UserFavourite` (added in Stage 2C) correctly uses `onDelete: Cascade`
+- Both `UserProgress.user` and `UserProgress.move` have `onDelete: Cascade` in schema.prisma
 
 **`prisma/migrations/` — baseline uses `"public".` schema qualifier, subsequent migrations do not**
 
