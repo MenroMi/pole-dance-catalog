@@ -1,5 +1,6 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 
 import type { ProgressWithMove } from '../types';
 
@@ -15,35 +16,38 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   ADVANCED: '#f59e0b',
 };
 
-function DifficultyChip({ difficulty }: { difficulty: string }) {
+function DifficultyChip({ label, difficulty }: { label: string; difficulty: string }) {
   const color = DIFFICULTY_COLOR[difficulty] ?? DIFFICULTY_COLOR.BEGINNER;
   return (
     <span
       className="shrink-0 rounded-full px-2 py-0.5 font-sans text-[9px] font-bold tracking-[0.14em] uppercase"
       style={{ background: `${color}18`, color }}
     >
-      {difficulty.charAt(0) + difficulty.slice(1).toLowerCase()}
+      {label}
     </span>
   );
 }
 
-export default function ProfileCurrentlyLearning({ moves }: ProfileCurrentlyLearningProps) {
+export default async function ProfileCurrentlyLearning({ moves }: ProfileCurrentlyLearningProps) {
+  const t = await getTranslations('profile');
+  const te = await getTranslations('enums');
+
   return (
     <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-outline-variant/20 bg-surface-container p-6">
       <div className="mb-[18px] flex shrink-0 items-baseline justify-between">
         <span className="font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-          Currently learning
+          {t('currentlyLearning')}
         </span>
         <span className="font-sans text-[11px] text-on-surface-variant/70">
-          {moves.length} move{moves.length !== 1 ? 's' : ''}
+          {moves.length} {t('movesCount', { count: moves.length })}
         </span>
       </div>
 
       {moves.length === 0 ? (
         <div className="flex flex-col gap-1.5">
-          <p className="font-sans text-sm text-on-surface-variant">No moves in progress yet.</p>
+          <p className="font-sans text-sm text-on-surface-variant">{t('emptyInProgress')}</p>
           <Link href="/catalog" className="font-sans text-sm text-primary hover:underline">
-            Browse the catalog →
+            {t('browseCatalog')}
           </Link>
         </div>
       ) : (
@@ -51,7 +55,7 @@ export default function ProfileCurrentlyLearning({ moves }: ProfileCurrentlyLear
           {moves.map((p) => {
             const tagLine = p.move.tags
               .slice(0, 2)
-              .map((t) => t.name)
+              .map((tag) => tag.name)
               .join(' · ');
             return (
               <Link
@@ -85,7 +89,10 @@ export default function ProfileCurrentlyLearning({ moves }: ProfileCurrentlyLear
                   )}
                 </div>
 
-                <DifficultyChip difficulty={p.move.difficulty} />
+                <DifficultyChip
+                  label={te(`difficulty.${p.move.difficulty}`)}
+                  difficulty={p.move.difficulty}
+                />
               </Link>
             );
           })}

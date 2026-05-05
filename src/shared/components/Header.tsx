@@ -1,9 +1,9 @@
-import Link from 'next/link';
-
+import { Link } from '@/i18n/navigation';
 import { auth } from '@/shared/lib/auth';
 
 import FavouritesButton from './FavouritesButton';
 import HeaderNav from './HeaderNav';
+import LocaleSwitcher from './LocaleSwitcher';
 import UserMenu from './UserMenu';
 
 export default async function Header() {
@@ -29,9 +29,10 @@ export default async function Header() {
 
         <HeaderNav />
 
-        <div className="flex items-center gap-2 justify-self-end">
-          <FavouritesButton hasNew={Boolean(user)} />
+        <div className="flex items-center gap-1 justify-self-end">
+          <FavouritesButton />
           <UserMenu user={user} />
+          <LocaleSwitcher />
         </div>
       </div>
     </header>

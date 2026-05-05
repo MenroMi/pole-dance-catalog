@@ -1,9 +1,10 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
 import { signupAction } from '../actions';
@@ -13,21 +14,29 @@ import type { SignupFormData } from '../lib/validation';
 import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
 export function SignupForm() {
+  const t = useTranslations('auth.signup');
+  const te = useTranslations('auth.errors');
   const [detectedLocation, setDetectedLocation] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      try {
-        const { latitude, longitude } = position.coords;
-        const res = await fetch(`/api/geocode?lat=${latitude}&lon=${longitude}`);
-        if (!res.ok) return;
-        const data = (await res.json()) as { location?: string | null };
-        if (data.location) setDetectedLocation(data.location);
-      } catch {
-        // silent — location is optional
-      }
-    });
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`/api/geocode?lat=${latitude}&lon=${longitude}`);
+          if (!res.ok) return;
+          const data = (await res.json()) as { location?: string | null };
+          if (data.location) setDetectedLocation(data.location);
+        } catch {
+          // silent — location is optional
+        }
+      },
+      () => {
+        // permission denied or unavailable — silent
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
+    );
   }, []);
 
   const {
@@ -51,9 +60,9 @@ export function SignupForm() {
     <div className="w-full max-w-sm animate-fade-in-up space-y-10">
       <div className="space-y-1.5">
         <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-          join pole space.
+          {t('title')}
         </h2>
-        <p className="text-sm text-on-surface-variant">create your account to start tracking.</p>
+        <p className="text-sm text-on-surface-variant">{t('subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -64,13 +73,13 @@ export function SignupForm() {
               htmlFor="firstName"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              first name
+              {t('firstNameLabel')}
             </label>
             <div className="relative">
               <input
                 id="firstName"
                 type="text"
-                placeholder="your first name"
+                placeholder={t('firstNamePlaceholder')}
                 className="w-full border-b border-outline-variant bg-transparent px-0 py-3 text-on-surface placeholder:text-outline-variant/40 focus:outline-none"
                 aria-describedby={errors.firstName ? 'firstName-error' : undefined}
                 aria-invalid={!!errors.firstName}
@@ -95,13 +104,13 @@ export function SignupForm() {
               htmlFor="lastName"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              last name
+              {t('lastNameLabel')}
             </label>
             <div className="relative">
               <input
                 id="lastName"
                 type="text"
-                placeholder="your last name"
+                placeholder={t('lastNamePlaceholder')}
                 className="w-full border-b border-outline-variant bg-transparent px-0 py-3 text-on-surface placeholder:text-outline-variant/40 focus:outline-none"
                 aria-describedby={errors.lastName ? 'lastName-error' : undefined}
                 aria-invalid={!!errors.lastName}
@@ -126,7 +135,7 @@ export function SignupForm() {
               htmlFor="email"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              email address
+              {t('emailLabel')}
             </label>
             <div className="relative">
               <input
@@ -157,7 +166,7 @@ export function SignupForm() {
               htmlFor="password"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              password
+              {t('passwordLabel')}
             </label>
             <PasswordInput
               id="password"
@@ -195,7 +204,14 @@ export function SignupForm() {
                 clipRule="evenodd"
               />
             </svg>
-            {errors.root.message}
+            {(
+              {
+                'Too many requests': te('tooManyRequests'),
+                'Invalid input': te('invalidInput'),
+                'Email already in use': te('emailAlreadyInUse'),
+                'Failed to send email, please try again': te('sendEmailFailed'),
+              } as Record<string, string>
+            )[errors.root.message ?? ''] ?? errors.root.message}
           </div>
         )}
 
@@ -204,7 +220,7 @@ export function SignupForm() {
           disabled={isSubmitting}
           className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {isSubmitting ? 'creating account...' : 'create account'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
 
@@ -212,7 +228,7 @@ export function SignupForm() {
         <div className="relative flex items-center">
           <div className="h-px grow bg-outline-variant/20" />
           <span className="mx-4 shrink text-[10px] tracking-widest text-outline-variant uppercase">
-            or continue with
+            {t('orContinueWith')}
           </span>
           <div className="h-px grow bg-outline-variant/20" />
         </div>
@@ -236,12 +252,12 @@ export function SignupForm() {
       </div>
 
       <p className="text-center text-xs text-on-surface-variant">
-        already a member?{' '}
+        {t('hasAccount')}{' '}
         <Link
           href="/login"
           className="ml-1 font-bold text-primary decoration-2 underline-offset-4 hover:underline"
         >
-          sign in
+          {t('signIn')}
         </Link>
       </p>
     </div>

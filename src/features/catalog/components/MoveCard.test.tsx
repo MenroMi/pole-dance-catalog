@@ -1,7 +1,8 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
-import type { MoveWithTags } from '../types';
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCard from './MoveCard';
 
@@ -9,7 +10,21 @@ vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }));
 
-const baseMove: MoveWithTags = {
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
+}));
+
+const baseMove: LocalizedMoveWithTags = {
   id: 'move-1',
   title: 'Jade Split',
   description: 'A beautiful aerial move requiring flexibility.',
@@ -21,7 +36,7 @@ const baseMove: MoveWithTags = {
   createdAt: new Date(),
   updatedAt: new Date(),
   tags: [],
-  stepsData: [],
+  stepsData: null,
   gripType: null,
   entry: null,
   duration: null,
@@ -42,7 +57,7 @@ describe('MoveCard', () => {
 
   it('renders difficulty badge', () => {
     render(<MoveCard move={baseMove} />);
-    expect(screen.getByText('BEGINNER')).toBeInTheDocument();
+    expect(screen.getByText('difficulty.BEGINNER')).toBeInTheDocument();
   });
 
   it('falls back to YouTube thumbnail when imageUrl is null', () => {
@@ -69,7 +84,7 @@ describe('MoveCard', () => {
         { id: '2', name: 'strength', color: null },
         { id: '3', name: 'core', color: null },
         { id: '4', name: 'hidden-tag', color: null },
-      ] as MoveWithTags['tags'],
+      ] as LocalizedMoveWithTags['tags'],
     };
     render(<MoveCard move={move} />);
     expect(screen.getByText('flexibility')).toBeInTheDocument();
@@ -81,7 +96,7 @@ describe('MoveCard', () => {
   it('renders tag with tinted bg and colored text when color is set', () => {
     const move = {
       ...baseMove,
-      tags: [{ id: '1', name: 'aerial', color: '#3b82f6' }] as MoveWithTags['tags'],
+      tags: [{ id: '1', name: 'aerial', color: '#3b82f6' }] as LocalizedMoveWithTags['tags'],
     };
     render(<MoveCard move={move} />);
     const tag = screen.getByText('aerial');
@@ -91,7 +106,7 @@ describe('MoveCard', () => {
   it('renders tag without inline style when color is null', () => {
     const move = {
       ...baseMove,
-      tags: [{ id: '1', name: 'aerial', color: null }] as MoveWithTags['tags'],
+      tags: [{ id: '1', name: 'aerial', color: null }] as LocalizedMoveWithTags['tags'],
     };
     render(<MoveCard move={move} />);
     const tag = screen.getByText('aerial');
@@ -106,7 +121,7 @@ describe('MoveCard', () => {
   it('renders INTERMEDIATE badge with primary-container styling', () => {
     const move = { ...baseMove, difficulty: 'INTERMEDIATE' as const };
     render(<MoveCard move={move} />);
-    const badge = screen.getByText('INTERMEDIATE');
+    const badge = screen.getByText('difficulty.INTERMEDIATE');
     expect(badge.className).toContain('bg-primary-container');
     expect(badge.className).toContain('text-on-surface');
   });

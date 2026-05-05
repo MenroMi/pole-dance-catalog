@@ -3,8 +3,11 @@ import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
+import { getLocale } from 'next-intl/server';
 import { z } from 'zod';
 
+import { checkedLocale, defaultLocale } from '@/i18n/routing';
+import type { Locale } from '@/i18n/routing';
 import { signIn } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
 import { signupRatelimit, resendRatelimit, forgotPasswordRatelimit } from '@/shared/lib/ratelimit';
@@ -23,7 +26,10 @@ import { applyPasswordComplexity, signupSchema } from './lib/validation';
 import type { SignupFormData, LoginFormData } from './lib/validation';
 
 export async function signupAction(data: SignupFormData) {
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  const ip =
+    (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ??
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success: withinLimit } = await signupRatelimit.limit(ip);
   if (!withinLimit) return { error: 'Too many requests' };
 
@@ -32,6 +38,8 @@ export async function signupAction(data: SignupFormData) {
 
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) return { error: 'Email already in use' };
+
+  const locale = checkedLocale(await getLocale());
 
   const hashed = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.create({
@@ -45,25 +53,26 @@ export async function signupAction(data: SignupFormData) {
     },
   });
 
-  const token = await generateVerificationToken(parsed.data.email);
+  const token = await generateVerificationToken(parsed.data.email, locale);
 
   try {
-    await sendVerificationEmail(parsed.data.email, token);
+    await sendVerificationEmail(parsed.data.email, token, locale);
   } catch {
     await deleteUserTokens(parsed.data.email);
     await prisma.user.delete({ where: { email: parsed.data.email } });
     return { error: 'Failed to send email, please try again' };
   }
 
-  redirect(`/verify-email?sent=true&email=${encodeURIComponent(parsed.data.email)}`);
+  redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(parsed.data.email)}`);
 }
 
 export async function loginAction(data: LoginFormData) {
+  const locale = checkedLocale(await getLocale());
   try {
     await signIn('credentials', {
       email: data.email,
       password: data.password,
-      redirectTo: '/catalog',
+      redirectTo: `/${locale}/catalog`,
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -80,31 +89,32 @@ export async function loginAction(data: LoginFormData) {
 
 export async function resendVerificationAction(email: string) {
   const { success: withinLimit } = await resendRatelimit.limit(email);
-  if (!withinLimit) redirect(`/verify-email?error=rate-limited`);
+  const locale = checkedLocale(await getLocale());
+  if (!withinLimit) redirect(`/${locale}/verify-email?error=rate-limited`);
 
   const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) redirect('/verify-email?error=invalid');
-  if (user.emailVerified !== null) redirect('/catalog');
+  if (!user) redirect(`/${locale}/verify-email?error=invalid`);
+  if (user.emailVerified !== null) redirect(`/${locale}/catalog`);
 
   const existing = await prisma.verificationToken.findFirst({ where: { identifier: email } });
   if (existing) {
     if (Date.now() - existing.createdAt.getTime() < RESEND_COOLDOWN_MS) {
-      redirect(`/verify-email?sent=true&email=${encodeURIComponent(email)}`);
+      redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(email)}`);
     }
   }
 
   await deleteUserTokens(email);
-  const token = await generateVerificationToken(email);
+  const token = await generateVerificationToken(email, locale);
 
   try {
-    await sendVerificationEmail(email, token);
+    await sendVerificationEmail(email, token, locale);
   } catch {
     await deleteUserTokens(email);
-    redirect(`/verify-email?error=send-failed&email=${encodeURIComponent(email)}`);
+    redirect(`/${locale}/verify-email?error=send-failed&email=${encodeURIComponent(email)}`);
   }
 
-  redirect(`/verify-email?sent=true&email=${encodeURIComponent(email)}`);
+  redirect(`/${locale}/verify-email?sent=true&email=${encodeURIComponent(email)}`);
 }
 
 export async function checkEmailVerifiedAction(email: string): Promise<boolean> {
@@ -126,7 +136,10 @@ const resetPasswordSchema = z
 export async function forgotPasswordAction(
   email: string,
 ): Promise<{ sent: true } | { error: string }> {
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  const ip =
+    (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ??
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success: withinLimit } = await forgotPasswordRatelimit.limit(ip);
   if (!withinLimit) return { sent: true };
 
@@ -140,11 +153,13 @@ export async function forgotPasswordAction(
 
   if (!user || user.password === null) return { sent: true };
 
+  const locale = checkedLocale(await getLocale());
+
   await deleteResetTokensByEmail(email);
-  const token = await generateResetToken(email);
+  const token = await generateResetToken(email, locale);
 
   try {
-    await sendPasswordResetEmail(email, token);
+    await sendPasswordResetEmail(email, token, locale);
   } catch (err) {
     console.error('[forgotPasswordAction] email send failed:', err);
     await deleteResetToken(token);
@@ -157,7 +172,7 @@ export async function forgotPasswordAction(
 export async function resetPasswordAction(
   token: string,
   newPassword: string,
-): Promise<{ success: true } | { error: string }> {
+): Promise<{ error: string }> {
   const passwordResult = resetPasswordSchema.safeParse(newPassword);
   if (!passwordResult.success) return { error: 'Invalid password' };
 
@@ -165,9 +180,11 @@ export async function resetPasswordAction(
   if (!record) return { error: 'invalid' };
   if (record.expiresAt < new Date()) return { error: 'expired' };
 
+  const tokenLocale = (record.locale ?? defaultLocale) as Locale;
+
   const hashed = await bcrypt.hash(newPassword, 10);
   await prisma.user.update({ where: { email: record.email }, data: { password: hashed } });
   await deleteResetToken(token);
 
-  return { success: true };
+  redirect(`/${tokenLocale}/login?reset=true`);
 }

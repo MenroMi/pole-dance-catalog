@@ -11,13 +11,13 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-const TAGS: { name: string; color: string }[] = [
-  { name: 'aerial', color: '#3b82f6' },
-  { name: 'beginner-friendly', color: '#22c55e' },
-  { name: 'core', color: '#f97316' },
-  { name: 'flexibility', color: '#a855f7' },
-  { name: 'inversion', color: '#ec4899' },
-  { name: 'strength', color: '#ef4444' },
+const TAGS: { name_pl: string; name_en: string; color: string }[] = [
+  { name_pl: 'Aerial', name_en: 'aerial', color: '#3b82f6' },
+  { name_pl: 'Przyjazny Początkującym', name_en: 'beginner-friendly', color: '#22c55e' },
+  { name_pl: 'Core', name_en: 'core', color: '#f97316' },
+  { name_pl: 'Elastyczność', name_en: 'flexibility', color: '#a855f7' },
+  { name_pl: 'Inwersja', name_en: 'inversion', color: '#ec4899' },
+  { name_pl: 'Siłowy', name_en: 'strength', color: '#ef4444' },
 ];
 
 const TAG_MAP: Record<string, string[]> = {
@@ -43,23 +43,27 @@ const TAG_MAP: Record<string, string[]> = {
 
 async function main() {
   // upsert tags
-  for (const { name, color } of TAGS) {
-    await prisma.tag.upsert({ where: { name }, update: { color }, create: { name, color } });
+  for (const tag of TAGS) {
+    await prisma.tag.upsert({
+      where: { name_en: tag.name_en },
+      update: { name_pl: tag.name_pl, color: tag.color },
+      create: { name_pl: tag.name_pl, name_en: tag.name_en, color: tag.color },
+    });
   }
   console.log(`Upserted ${TAGS.length} tags.`);
 
   const tags = await prisma.tag.findMany();
-  const tagByName = Object.fromEntries(tags.map((t) => [t.name, t.id]));
+  const tagByNameEn = Object.fromEntries(tags.map((t) => [t.name_en, t.id]));
 
   let updated = 0;
-  for (const [title, tagNames] of Object.entries(TAG_MAP)) {
-    const move = await prisma.move.findFirst({ where: { title } });
+  for (const [titleEn, tagNames] of Object.entries(TAG_MAP)) {
+    const move = await prisma.move.findFirst({ where: { title_en: titleEn } });
     if (!move) {
-      console.warn(`Move not found: ${title}`);
+      console.warn(`Move not found: ${titleEn}`);
       continue;
     }
 
-    const tagIds = tagNames.map((n) => ({ id: tagByName[n] }));
+    const tagIds = tagNames.map((n) => ({ id: tagByNameEn[n] }));
     await prisma.move.update({
       where: { id: move.id },
       data: { tags: { connect: tagIds } },

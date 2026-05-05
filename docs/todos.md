@@ -116,6 +116,11 @@ Worktree: `.worktrees/error-boundaries`
 - `EyeIcon` and `EyeOffIcon` are defined both in `SettingsForm.tsx` and `PasswordInput.tsx`
 - Fix: re-export from `PasswordInput.tsx` or move to a shared `icons.tsx`; low priority until a third usage site appears
 
+~~**`src/features/auth/components/SignupForm.tsx` — geolocation timing**~~ ✅ Resolved (2026-05-04)
+
+- `getCurrentPosition` had no options and no error callback — on desktop without GPS it could block for 30+ seconds or never resolve, causing a race condition where the user submits the form before `detectedLocation` is set
+- Fix: added `{ enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }` options (uses fast IP/Wi-Fi positioning, enforces 5s deadline, accepts cached position) and a silent error callback
+
 ~~**`src/features/auth/components/SignupForm.tsx`**~~ ✅ Resolved (2026-04-22)
 
 - ~~`name` field uses Zod defaults (`"String must contain at least 2 character(s)"`) — inconsistent with password field which has a custom message~~
@@ -287,6 +292,94 @@ Worktree: `.worktrees/error-boundaries`
 - Redesigned: 3-accordion multi-select sidebar (Pole state, Difficulty, Tags)
 - Old single-select category accordion removed; replaced with Pole state + Tags
 - Remaining open question: mobile UX (bottom-sheet vs sidebar collapse) — deferred until mobile layout pass
+
+~~**i18n (feat/i18n)**~~ ✅ Done (2026-05-04) — все 12 задач + post-launch fixes завершены
+
+- next-intl 4.11.0, routing config (`pl` default, `en` second), ~150 ключей в en.json/pl.json
+- Middleware `proxy.ts` → `src/middleware.ts` (createMiddleware + createNavigation)
+- Prisma schema: `_pl`/`_en` columns на Move и Tag, `locale` field на токенах
+- `localizeMove`/`localizeTag` helpers (TDD, 8 тестов)
+- App directory под `src/app/[locale]/`, navigation imports → `@/i18n/navigation`
+- Catalog + moves actions принимают `locale` param
+- Email localization: locale-aware subjects, токены хранят locale, `verify/route.ts` редиректит по `token.locale`
+- Task 9: `LocaleSwitcher` — Globe dropdown, `router.replace(pathname, { locale })`, мок Radix для тестов
+- Task 10: Auth UI strings — LoginForm, SignupForm, verifyEmail, forgotPassword, resetPassword через `useTranslations`
+- Task 11: Nav + filters + errors — HeaderNav, UserMenu, CatalogFilters, not-found, error boundaries, admin через `useTranslations`/`getTranslations`
+- Task 12: Валидация структуры en/pl; e2e кейсы ниже
+- Post-launch: SettingsForm, AvatarUpload, MoveCard difficulty badges, FavouriteMovesGallery дата, auth layout, SignupForm placeholders полностью переведены
+- Post-launch: `PasswordInput`, `FavouritesButton`, `MoveHero`, `ProfileAside`, `ProfileHero` — aria-labels и fallback-строки переведены
+- Post-launch: `ResetPasswordForm` — Zod-сообщения через `t()`, схема внутри компонента
+- Post-launch: `SignupForm` геолокация — `timeout: 5000`, `enableHighAccuracy: false` (фикс гонки submit vs detectedLocation)
+- Финальный аудит: структура en/pl синхронизирована, битых ключей нет, 469/469 тестов
+- `global-error.tsx` — намеренно оставлен на английском (вне `[locale]` роутинга)
+
+**Manual e2e — i18n (feat/i18n)**
+
+_Positive:_
+
+- [ ] Открыть `/` — редирект на `/pl/catalog`, весь UI на польском (заголовки фильтров, кнопки навигации)
+- [ ] Открыть `/en/catalog` напрямую — UI на английском без переключателя
+- [ ] В LocaleSwitcher нажать «English» — URL меняется на `/en/catalog`, UI переключается на английский; «English» отмечен галочкой (aria-checked=true)
+- [ ] Переключиться обратно на «Polski» — URL `/pl/catalog`, UI на польском; «Polski» отмечен
+- [ ] На `/pl/moves/[slug]` переключить locale — переход на `/en/moves/[slug]`, тот же элемент, язык изменён
+- [ ] Фильтры каталога (Pole state / Difficulty / Tags) отображают переводы: pl=«Stan słupa / Poziom trudności / Tagi», en=«Pole state / Difficulty / Tags»
+- [ ] Enum-значения в фильтрах: pl=«Statyczny / Wirujący», en=«Static / Spin»; аналогично Difficulty
+- [ ] Auth: страница `/pl/login` — все лейблы на польском; `/en/login` — на английском
+- [ ] Forgot password / reset password — форма отображает переводы под текущей локалью
+- [ ] Ошибка верификации email — страница `/pl/verify-email?error=expired` показывает польский текст
+- [ ] 404 страница (`/pl/unknown-path`) — «straciłeś momentum?» на польском
+- [ ] Admin: `/pl/admin` при ADMIN-роли показывает польский заголовок дашборда
+
+_Negative:_
+
+- [ ] Переключение locale сохраняет путь: `/pl/catalog?poleType=STATIC` → `/en/catalog?poleType=STATIC` (query не теряется)
+- [ ] `/invalid-locale/catalog` — должен вернуть 404 или редирект на `/pl/catalog`
+- [ ] Переключение locale на залогиненном пользователе не разлогинивает (сессия сохраняется)
+
+**`Move.title_en` — отсутствует `@unique` constraint** (2026-05-03)
+
+- `seed-move-detail.ts`, `seed-coach-notes.ts`, `seed-tags.ts` ищут moves через `findFirst({ where: { title_en } })` — без уникального индекса это ненадёжно при дублях
+- Fix: добавить `@unique` к `title_en` в `schema.prisma` + новая миграция
+- Приоритет: низкий — в dev-базе дублей не будет, но стоит закрыть до merge
+
+**`poleTypes` — нет DB-дефолта несмотря на миграцию** (2026-05-03)
+
+- Миграция добавляла `NOT NULL DEFAULT '{}'`, но Neon/PostgreSQL не сохраняет default для enum-массивов в `information_schema.columns`
+- Workaround в `seed.ts`: явный `poleTypes: []` в create-цикле
+- Если кто-то напишет новый seed без этого — получит тихий P2011
+- Fix: создать дополнительную миграцию с `ALTER TABLE "Move" ALTER COLUMN "poleTypes" SET DEFAULT '{}'`; после проверки — убрать workaround
+
+**i18n — orphan-ключи в messages** (2026-05-04)
+
+Выявлены при финальном аудите. Ключи присутствуют в `en.json`/`pl.json`, но не используются ни в одном компоненте:
+
+- `nav.admin` — Admin-ссылка в навигации не реализована; HeaderNav и UserMenu этот ключ не читают
+- `profile.noProgress` — заменён более специфичными `profile.emptyInProgress` / `emptyInProgressHint`
+- `profile.noFavourites` — заменён `profile.emptyFavourites` / `emptyFavouritesHint`
+- `profile.editAvatar` — кнопка смены аватара не использует этот ключ; AvatarUpload управляет своими строками напрямую
+- `profile.inProgress` — строка «In Progress» используется как data-ключ в `ProfileProgressBreakdown`, не как перевод через `t()`
+
+Fix: удалить 5 ключей из обоих файлов messages, убедиться что тесты зелёные.
+
+**Контентные вопросы — подтвердить** (2026-05-03)
+
+- `gripType_pl: 'Split grip'` у Chair Spin и Carousel Spin — оставлен на английском (все остальные переведены). Уточнить: это принятый польский термин или пропуск?
+- `title_pl: 'Wejście na Słup'` для Basic Climb — в плане было `'Podstawowe Wspinanie'`. Другая семантика ("Getting on the Pole" vs "Basic Climb"). Подтвердить итоговый вариант.
+
+**`next.config.ts` — паттерн `/settings(.*)` удалён как мёртвый** (2026-05-03)
+
+- Оригинальный `Cache-Control: no-store` паттерн `/settings(.*)` не совпадал ни с одним реальным роутом (settings живёт на `/profile/settings`, покрыт правилом `/profile/(.*)`)
+- Удалён при исправлении паттернов для i18n. Если появится отдельный роут `/settings`, добавить `/:locale([a-z]{2})/settings(.*)` обратно
+
+~~**`getRelatedMovesAction` — `orderBy: { title: 'asc' }` сломан**~~ ✅ Resolved (Task 7, 2026-05-03)
+
+- Реализация заменена на `select`-проекцию только нужных полей + ручная локализация; `orderBy` убран (related moves — небольшой лимит 4 элемента, порядок несущественен)
+
+**`localizeMove`/`localizeTag` — хрупкие `as Parameters<typeof ...>[0]` касты** (2026-05-03)
+
+- 7 мест в `catalog/actions.ts` и `moves/actions.ts` используют `move as Parameters<typeof localizeMove>[0]`
+- Причина: Prisma генерирует enum-типы (`Difficulty`, `PoleType`), а `RawMove` изначально имел `string`/`string[]`; после Fix 1 Task 7 типы выровнены, но `stepsData: JsonValue` vs `unknown` всё ещё требует каста
+- Fix: типизировать `RawMove.stepsData` как `Prisma.JsonValue` вместо `unknown`, тогда Prisma-объект структурно совместим и каст исчезнет
 
 ## Database
 

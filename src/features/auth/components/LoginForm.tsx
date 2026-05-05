@@ -1,10 +1,11 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
 import { loginAction } from '../actions';
@@ -14,8 +15,11 @@ import type { LoginFormData } from '../lib/validation';
 import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
 export function LoginForm() {
+  const t = useTranslations('auth.login');
+  const te = useTranslations('auth.errors');
   const searchParams = useSearchParams();
   const showResetBanner = searchParams.get('reset') === 'true';
+  const showVerifiedBanner = searchParams.get('verified') === 'true';
 
   const {
     register,
@@ -38,9 +42,9 @@ export function LoginForm() {
     <div className="w-full max-w-sm animate-fade-in-up space-y-10">
       <div className="space-y-1.5">
         <h2 className="font-display text-4xl font-light tracking-tight text-on-surface lowercase">
-          welcome back.
+          {t('title')}
         </h2>
-        <p className="text-sm text-on-surface-variant">sign in to continue your practice.</p>
+        <p className="text-sm text-on-surface-variant">{t('subtitle')}</p>
       </div>
 
       {showResetBanner && (
@@ -48,7 +52,16 @@ export function LoginForm() {
           role="status"
           className="rounded-lg border border-green-500/20 bg-green-500/8 px-3.5 py-3 text-sm text-green-400"
         >
-          Password updated — please sign in.
+          {t('resetBanner')}
+        </p>
+      )}
+
+      {showVerifiedBanner && (
+        <p
+          role="status"
+          className="rounded-lg border border-green-500/20 bg-green-500/8 px-3.5 py-3 text-sm text-green-400"
+        >
+          {t('verifiedBanner')}
         </p>
       )}
 
@@ -60,7 +73,7 @@ export function LoginForm() {
               htmlFor="email"
               className="mb-1 block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
             >
-              email address
+              {t('emailLabel')}
             </label>
             <div className="relative">
               <input
@@ -92,13 +105,13 @@ export function LoginForm() {
                 htmlFor="password"
                 className="block text-[10px] font-medium tracking-widest text-outline-variant uppercase transition-colors duration-200 group-focus-within:text-primary"
               >
-                password
+                {t('passwordLabel')}
               </label>
               <Link
                 href="/forgot-password"
                 className="text-[10px] tracking-widest text-primary/60 uppercase transition-colors duration-200 hover:text-primary"
               >
-                forgot?
+                {t('forgot')}
               </Link>
             </div>
             <PasswordInput
@@ -138,7 +151,12 @@ export function LoginForm() {
               />
             </svg>
             <span>
-              {errors.root.message}
+              {(
+                {
+                  'Invalid credentials': te('invalidCredentials'),
+                  'Please verify your email first': te('verifyEmailFirst'),
+                } as Record<string, string>
+              )[errors.root.message ?? ''] ?? errors.root.message}
               {unverifiedEmail && (
                 <>
                   {' — '}
@@ -146,7 +164,7 @@ export function LoginForm() {
                     href={`/verify-email?sent=true&email=${encodeURIComponent(unverifiedEmail)}`}
                     className="underline underline-offset-4 hover:text-red-300"
                   >
-                    resend verification email
+                    {t('resendVerificationLink')}
                   </Link>
                 </>
               )}
@@ -159,7 +177,7 @@ export function LoginForm() {
           disabled={isSubmitting}
           className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {isSubmitting ? 'signing in...' : 'sign in'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
 
@@ -167,7 +185,7 @@ export function LoginForm() {
         <div className="relative flex items-center">
           <div className="h-px grow bg-outline-variant/20" />
           <span className="mx-4 shrink text-[10px] tracking-widest text-outline-variant uppercase">
-            or continue with
+            {t('orContinueWith')}
           </span>
           <div className="h-px grow bg-outline-variant/20" />
         </div>
@@ -191,12 +209,12 @@ export function LoginForm() {
       </div>
 
       <p className="text-center text-xs text-on-surface-variant">
-        new to pole space?{' '}
+        {t('noAccount')}{' '}
         <Link
           href="/signup"
           className="ml-1 font-bold text-primary decoration-2 underline-offset-4 hover:underline"
         >
-          create account
+          {t('createAccount')}
         </Link>
       </p>
     </div>

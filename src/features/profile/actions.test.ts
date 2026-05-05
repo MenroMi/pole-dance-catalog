@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
+vi.mock('@/shared/lib/localize', () => ({
+  localizeMove: vi.fn((m: unknown) => m),
+  localizeTag: vi.fn((t: unknown) => t),
+}));
+
 vi.mock('@/shared/lib/prisma', () => ({
   prisma: {
     userProgress: {
@@ -363,7 +368,7 @@ describe('getUserFavouritesAction', () => {
 
   it('returns favourites with move for the authenticated user', async () => {
     mockAuth.mockResolvedValue(session);
-    mockFavouriteFindMany.mockResolvedValue([{ id: 'fav-1', move: { title: 'Spin' } }]);
+    mockFavouriteFindMany.mockResolvedValue([{ id: 'fav-1', move: { title: 'Spin', tags: [] } }]);
     const result = await getUserFavouritesAction();
     expect(mockFavouriteFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -372,7 +377,7 @@ describe('getUserFavouritesAction', () => {
         orderBy: { createdAt: 'desc' },
       }),
     );
-    expect(result).toEqual([{ id: 'fav-1', move: { title: 'Spin' } }]);
+    expect(result).toEqual([{ id: 'fav-1', move: { title: 'Spin', tags: [] } }]);
   });
 });
 

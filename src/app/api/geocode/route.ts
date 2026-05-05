@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { geocodeRatelimit } from '@/shared/lib/ratelimit';
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success } = await geocodeRatelimit.limit(ip);
   if (!success) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

@@ -12,9 +12,9 @@ describe('ProgressStatusPicker', () => {
         isPending={false}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Want to Learn' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'In Progress' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Learned' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'learnStatus.WANT_TO_LEARN' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'learnStatus.IN_PROGRESS' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'learnStatus.LEARNED' })).toBeInTheDocument();
   });
 
   it('does not disable the active status button (allows unchecking)', () => {
@@ -25,9 +25,9 @@ describe('ProgressStatusPicker', () => {
         isPending={false}
       />,
     );
-    expect(screen.getByRole('button', { name: 'In Progress' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Want to Learn' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Learned' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'learnStatus.IN_PROGRESS' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'learnStatus.WANT_TO_LEARN' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'learnStatus.LEARNED' })).not.toBeDisabled();
   });
 
   it('calls onStatusChange with the new value when an inactive button is clicked', async () => {
@@ -40,7 +40,7 @@ describe('ProgressStatusPicker', () => {
         isPending={false}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Learned' }));
+    await user.click(screen.getByRole('button', { name: 'learnStatus.LEARNED' }));
     expect(onStatusChange).toHaveBeenCalledWith('LEARNED');
   });
 
@@ -54,7 +54,7 @@ describe('ProgressStatusPicker', () => {
         isPending={false}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Want to Learn' }));
+    await user.click(screen.getByRole('button', { name: 'learnStatus.WANT_TO_LEARN' }));
     expect(onStatusChange).toHaveBeenCalledWith(null);
   });
 
@@ -66,15 +66,15 @@ describe('ProgressStatusPicker', () => {
         isPending={false}
       />,
     );
-    expect(screen.getByRole('button', { name: 'In Progress' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'learnStatus.IN_PROGRESS' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-    expect(screen.getByRole('button', { name: 'Want to Learn' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'learnStatus.WANT_TO_LEARN' })).toHaveAttribute(
       'aria-pressed',
       'false',
     );
-    expect(screen.getByRole('button', { name: 'Learned' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'learnStatus.LEARNED' })).toHaveAttribute(
       'aria-pressed',
       'false',
     );
@@ -113,7 +113,7 @@ describe('ProgressStatusPicker', () => {
         isPending={false}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'In Progress' }));
+    await user.click(screen.getByRole('button', { name: 'learnStatus.IN_PROGRESS' }));
     expect(onStatusChange).toHaveBeenCalledWith('IN_PROGRESS');
   });
 });

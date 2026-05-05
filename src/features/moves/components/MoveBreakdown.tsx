@@ -1,5 +1,6 @@
 'use client';
 import { Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import type { StepItem } from '../types';
 
@@ -20,6 +21,8 @@ export default function MoveBreakdown({
   coachNote: string | null;
   coachNoteAuthor: string | null;
 }) {
+  const t = useTranslations('moves');
+
   if (stepsData.length === 0) return null;
 
   return (
@@ -40,7 +43,7 @@ export default function MoveBreakdown({
                   <button
                     type="button"
                     onClick={() => onSeek(step.timestamp!)}
-                    aria-label={`Seek to ${formatTimestamp(step.timestamp)}`}
+                    aria-label={t('seekTo', { time: formatTimestamp(step.timestamp) })}
                     className="flex shrink-0 cursor-pointer items-center gap-1 rounded px-2 py-1 font-sans text-xs text-on-surface-variant transition-all hover:bg-surface-container hover:text-on-surface active:scale-95"
                   >
                     <Play size={10} fill="currentColor" aria-hidden="true" />
@@ -58,7 +61,7 @@ export default function MoveBreakdown({
               data-testid="coach-note-label"
               className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-primary uppercase"
             >
-              Coach&apos;s Note
+              {t('coachNote')}
             </p>
             <p className="text-sm leading-relaxed text-on-surface-variant">
               &ldquo;{coachNote}&rdquo;

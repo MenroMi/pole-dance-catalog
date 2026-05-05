@@ -1,7 +1,10 @@
+'use client';
 import { ImageOff } from 'lucide-react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
-import type { MoveWithTags } from '../types';
+import { Link } from '@/i18n/navigation';
+
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCardImage from './MoveCardImage';
 
@@ -16,7 +19,10 @@ const DIFFICULTY_BADGE: Record<string, { className: string; style?: React.CSSPro
   ADVANCED: { className: '', style: { backgroundColor: '#92400e', color: '#fef3c7' } },
 };
 
-export default function MoveCard({ move }: { move: MoveWithTags }) {
+type MoveCardProps = { move: LocalizedMoveWithTags };
+
+export default function MoveCard({ move }: MoveCardProps) {
+  const te = useTranslations('enums');
   const badge = DIFFICULTY_BADGE[move.difficulty] ?? DIFFICULTY_BADGE.BEGINNER;
 
   const imageSrc: string | null =
@@ -42,10 +48,10 @@ export default function MoveCard({ move }: { move: MoveWithTags }) {
       </div>
       <div className="flex flex-col gap-2 p-4">
         <span
-          className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
+          className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${badge.className}`}
           style={badge.style}
         >
-          {move.difficulty}
+          {te(`difficulty.${move.difficulty}`)}
         </span>
         <h3 className="truncate font-display font-semibold text-on-surface">{move.title}</h3>
         {move.description && (

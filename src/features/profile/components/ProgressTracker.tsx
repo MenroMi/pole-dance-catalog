@@ -1,10 +1,10 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, Search, X } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useOptimistic, useState, useTransition } from 'react';
 
+import { Link, useRouter } from '@/i18n/navigation';
 import { cardVariants, tabContentVariants } from '@/shared/lib/motion';
 import type { LearnStatus } from '@/shared/types';
 
@@ -22,12 +22,21 @@ const DIFFICULTY_ORDER: Record<string, number> = {
 
 type Tab = 'in_progress' | 'want_to_learn' | 'learned';
 
+const TAB_IDS: Tab[] = ['in_progress', 'want_to_learn', 'learned'];
+const TAB_STATUS: Record<Tab, LearnStatus> = {
+  in_progress: 'IN_PROGRESS',
+  want_to_learn: 'WANT_TO_LEARN',
+  learned: 'LEARNED',
+};
+
 type ProgressTrackerProps = {
   initialProgress: ProgressWithMove[];
   userName: string | null;
 };
 
 function EmptyTab({ tab }: { tab: Tab }) {
+  const t = useTranslations('profile');
+
   if (tab === 'in_progress')
     return (
       <div className="flex flex-col items-center rounded-xl border border-dashed border-outline-variant/40 px-6 py-20 text-center">
@@ -35,13 +44,13 @@ function EmptyTab({ tab }: { tab: Tab }) {
           className="font-display text-[22px] text-on-surface"
           style={{ letterSpacing: '-0.01em' }}
         >
-          Nothing in progress yet.
+          {t('emptyInProgress')}
         </p>
         <p className="mt-1.5 max-w-xs font-sans text-sm text-on-surface-variant">
-          Open any move and set it to In Progress to start tracking it here.
+          {t('emptyInProgressHint')}
         </p>
         <Link href="/catalog" className="mt-4 font-sans text-sm text-primary hover:underline">
-          Browse the catalog →
+          {t('browseCatalog')}
         </Link>
       </div>
     );
@@ -53,13 +62,13 @@ function EmptyTab({ tab }: { tab: Tab }) {
           className="font-display text-[22px] text-on-surface"
           style={{ letterSpacing: '-0.01em' }}
         >
-          Your wishlist is empty.
+          {t('emptyWantToLearn')}
         </p>
         <p className="mt-1.5 max-w-xs font-sans text-sm text-on-surface-variant">
-          Mark moves as &ldquo;Want to Learn&rdquo; while browsing the catalog.
+          {t('emptyWantToLearnHint')}
         </p>
         <Link href="/catalog" className="mt-4 font-sans text-sm text-primary hover:underline">
-          Browse the catalog →
+          {t('browseCatalog')}
         </Link>
       </div>
     );
@@ -67,16 +76,18 @@ function EmptyTab({ tab }: { tab: Tab }) {
   return (
     <div className="flex flex-col items-center rounded-xl border border-dashed border-outline-variant/40 px-6 py-20 text-center">
       <p className="font-display text-[22px] text-on-surface" style={{ letterSpacing: '-0.01em' }}>
-        No mastered moves yet.
+        {t('emptyLearned')}
       </p>
       <p className="mt-1.5 max-w-xs font-sans text-sm text-on-surface-variant">
-        When you master a move, mark it as &ldquo;Learned&rdquo; to see it here.
+        {t('emptyLearnedHint')}
       </p>
     </div>
   );
 }
 
 export default function ProgressTracker({ initialProgress, userName }: ProgressTrackerProps) {
+  const t = useTranslations('profile');
+  const te = useTranslations('enums');
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('in_progress');
   const [query, setQuery] = useState('');
@@ -114,11 +125,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
   );
 
   const filtered = useMemo(() => {
-    const byTab = optimisticProgress.filter((p) => {
-      if (tab === 'in_progress') return p.status === 'IN_PROGRESS';
-      if (tab === 'want_to_learn') return p.status === 'WANT_TO_LEARN';
-      return p.status === 'LEARNED';
-    });
+    const byTab = optimisticProgress.filter((p) => p.status === TAB_STATUS[tab]);
     const searched = query
       ? byTab.filter((p) => p.move.title.toLowerCase().includes(query.toLowerCase()))
       : byTab;
@@ -131,12 +138,6 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
     return searched;
   }, [optimisticProgress, tab, query]);
 
-  const TABS: { id: Tab; label: string; count: number }[] = [
-    { id: 'in_progress', label: 'In Progress', count: counts.in_progress },
-    { id: 'want_to_learn', label: 'Want to Learn', count: counts.want_to_learn },
-    { id: 'learned', label: 'Learned', count: counts.learned },
-  ];
-
   return (
     <div className="px-6 pb-24 md:px-12">
       {/* Breadcrumb */}
@@ -145,23 +146,27 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
           href="/profile"
           className="text-on-surface-variant/80 transition-colors hover:text-on-surface"
         >
-          Profile
+          {t('overview')}
         </Link>
         <ChevronRight className="h-3 w-3 opacity-50" />
-        <span className="font-semibold tracking-[0.1em] text-primary uppercase">Progress</span>
+        <span className="font-semibold tracking-[0.1em] text-primary uppercase">
+          {t('progress')}
+        </span>
       </div>
 
       {/* Page header */}
       <div className="mt-5 flex flex-col gap-8">
         <div>
           <p className="mb-3 font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-            {optimisticProgress.length} tracked{userName ? ` · ${userName}` : ''}
+            {optimisticProgress.length} {t('tracked')}
+            {userName ? ` · ${userName}` : ''}
           </p>
           <h1 className="font-display text-5xl leading-[0.95] font-semibold tracking-[-0.04em] text-on-surface lowercase md:text-[64px]">
-            your <em className="font-medium text-primary italic not-italic">journey</em>
+            {t('journeyHeading')}{' '}
+            <em className="font-medium text-primary italic not-italic">{t('journeyHighlight')}</em>
           </h1>
           <p className="mt-3.5 max-w-[460px] font-sans text-base leading-relaxed text-on-surface-variant">
-            Track what you&apos;re learning and celebrate what you&apos;ve mastered.
+            {t('journeySubtitle')}
           </p>
         </div>
 
@@ -171,8 +176,8 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
           <div className="relative w-[280px]">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-on-surface-variant/60" />
             <input
-              aria-label="Search moves"
-              placeholder="Search moves..."
+              aria-label={t('searchMovesLabel')}
+              placeholder={t('searchMovesPlaceholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full rounded-lg border border-outline-variant/60 bg-transparent px-9 py-2.5 font-sans text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/40 focus:border-primary/50"
@@ -181,7 +186,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                aria-label="Clear search"
+                aria-label={t('clearSearch')}
                 className="absolute top-1/2 right-2 flex h-[22px] w-[22px] -translate-y-1/2 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 text-on-surface-variant/60 hover:text-on-surface"
               >
                 <X className="h-3.5 w-3.5" />
@@ -194,7 +199,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
             role="tablist"
             className="inline-flex gap-0 rounded-lg border border-outline-variant/60 p-[3px]"
           >
-            {TABS.map(({ id, label, count }) => (
+            {TAB_IDS.map((id) => (
               <button
                 key={id}
                 role="tab"
@@ -210,7 +215,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
                     : 'bg-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                {label}{' '}
+                {te(`learnStatus.${TAB_STATUS[id]}`)}{' '}
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-[9px] ${
                     tab === id
@@ -218,7 +223,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
                       : 'bg-surface-container-highest text-on-surface-variant/60'
                   }`}
                 >
-                  {count}
+                  {counts[id]}
                 </span>
               </button>
             ))}
@@ -257,7 +262,7 @@ export default function ProgressTracker({ initialProgress, userName }: ProgressT
                   exit="exit"
                 >
                   <div className="py-20 text-center font-sans text-sm text-on-surface-variant">
-                    No moves match &ldquo;{query}&rdquo;.
+                    {t('noSearchMatch', { query })}
                   </div>
                 </motion.div>
               )}

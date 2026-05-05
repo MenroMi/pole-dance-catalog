@@ -48,7 +48,7 @@ describe('MoveHero', () => {
   describe('initial idle state', () => {
     it('renders the play button in idle state', () => {
       render(<MoveHero {...baseProps} />);
-      expect(screen.getByRole('button', { name: /play fireman spin/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'playMove' })).toBeInTheDocument();
     });
 
     it('does not render the iframe in idle state', () => {
@@ -104,7 +104,7 @@ describe('MoveHero', () => {
       rerender(<MoveHero {...baseProps} seekRequest={{ seconds: 5 }} />);
 
       // In transitioning phase the play button is gone (phase !== 'idle')
-      expect(screen.queryByRole('button', { name: /play fireman spin/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'playMove' })).not.toBeInTheDocument();
     });
 
     it('skips transitioning and goes directly to playing when prefers-reduced-motion is set', () => {
@@ -248,7 +248,7 @@ describe('MoveHero', () => {
       render(<MoveHero {...baseProps} />);
 
       act(() => {
-        fireEvent.click(screen.getByRole('button', { name: /play fireman spin/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'playMove' }));
       });
 
       // Should be in transitioning phase (iframe present, opacity-0)
@@ -265,7 +265,7 @@ describe('MoveHero', () => {
       render(<MoveHero {...baseProps} />);
 
       act(() => {
-        fireEvent.click(screen.getByRole('button', { name: /play fireman spin/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'playMove' }));
       });
       act(() => vi.advanceTimersByTime(500));
 

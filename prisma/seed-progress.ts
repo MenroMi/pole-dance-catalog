@@ -75,7 +75,7 @@ async function main() {
   }
 
   const moves = await prisma.move.findMany();
-  const moveByTitle = Object.fromEntries(moves.map((m) => [m.title, m.id]));
+  const moveByTitle = Object.fromEntries(moves.map((m) => [m.title_en, m.id]));
 
   let progressCount = 0;
   for (const [title, status] of Object.entries(PROGRESS)) {

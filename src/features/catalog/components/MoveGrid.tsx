@@ -1,21 +1,25 @@
 'use client';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 
+import type { Locale } from '@/i18n/routing';
 import { cardVariants } from '@/shared/lib/motion';
+import type { MoveFilters } from '@/shared/types';
 
 import { getMovesAction } from '../actions';
-import type { MoveWithTags, MoveFilters } from '../types';
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveCard from './MoveCard';
 
 const PAGE_SIZE = 12;
 
 type MoveGridProps = {
-  initialMoves: MoveWithTags[];
+  initialMoves: LocalizedMoveWithTags[];
   initialHasMore: boolean;
   totalCount: number;
   filters: MoveFilters;
+  locale: Locale;
 };
 
 export default function MoveGrid({
@@ -23,7 +27,9 @@ export default function MoveGrid({
   initialHasMore,
   totalCount,
   filters,
+  locale,
 }: MoveGridProps) {
+  const t = useTranslations('catalog');
   const [moves, setMoves] = useState(initialMoves);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -46,7 +52,10 @@ export default function MoveGrid({
 
       try {
         const nextPage = pageRef.current + 1;
-        const result = await getMovesAction({ ...filters, page: nextPage, pageSize: PAGE_SIZE });
+        const result = await getMovesAction(
+          { ...filters, page: nextPage, pageSize: PAGE_SIZE },
+          locale,
+        );
 
         if (cancelled) return;
 
@@ -72,10 +81,11 @@ export default function MoveGrid({
   const header = (
     <div className="mb-8">
       <p className="mb-3 text-[11px] font-semibold tracking-[0.16em] text-on-surface-variant uppercase">
-        Catalog · {totalCount} moves
+        {t('moveCount', { count: totalCount })}
       </p>
       <h1 className="font-display text-4xl font-bold tracking-tight text-on-surface lowercase md:text-5xl">
-        Every move, <em className="font-medium text-primary not-italic">indexed.</em>
+        {t('tagline')}{' '}
+        <em className="font-medium text-primary not-italic">{t('taglineHighlight')}</em>
       </h1>
     </div>
   );
@@ -85,7 +95,7 @@ export default function MoveGrid({
       <div className="flex h-full flex-col p-6">
         {header}
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-on-surface-variant">No moves match these filters.</p>
+          <p className="text-sm text-on-surface-variant">{t('empty')}</p>
         </div>
       </div>
     );

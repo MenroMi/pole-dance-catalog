@@ -2,19 +2,21 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { getMovesAction } from '../actions';
-import type { MoveWithTags } from '../types';
+import type { LocalizedMoveWithTags } from '../types';
 
 import MoveGrid from './MoveGrid';
 
 vi.mock('../actions', () => ({ getMovesAction: vi.fn() }));
 
 vi.mock('./MoveCard', () => ({
-  default: ({ move }: { move: MoveWithTags }) => <div data-testid="move-card">{move.title}</div>,
+  default: ({ move }: { move: LocalizedMoveWithTags }) => (
+    <div data-testid="move-card">{move.title}</div>
+  ),
 }));
 
 const mockGetMovesAction = getMovesAction as ReturnType<typeof vi.fn>;
 
-function makeMoves(count: number, offset = 0): MoveWithTags[] {
+function makeMoves(count: number, offset = 0): LocalizedMoveWithTags[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `move-${offset + i}`,
     title: `Move ${offset + i}`,
@@ -27,7 +29,7 @@ function makeMoves(count: number, offset = 0): MoveWithTags[] {
     createdAt: new Date(),
     updatedAt: new Date(),
     tags: [],
-    stepsData: [],
+    stepsData: null,
     gripType: null,
     entry: null,
     duration: null,
@@ -58,29 +60,53 @@ beforeEach(() => {
 describe('MoveGrid', () => {
   it('renders editorial header with total count', () => {
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={242} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={242}
+        filters={{}}
+        locale="pl"
+      />,
     );
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText(/242 moves/i)).toBeInTheDocument();
+    expect(screen.getByText('moveCount')).toBeInTheDocument();
   });
 
   it('renders all initialMoves', () => {
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={12} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={12}
+        filters={{}}
+        locale="pl"
+      />,
     );
     expect(screen.getAllByTestId('move-card')).toHaveLength(12);
   });
 
   it('observes sentinel when hasMore is true', () => {
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={12} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={12}
+        filters={{}}
+        locale="pl"
+      />,
     );
     expect(observeMock).toHaveBeenCalled();
   });
 
   it('does not observe sentinel when initialHasMore is false', () => {
     render(
-      <MoveGrid initialMoves={makeMoves(5)} initialHasMore={false} totalCount={5} filters={{}} />,
+      <MoveGrid
+        initialMoves={makeMoves(5)}
+        initialHasMore={false}
+        totalCount={5}
+        filters={{}}
+        locale="pl"
+      />,
     );
     expect(observeMock).not.toHaveBeenCalled();
   });
@@ -90,7 +116,13 @@ describe('MoveGrid', () => {
     mockGetMovesAction.mockResolvedValue({ items: newMoves, total: 17, page: 2, pageSize: 12 });
 
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={12} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={12}
+        filters={{}}
+        locale="pl"
+      />,
     );
 
     await act(async () => {
@@ -102,6 +134,7 @@ describe('MoveGrid', () => {
 
     expect(mockGetMovesAction).toHaveBeenCalledWith(
       expect.objectContaining({ page: 2, pageSize: 12 }),
+      'pl',
     );
   });
 
@@ -110,7 +143,13 @@ describe('MoveGrid', () => {
     mockGetMovesAction.mockResolvedValue({ items: newMoves, total: 17, page: 2, pageSize: 12 });
 
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={12} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={12}
+        filters={{}}
+        locale="pl"
+      />,
     );
 
     await act(async () => {
@@ -135,6 +174,7 @@ describe('MoveGrid', () => {
         initialHasMore={true}
         totalCount={15}
         filters={{ difficulty: ['BEGINNER'] }}
+        locale="pl"
       />,
     );
 
@@ -147,6 +187,7 @@ describe('MoveGrid', () => {
 
     expect(mockGetMovesAction).toHaveBeenCalledWith(
       expect.objectContaining({ difficulty: ['BEGINNER'], page: 2 }),
+      'pl',
     );
   });
 
@@ -160,7 +201,13 @@ describe('MoveGrid', () => {
     });
 
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={12} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={12}
+        filters={{}}
+        locale="pl"
+      />,
     );
 
     await act(async () => {
@@ -184,7 +231,13 @@ describe('MoveGrid', () => {
     );
 
     render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={12} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={12}
+        filters={{}}
+        locale="pl"
+      />,
     );
 
     act(() => {
@@ -202,12 +255,16 @@ describe('MoveGrid', () => {
   });
 
   it('shows empty state text when initialMoves is empty', () => {
-    render(<MoveGrid initialMoves={[]} initialHasMore={false} totalCount={0} filters={{}} />);
-    expect(screen.getByText('No moves match these filters.')).toBeInTheDocument();
+    render(
+      <MoveGrid initialMoves={[]} initialHasMore={false} totalCount={0} filters={{}} locale="pl" />,
+    );
+    expect(screen.getByText('empty')).toBeInTheDocument();
   });
 
   it('does not render move cards when initialMoves is empty', () => {
-    render(<MoveGrid initialMoves={[]} initialHasMore={false} totalCount={0} filters={{}} />);
+    render(
+      <MoveGrid initialMoves={[]} initialHasMore={false} totalCount={0} filters={{}} locale="pl" />,
+    );
     expect(screen.queryAllByTestId('move-card')).toHaveLength(0);
   });
 
@@ -222,7 +279,13 @@ describe('MoveGrid', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { unmount } = render(
-      <MoveGrid initialMoves={initialMoves} initialHasMore={true} totalCount={0} filters={{}} />,
+      <MoveGrid
+        initialMoves={initialMoves}
+        initialHasMore={true}
+        totalCount={0}
+        filters={{}}
+        locale="pl"
+      />,
     );
 
     act(() => {
@@ -249,7 +312,7 @@ describe('MoveGrid', () => {
             createdAt: new Date(),
             updatedAt: new Date(),
             tags: [],
-            stepsData: [],
+            stepsData: null,
             gripType: null,
             entry: null,
             duration: null,

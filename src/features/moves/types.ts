@@ -1,12 +1,12 @@
-import type { Move, Tag, UserFavourite } from '@prisma/client';
-
+import type { UserFavourite } from '@prisma/client';
+import type { LocalizedMove, LocalizedTag } from '@/shared/lib/localize';
 import type { LearnStatus } from '@/shared/types';
 
 export type StepItem = { text: string; timestamp?: number };
 
-export type MoveDetail = Omit<Move, 'stepsData'> & {
+export type MoveDetail = Omit<LocalizedMove, 'stepsData'> & {
   favourites: UserFavourite[];
   stepsData: StepItem[];
   currentProgress: LearnStatus | null;
-  tags: Tag[];
+  tags: LocalizedTag[];
 };

@@ -31,3 +31,13 @@ vi.mock('framer-motion', () => ({
   ),
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
+
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'pl',
+}));
+
+vi.mock('next-intl/server', () => ({
+  getTranslations: async () => (key: string) => key,
+  getLocale: async () => 'pl',
+}));

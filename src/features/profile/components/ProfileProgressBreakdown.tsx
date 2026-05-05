@@ -1,4 +1,6 @@
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+
+import { Link } from '@/i18n/navigation';
 
 type ProfileProgressBreakdownProps = {
   learned: number;
@@ -7,16 +9,18 @@ type ProfileProgressBreakdownProps = {
 };
 
 const ROWS = [
-  { key: 'learned', label: 'Learned', color: '#84d099' },
-  { key: 'inProgress', label: 'In progress', color: '#dcb8ff' },
-  { key: 'wantToLearn', label: 'Want to learn', color: '#978e9b' },
+  { key: 'learned', status: 'LEARNED', color: '#84d099' },
+  { key: 'inProgress', status: 'IN_PROGRESS', color: '#dcb8ff' },
+  { key: 'wantToLearn', status: 'WANT_TO_LEARN', color: '#978e9b' },
 ] as const;
 
-export default function ProfileProgressBreakdown({
+export default async function ProfileProgressBreakdown({
   learned,
   inProgress,
   wantToLearn,
 }: ProfileProgressBreakdownProps) {
+  const t = await getTranslations('profile');
+  const te = await getTranslations('enums');
   const counts: Record<string, number> = { learned, inProgress, wantToLearn };
   const total = learned + inProgress + wantToLearn;
 
@@ -24,13 +28,13 @@ export default function ProfileProgressBreakdown({
     <div className="rounded-xl border border-outline-variant/20 bg-surface-container p-6">
       <div className="mb-[18px] flex items-baseline justify-between">
         <span className="font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-          Progress
+          {t('progress')}
         </span>
         <Link
           href="/profile/progress"
           className="font-sans text-xs text-primary/80 transition-colors hover:text-primary"
         >
-          View all →
+          {t('viewAll')}
         </Link>
       </div>
 
@@ -55,7 +59,7 @@ export default function ProfileProgressBreakdown({
 
       {/* Rows */}
       <div className="flex flex-col gap-2.5">
-        {ROWS.map(({ key, label, color }) => (
+        {ROWS.map(({ key, status, color }) => (
           <div key={key} className="flex items-center justify-between">
             <span className="flex items-center gap-2.5 font-sans text-[13px] text-on-surface-variant">
               <span
@@ -63,7 +67,7 @@ export default function ProfileProgressBreakdown({
                 style={{ background: color }}
                 aria-hidden="true"
               />
-              {label}
+              {te(`learnStatus.${status}`)}
             </span>
             <span className="font-display text-lg font-medium text-on-surface">{counts[key]}</span>
           </div>

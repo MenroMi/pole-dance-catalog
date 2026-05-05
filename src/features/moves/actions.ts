@@ -1,9 +1,15 @@
 'use server';
+import type { Locale } from '@/i18n/routing';
+import { localizeMove, localizeTag } from '@/shared/lib/localize';
 import { prisma } from '@/shared/lib/prisma';
 
 import type { MoveDetail, StepItem } from './types';
 
-export async function getMoveByIdAction(id: string, userId?: string): Promise<MoveDetail | null> {
+export async function getMoveByIdAction(
+  id: string,
+  locale: Locale,
+  userId?: string,
+): Promise<MoveDetail | null> {
   const move = await prisma.move.findUnique({
     where: { id },
     include: { tags: true },
@@ -18,7 +24,9 @@ export async function getMoveByIdAction(id: string, userId?: string): Promise<Mo
       : Promise.resolve(null),
   ]);
 
-  const stepsData = (Array.isArray(move.stepsData) ? move.stepsData : []).filter(
+  const localized = localizeMove(move, locale);
+
+  const stepsData = (Array.isArray(localized.stepsData) ? localized.stepsData : []).filter(
     (s): s is StepItem => {
       if (typeof s !== 'object' || s === null || Array.isArray(s)) return false;
       const obj = s as Record<string, unknown>;
@@ -30,17 +38,36 @@ export async function getMoveByIdAction(id: string, userId?: string): Promise<Mo
   );
 
   return {
-    ...move,
+    ...localized,
     favourites,
     stepsData,
     currentProgress: progressRecord?.status ?? null,
+    tags: move.tags.map((tag) => localizeTag(tag, locale)),
   };
 }
 
-export async function getRelatedMovesAction(tagIds: string[], excludeId: string) {
-  return prisma.move.findMany({
-    where: { id: { not: excludeId }, tags: { some: { id: { in: tagIds } } } },
-    select: { id: true, title: true, difficulty: true, imageUrl: true, youtubeUrl: true },
+export async function getRelatedMovesAction(tagIds: string[], excludeId: string, locale: Locale) {
+  const moves = await prisma.move.findMany({
+    where: {
+      id: { not: excludeId },
+      tags: { some: { id: { in: tagIds } } },
+    },
+    select: {
+      id: true,
+      title_pl: true,
+      title_en: true,
+      difficulty: true,
+      imageUrl: true,
+      youtubeUrl: true,
+    },
     take: 4,
   });
+  const pl = locale === 'pl';
+  return moves.map((move) => ({
+    id: move.id,
+    title: pl ? move.title_pl : move.title_en,
+    difficulty: move.difficulty,
+    imageUrl: move.imageUrl,
+    youtubeUrl: move.youtubeUrl,
+  }));
 }

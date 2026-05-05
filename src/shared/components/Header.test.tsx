@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -5,9 +6,23 @@ import { auth } from '@/shared/lib/auth';
 
 import Header from './Header';
 
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
+  usePathname: vi.fn(),
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
+}));
 vi.mock('@/shared/lib/auth', () => ({ auth: vi.fn() }));
 vi.mock('./FavouritesButton', () => ({ default: () => <div data-testid="favourites-button" /> }));
 vi.mock('./HeaderNav', () => ({ default: () => <nav data-testid="header-nav" /> }));
+vi.mock('./LocaleSwitcher', () => ({ default: () => <div data-testid="locale-switcher" /> }));
 vi.mock('./UserMenu', () => ({
   default: (props: { user: { name: string | null; image: string | null } | null }) => (
     <div data-testid="user-menu" data-user={JSON.stringify(props.user)} />

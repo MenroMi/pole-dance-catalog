@@ -35,7 +35,7 @@ describe('MoveBreakdown', () => {
   it('renders timestamp badge for steps with a timestamp', () => {
     const stepsData: StepItem[] = [{ text: 'Kick out', timestamp: 45 }];
     render(<MoveBreakdown stepsData={stepsData} onSeek={noop} {...defaultProps} />);
-    expect(screen.getByRole('button', { name: 'Seek to 0:45' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'seekTo' })).toBeInTheDocument();
     expect(screen.getByText('0:45')).toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe('MoveBreakdown', () => {
     const onSeek = vi.fn();
     const stepsData: StepItem[] = [{ text: 'Kick out', timestamp: 45 }];
     render(<MoveBreakdown stepsData={stepsData} onSeek={onSeek} {...defaultProps} />);
-    await user.click(screen.getByRole('button', { name: 'Seek to 0:45' }));
+    await user.click(screen.getByRole('button', { name: 'seekTo' }));
     expect(onSeek).toHaveBeenCalledWith(45);
     expect(onSeek).toHaveBeenCalledTimes(1);
   });

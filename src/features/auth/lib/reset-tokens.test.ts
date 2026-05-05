@@ -29,14 +29,21 @@ beforeEach(() => vi.clearAllMocks());
 describe('generateResetToken', () => {
   it('returns a UUID string', async () => {
     mockCreate.mockResolvedValue({});
-    const token = await generateResetToken('user@example.com');
+    const token = await generateResetToken('user@example.com', 'pl');
     expect(token).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
   });
 
-  it('creates record with correct email and 1h TTL', async () => {
+  it('generates a unique token on each call', async () => {
+    mockCreate.mockResolvedValue({});
+    const a = await generateResetToken('user@example.com', 'pl');
+    const b = await generateResetToken('user@example.com', 'pl');
+    expect(a).not.toBe(b);
+  });
+
+  it('creates record with correct email, 1h TTL, and locale', async () => {
     mockCreate.mockResolvedValue({});
     const before = Date.now();
-    await generateResetToken('user@example.com');
+    await generateResetToken('user@example.com', 'pl');
     const after = Date.now();
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -45,12 +52,23 @@ describe('generateResetToken', () => {
           email: 'user@example.com',
           token: expect.any(String),
           expiresAt: expect.any(Date),
+          locale: 'pl',
         }),
       }),
     );
     const expiresAt: Date = mockCreate.mock.calls[0][0].data.expiresAt;
     expect(expiresAt.getTime()).toBeGreaterThanOrEqual(before + 60 * 60 * 1000 - 100);
     expect(expiresAt.getTime()).toBeLessThanOrEqual(after + 60 * 60 * 1000 + 100);
+  });
+
+  it('stores the correct locale when called with en', async () => {
+    mockCreate.mockResolvedValue({});
+    await generateResetToken('user@example.com', 'en');
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ locale: 'en' }),
+      }),
+    );
   });
 });
 
@@ -62,6 +80,7 @@ describe('findResetToken', () => {
       token: 'abc',
       expiresAt: new Date(Date.now() + 60_000),
       createdAt: new Date(),
+      locale: 'pl',
     };
     mockFindUnique.mockResolvedValue(record);
     const result = await findResetToken('abc');

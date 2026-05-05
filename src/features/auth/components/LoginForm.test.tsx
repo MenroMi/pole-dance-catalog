@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -9,6 +10,19 @@ vi.mock('@/features/auth/actions', () => ({
 }));
 vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
+}));
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
 import { loginAction } from '@/features/auth/actions';
@@ -25,7 +39,7 @@ describe('LoginForm', () => {
     render(<LoginForm />);
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'submit' })).toBeInTheDocument();
   });
 
   it('renders forgot password link pointing to /forgot-password', () => {
@@ -37,7 +51,7 @@ describe('LoginForm', () => {
   it('shows validation error when email is empty on submit', async () => {
     const user = userEvent.setup();
     render(<LoginForm />);
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: 'submit' }));
     expect(await screen.findByText(/invalid email/i)).toBeInTheDocument();
   });
 
@@ -48,7 +62,7 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'a@b.com');
     await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: 'submit' }));
 
     expect(mockLoginAction).toHaveBeenCalledWith({ email: 'a@b.com', password: 'password123' });
   });
@@ -56,7 +70,13 @@ describe('LoginForm', () => {
   it('shows reset success banner when ?reset=true is in URL', () => {
     mockUseSearchParams.mockReturnValue(new URLSearchParams('reset=true'));
     render(<LoginForm />);
-    expect(screen.getByText(/password updated/i)).toBeInTheDocument();
+    expect(screen.getByText('resetBanner')).toBeInTheDocument();
+  });
+
+  it('shows verified banner when ?verified=true is in URL', () => {
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('verified=true'));
+    render(<LoginForm />);
+    expect(screen.getByText('verifiedBanner')).toBeInTheDocument();
   });
 
   it('displays server error returned from loginAction', async () => {
@@ -66,8 +86,8 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'a@b.com');
     await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: 'submit' }));
 
-    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(await screen.findByText('invalidCredentials')).toBeInTheDocument();
   });
 });

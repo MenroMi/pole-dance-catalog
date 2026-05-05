@@ -1,6 +1,5 @@
-import type { Move, Tag } from '@prisma/client';
+import type { LocalizedMove, LocalizedTag } from '@/shared/lib/localize';
 
-import type { MoveFilters, PaginatedResult } from '@/shared/types';
+export type { LocalizedTag };
 
-export type { MoveFilters, PaginatedResult };
-export type MoveWithTags = Move & { tags: Tag[] };
+export type LocalizedMoveWithTags = LocalizedMove & { tags: LocalizedTag[] };

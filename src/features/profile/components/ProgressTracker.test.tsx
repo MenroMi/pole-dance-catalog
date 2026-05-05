@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,28 +11,22 @@ vi.mock('../actions', () => ({
   removeProgressAction: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ refresh: vi.fn() }),
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
+  usePathname: () => '/catalog',
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
 vi.mock('next/image', () => ({
   default: ({ alt }: { alt: string }) => <img alt={alt} />,
-}));
-
-vi.mock('next/link', () => ({
-  default: ({
-    href,
-    children,
-    ...props
-  }: {
-    href: string;
-    children: React.ReactNode;
-    [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
 }));
 
 function makeMove(id: string, title: string, difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') {
@@ -91,15 +86,15 @@ describe('ProgressTracker', () => {
 
   it('displays correct counts on tab buttons', () => {
     render(<ProgressTracker initialProgress={mockProgress} userName={null} />);
-    expect(screen.getByRole('tab', { name: /in progress/i })).toHaveTextContent('1');
-    expect(screen.getByRole('tab', { name: /want to learn/i })).toHaveTextContent('1');
-    expect(screen.getByRole('tab', { name: /learned/i })).toHaveTextContent('1');
+    expect(screen.getByRole('tab', { name: /IN_PROGRESS/ })).toHaveTextContent('1');
+    expect(screen.getByRole('tab', { name: /WANT_TO_LEARN/ })).toHaveTextContent('1');
+    expect(screen.getByRole('tab', { name: /LEARNED/ })).toHaveTextContent('1');
   });
 
   it('shows Want to Learn moves after clicking that tab', async () => {
     const user = userEvent.setup();
     render(<ProgressTracker initialProgress={mockProgress} userName={null} />);
-    await user.click(screen.getByRole('tab', { name: /want to learn/i }));
+    await user.click(screen.getByRole('tab', { name: /WANT_TO_LEARN/ }));
     expect(screen.getByText('Butterfly')).toBeInTheDocument();
     expect(screen.queryByText('Fireman Spin')).not.toBeInTheDocument();
   });
@@ -107,7 +102,7 @@ describe('ProgressTracker', () => {
   it('shows Learned moves after clicking that tab', async () => {
     const user = userEvent.setup();
     render(<ProgressTracker initialProgress={mockProgress} userName={null} />);
-    await user.click(screen.getByRole('tab', { name: /learned/i }));
+    await user.click(screen.getByRole('tab', { name: /LEARNED/ }));
     expect(screen.getByText(/crucifix/i)).toBeInTheDocument();
     expect(screen.queryByText(/fireman spin/i)).not.toBeInTheDocument();
   });
@@ -131,7 +126,7 @@ describe('ProgressTracker', () => {
       },
     ];
     render(<ProgressTracker initialProgress={progress} userName={null} />);
-    await user.type(screen.getByPlaceholderText(/search moves/i), 'fire');
+    await user.type(screen.getByPlaceholderText('searchMovesPlaceholder'), 'fire');
     expect(screen.getByText('Fireman Spin')).toBeInTheDocument();
     expect(screen.queryByText('Pole Sit')).not.toBeInTheDocument();
   });
@@ -147,14 +142,14 @@ describe('ProgressTracker', () => {
       },
     ];
     render(<ProgressTracker initialProgress={progress} userName={null} />);
-    expect(screen.getByText(/nothing in progress yet/i)).toBeInTheDocument();
+    expect(screen.getByText('emptyInProgress')).toBeInTheDocument();
   });
 
   it('shows no-match message when search has no results', async () => {
     const user = userEvent.setup();
     render(<ProgressTracker initialProgress={mockProgress} userName={null} />);
-    await user.type(screen.getByPlaceholderText(/search moves/i), 'xyznotamove');
-    expect(screen.getByText(/no moves match/i)).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText('searchMovesPlaceholder'), 'xyznotamove');
+    expect(screen.getByText('noSearchMatch')).toBeInTheDocument();
   });
 
   it('shows total tracked count in header', () => {
@@ -165,8 +160,8 @@ describe('ProgressTracker', () => {
   it('tab remains clickable after status change (regression: exiting layer blocking clicks)', async () => {
     const user = userEvent.setup();
     render(<ProgressTracker initialProgress={mockProgress} userName={null} />);
-    const wantToLearnTab = screen.getByRole('tab', { name: /want to learn/i });
-    await user.click(screen.getByRole('tab', { name: /in progress/i }));
+    const wantToLearnTab = screen.getByRole('tab', { name: /WANT_TO_LEARN/ });
+    await user.click(screen.getByRole('tab', { name: /IN_PROGRESS/ }));
     await user.click(wantToLearnTab);
     expect(screen.getByText('Butterfly')).toBeInTheDocument();
   });

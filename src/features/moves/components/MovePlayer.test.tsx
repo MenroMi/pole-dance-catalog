@@ -6,6 +6,20 @@ import userEvent from '@testing-library/user-event';
 const scrollToMock = vi.fn();
 vi.stubGlobal('scrollTo', scrollToMock);
 
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children?: React.ReactNode;
+  }) => React.createElement('a', { href, ...props }, children),
+  usePathname: vi.fn(),
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  redirect: vi.fn(),
+}));
+
 vi.mock('./MoveHero', () => ({
   default: vi.fn(({ seekRequest }: { seekRequest?: { seconds: number } }) => (
     <div data-testid="move-hero" data-seek-to={seekRequest?.seconds ?? ''} />
@@ -79,7 +93,7 @@ describe('MovePlayer', () => {
 
   it('renders the difficulty chip', () => {
     render(<MovePlayer {...baseProps} />);
-    expect(screen.getByText('Beginner')).toBeInTheDocument();
+    expect(screen.getByText('difficulty.BEGINNER')).toBeInTheDocument();
   });
 
   it('renders the description', () => {

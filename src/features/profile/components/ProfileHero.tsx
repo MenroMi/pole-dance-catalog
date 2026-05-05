@@ -1,6 +1,8 @@
 import { Settings, User } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+
+import { Link } from '@/i18n/navigation';
 
 type ProfileHeroProps = {
   firstName: string | null;
@@ -11,7 +13,7 @@ type ProfileHeroProps = {
   createdAt: Date;
 };
 
-export default function ProfileHero({
+export default async function ProfileHero({
   firstName,
   lastName,
   username,
@@ -19,7 +21,8 @@ export default function ProfileHero({
   location,
   createdAt,
 }: ProfileHeroProps) {
-  const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'anonymous';
+  const t = await getTranslations('profile');
+  const displayName = [firstName, lastName].filter(Boolean).join(' ') || t('anonymous');
   const joinYear = createdAt.getFullYear();
 
   return (
@@ -63,18 +66,19 @@ export default function ProfileHero({
             {displayName}
           </h1>
           <p className="font-sans text-sm text-on-surface-variant">
-            {username ? `@${username} · ` : ''}Joined {joinYear}
+            {username ? `@${username} · ` : ''}
+            {t('joinedYear', { year: joinYear })}
           </p>
         </div>
 
         {/* Settings link */}
         <Link
           href="/profile/settings"
-          aria-label="Profile settings"
+          aria-label={t('heroSettingsLabel')}
           className="flex items-center gap-2 rounded-lg border border-outline-variant/60 bg-transparent px-4 py-2.5 font-sans text-[13px] font-semibold text-on-surface-variant transition-colors hover:border-outline-variant hover:text-on-surface"
         >
           <Settings size={14} aria-hidden="true" />
-          Settings
+          {t('settings')}
         </Link>
       </div>
     </section>

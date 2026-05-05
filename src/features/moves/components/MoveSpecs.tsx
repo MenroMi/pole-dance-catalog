@@ -1,8 +1,9 @@
-import type { Move } from '@prisma/client';
+'use client';
+import { useTranslations } from 'next-intl';
 
-import { formatPoleTypes } from '../utils';
+import type { LocalizedMove } from '@/shared/lib/localize';
 
-type MoveSpecsProps = Pick<Move, 'gripType' | 'entry' | 'duration' | 'poleTypes'>;
+type MoveSpecsProps = Pick<LocalizedMove, 'gripType' | 'entry' | 'duration' | 'poleTypes'>;
 type SpecItem = { label: string; value: string };
 
 function SpecCard({ label, value }: SpecItem) {
@@ -17,20 +18,30 @@ function SpecCard({ label, value }: SpecItem) {
 }
 
 export default function MoveSpecs({ gripType, entry, duration, poleTypes }: MoveSpecsProps) {
+  const t = useTranslations('moves');
+  const te = useTranslations('enums');
+
+  const poleTypeValue =
+    poleTypes.length === 0
+      ? null
+      : poleTypes.length === 2
+        ? `${te('poleType.STATIC')} & ${te('poleType.SPIN')}`
+        : te(`poleType.${poleTypes[0]}`);
+
   const raw: { label: string; value: string | null | undefined }[] = [
-    { label: 'Grip Type', value: gripType },
-    { label: 'Entry', value: entry },
-    { label: 'Duration', value: duration },
-    { label: 'Pole Setting', value: formatPoleTypes(poleTypes) },
+    { label: t('gripType'), value: gripType },
+    { label: t('entry'), value: entry },
+    { label: t('duration'), value: duration },
+    { label: t('poleSetting'), value: poleTypeValue },
   ];
   const specs: SpecItem[] = raw.filter((s): s is SpecItem => s.value != null);
 
   if (specs.length === 0) return null;
 
   return (
-    <section aria-label="Move specs" className="mt-8 pb-4">
+    <section aria-label={t('specs')} className="mt-8 pb-4">
       <p className="mb-3 font-sans text-[10px] font-semibold tracking-[0.18em] text-on-surface-variant uppercase">
-        Specs
+        {t('specs')}
       </p>
       <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {specs.map(({ label, value }) => (

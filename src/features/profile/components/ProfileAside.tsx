@@ -1,26 +1,36 @@
 'use client';
 import { Heart, LayoutDashboard, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import type { LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-const NAV_LINKS = [
+import { Link, usePathname } from '@/i18n/navigation';
+
+type NavItem = {
+  href: string;
+  labelKey: 'overview' | 'favourites' | 'progress';
+  icon: LucideIcon;
+  matches: string[];
+  disabled: boolean;
+};
+
+const NAV_ITEMS: NavItem[] = [
   {
     href: '/profile',
-    label: 'Overview',
+    labelKey: 'overview',
     icon: LayoutDashboard,
     matches: ['/profile'],
     disabled: false,
   },
   {
     href: '/profile/favourite-moves',
-    label: 'Favourite Moves',
+    labelKey: 'favourites',
     icon: Heart,
     matches: ['/profile/favourite-moves'],
     disabled: false,
   },
   {
     href: '/profile/progress',
-    label: 'Progress',
+    labelKey: 'progress',
     icon: TrendingUp,
     matches: ['/profile/progress'],
     disabled: false,
@@ -31,11 +41,13 @@ const BASE =
   'mx-4 my-1 flex items-center gap-4 rounded-md px-4 py-3 font-display text-xs uppercase tracking-widest';
 
 export default function ProfileAside() {
+  const t = useTranslations('profile');
   const pathname = usePathname();
 
   return (
     <nav className="flex h-full flex-col gap-2 py-10">
-      {NAV_LINKS.map(({ href, label, icon: Icon, matches, disabled }) => {
+      {NAV_ITEMS.map(({ href, labelKey, icon: Icon, matches, disabled }) => {
+        const label = t(labelKey);
         if (disabled) {
           return (
             <span
@@ -46,7 +58,7 @@ export default function ProfileAside() {
               <Icon size={20} aria-hidden="true" />
               <span className="flex-1">{label}</span>
               <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] tracking-widest text-on-surface-variant">
-                Soon
+                {t('comingSoon')}
               </span>
             </span>
           );

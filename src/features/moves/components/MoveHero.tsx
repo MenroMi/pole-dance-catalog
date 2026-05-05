@@ -1,6 +1,7 @@
 'use client';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { extractVideoId } from '../lib/youtube';
@@ -18,6 +19,7 @@ type MoveHeroProps = {
 const YOUTUBE_PLACEHOLDER_MAX_WIDTH = 120;
 
 export default function MoveHero({ title, youtubeUrl, imageUrl, seekRequest }: MoveHeroProps) {
+  const t = useTranslations('moves');
   const [phase, setPhase] = useState<Phase>('idle');
   const [startAt, setStartAt] = useState<number | null>(null);
   const [iframeKey, setIframeKey] = useState(0);
@@ -133,7 +135,7 @@ export default function MoveHero({ title, youtubeUrl, imageUrl, seekRequest }: M
         <button
           type="button"
           onClick={handlePlay}
-          aria-label={`Play ${title}`}
+          aria-label={t('playMove', { title })}
           className="group absolute inset-0 flex items-center justify-center"
         >
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface/70 text-primary shadow-[0_0_32px_rgba(220,184,255,0.06)] backdrop-blur-md transition-transform group-hover:scale-105">

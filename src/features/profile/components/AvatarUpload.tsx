@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
@@ -12,6 +13,7 @@ type AvatarUploadProps = {
 };
 
 export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUploadProps) {
+  const t = useTranslations('profile');
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -27,11 +29,11 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setError('Only image files are allowed');
+      setError(t('avatarOnlyImages'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError('File size must be under 5MB');
+      setError(t('avatarMaxSize'));
       return;
     }
     setError(null);
@@ -48,13 +50,13 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
       formData.append('avatar', file);
       const result = await uploadAvatarAction(formData);
       if (!result.success) {
-        setError(result.error ?? 'Upload failed');
+        setError(result.error ?? t('avatarUploadFailed'));
       } else {
         onUploadSuccess();
         setPreview(null);
       }
     } catch {
-      setError('Upload failed');
+      setError(t('avatarUploadFailed'));
     } finally {
       setIsPending(false);
     }
@@ -66,10 +68,10 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
     <div className="flex flex-col items-center justify-center gap-3">
       <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-surface-high">
         {displayImage ? (
-          <Image src={displayImage} alt="Avatar" fill className="object-cover" />
+          <Image src={displayImage} alt={t('avatarAlt')} fill className="object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs text-on-surface-variant">
-            No photo
+            {t('noPhoto')}
           </div>
         )}
       </div>
@@ -83,11 +85,11 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
       />
       <div className="flex gap-2">
         <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-          Choose photo
+          {t('choosePhoto')}
         </Button>
         {preview && (
           <Button type="button" size="sm" onClick={handleUpload} disabled={isPending}>
-            {isPending ? 'Uploading…' : 'Upload'}
+            {isPending ? t('uploadingPhoto') : t('uploadPhoto')}
           </Button>
         )}
       </div>

@@ -1,15 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-
-const NAV_LINKS = [
-  { label: 'Catalog', href: '/catalog' },
-  // Add more tabs here — the pill stretches automatically.
-];
+import { Link, usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 export default function HeaderNav() {
+  const t = useTranslations('nav');
   const pathname = usePathname();
+
+  const NAV_LINKS = [{ label: t('catalog'), href: '/catalog' as const }];
 
   return (
     <nav className="flex gap-1 justify-self-center rounded-full border border-outline-variant/40 bg-surface-container-lowest p-1">

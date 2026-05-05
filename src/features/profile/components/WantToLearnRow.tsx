@@ -1,6 +1,8 @@
+'use client';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
+import { Link } from '@/i18n/navigation';
 import type { LearnStatus } from '@/shared/types';
 
 import type { ProgressWithMove } from '../types';
@@ -20,6 +22,7 @@ type WantToLearnRowProps = {
 };
 
 export default function WantToLearnRow({ item, onStatusChange, isPending }: WantToLearnRowProps) {
+  const te = useTranslations('enums');
   const color = DIFFICULTY_COLOR[item.move.difficulty] ?? DIFFICULTY_COLOR.BEGINNER;
 
   return (
@@ -52,7 +55,7 @@ export default function WantToLearnRow({ item, onStatusChange, isPending }: Want
           className="mt-0.5 inline-block rounded-full px-2 py-0.5 font-sans text-[9px] font-bold tracking-[0.14em] uppercase"
           style={{ background: `${color}18`, color }}
         >
-          {item.move.difficulty.charAt(0) + item.move.difficulty.slice(1).toLowerCase()}
+          {te(`difficulty.${item.move.difficulty}`)}
         </span>
       </Link>
 

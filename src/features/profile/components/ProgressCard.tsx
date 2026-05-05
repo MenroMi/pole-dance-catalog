@@ -1,6 +1,7 @@
 'use client';
 import { ImageOff } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import type { LearnStatus } from '@/shared/types';
 
@@ -21,6 +22,7 @@ type ProgressCardProps = {
 };
 
 export default function ProgressCard({ item, onStatusChange, isPending }: ProgressCardProps) {
+  const te = useTranslations('enums');
   const badge = DIFFICULTY_BADGE[item.move.difficulty] ?? DIFFICULTY_BADGE.BEGINNER;
 
   return (
@@ -40,7 +42,7 @@ export default function ProgressCard({ item, onStatusChange, isPending }: Progre
             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}
             style={badge.style}
           >
-            {item.move.difficulty}
+            {te(`difficulty.${item.move.difficulty}`)}
           </span>
           <h3 className="font-display font-semibold text-on-surface">{item.move.title}</h3>
         </div>
