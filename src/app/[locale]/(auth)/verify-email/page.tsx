@@ -1,9 +1,16 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { resendVerificationAction } from '@/features/auth';
 import { getResendCooldownRemaining } from '@/features/auth/lib/cooldown';
 import { redirect, Link } from '@/i18n/navigation';
+import { defaultLocale, locales } from '@/i18n/routing';
 import { prisma } from '@/shared/lib/prisma';
+
+type Locale = (typeof locales)[number];
+
+function getCheckedLocale(raw: string): Locale {
+  return (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
+}
 
 import { ExpiredEmailForm } from './ExpiredEmailForm';
 import { ResendForm } from './ResendForm';
@@ -50,20 +57,21 @@ function WarningIcon() {
   );
 }
 
-async function requireUnverifiedUser(email: string | undefined): Promise<string> {
-  if (!email) redirect('/signup');
+async function requireUnverifiedUser(email: string | undefined, locale: Locale): Promise<string> {
+  if (!email) redirect({ href: '/signup', locale });
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) redirect('/signup');
-  if (user.emailVerified !== null) redirect('/catalog');
+  if (!user) redirect({ href: '/signup', locale });
+  if (user.emailVerified !== null) redirect({ href: '/catalog', locale });
   return email;
 }
 
 export default async function VerifyEmailPage({ searchParams }: Props) {
   const { sent, error, email } = await searchParams;
+  const locale = getCheckedLocale(await getLocale());
   const t = await getTranslations('auth.verifyEmail');
 
   if (sent) {
-    const validEmail = await requireUnverifiedUser(email);
+    const validEmail = await requireUnverifiedUser(email, locale);
 
     // Token must exist and not be expired — otherwise redirect to expired state
     const token = await prisma.verificationToken.findFirst({
@@ -71,7 +79,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
       orderBy: { createdAt: 'desc' },
     });
     if (!token || token.expires < new Date()) {
-      redirect('/verify-email?error=expired');
+      redirect({ href: '/verify-email?error=expired', locale });
     }
 
     const initialRemaining = await getResendCooldownRemaining(validEmail);
@@ -142,8 +150,8 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
   if (error === 'send-failed') {
     if (email) {
       const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) redirect('/signup');
-      if (user.emailVerified != null) redirect('/catalog');
+      if (!user) redirect({ href: '/signup', locale });
+      if (user.emailVerified != null) redirect({ href: '/catalog', locale });
     }
 
     const resendWithEmail = email ? resendVerificationAction.bind(null, email) : null;
@@ -217,5 +225,5 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
     );
   }
 
-  redirect('/signup');
+  redirect({ href: '/signup', locale });
 }

@@ -32,7 +32,7 @@ describe('HomePage', () => {
   it('redirects to /catalog when session exists', async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: '1' } } as never);
     await HomePage(mockParams);
-    expect(redirect).toHaveBeenCalledWith('/catalog');
+    expect(redirect).toHaveBeenCalledWith({ href: '/catalog', locale: 'pl' });
   });
 
   it('renders landing content when unauthenticated', async () => {
