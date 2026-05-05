@@ -211,7 +211,7 @@ export function SignupForm() {
                 'Email already in use': te('emailAlreadyInUse'),
                 'Failed to send email, please try again': te('sendEmailFailed'),
               } as Record<string, string>
-            )[errors.root.message] ?? errors.root.message}
+            )[errors.root.message ?? ''] ?? errors.root.message}
           </div>
         )}
 

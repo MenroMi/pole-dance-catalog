@@ -156,7 +156,7 @@ export function LoginForm() {
                   'Invalid credentials': te('invalidCredentials'),
                   'Please verify your email first': te('verifyEmailFirst'),
                 } as Record<string, string>
-              )[errors.root.message] ?? errors.root.message}
+              )[errors.root.message ?? ''] ?? errors.root.message}
               {unverifiedEmail && (
                 <>
                   {' — '}
