@@ -61,8 +61,8 @@ async function requireUnverifiedUser(email: string | undefined, locale: Locale):
   if (!email) redirect({ href: '/signup', locale });
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) redirect({ href: '/signup', locale });
-  if (user.emailVerified !== null) redirect({ href: '/catalog', locale });
-  return email;
+  if (user && user.emailVerified !== null) redirect({ href: '/catalog', locale });
+  return email!;
 }
 
 export default async function VerifyEmailPage({ searchParams }: Props) {
@@ -151,7 +151,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
     if (email) {
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) redirect({ href: '/signup', locale });
-      if (user.emailVerified != null) redirect({ href: '/catalog', locale });
+      if (user && user.emailVerified != null) redirect({ href: '/catalog', locale });
     }
 
     const resendWithEmail = email ? resendVerificationAction.bind(null, email) : null;
