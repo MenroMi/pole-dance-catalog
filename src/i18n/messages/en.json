@@ -92,10 +92,10 @@
       "submitting": "saving...",
       "passwordMinLength": "Password must be at least 8 characters",
       "passwordsDoNotMatch": "Passwords do not match",
-      "invalidToken": "the password reset link is invalid or has expired.",
+      "invalidToken": "The password reset link is invalid or has expired.",
       "requestNewLink": "request a new one",
       "backToSignIn": "back to sign in",
-      "expiredAlert": "that link has expired — enter your email to get a new one."
+      "expiredAlert": "That link has expired — enter your email to get a new one."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password.",
@@ -116,7 +116,7 @@
     "moveCount": "Catalog · {count} moves",
     "tagline": "Every move,",
     "taglineHighlight": "indexed.",
-    "empty": "no moves match your filters.",
+    "empty": "No moves match your filters.",
     "filters": {
       "label": "Catalog filters",
       "poleState": "Pole state",

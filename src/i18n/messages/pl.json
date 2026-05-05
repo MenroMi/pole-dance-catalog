@@ -92,10 +92,10 @@
       "submitting": "zapisywanie...",
       "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków",
       "passwordsDoNotMatch": "Hasła nie są identyczne",
-      "invalidToken": "link do resetowania hasła jest nieprawidłowy lub wygasł.",
+      "invalidToken": "Link do resetowania hasła jest nieprawidłowy lub wygasł.",
       "requestNewLink": "poproś o nowy",
       "backToSignIn": "wróć do logowania",
-      "expiredAlert": "ten link wygasł — podaj e-mail, żeby dostać nowy."
+      "expiredAlert": "Ten link wygasł — podaj e-mail, żeby dostać nowy."
     },
     "errors": {
       "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
@@ -116,7 +116,7 @@
     "moveCount": "Katalog · {count} ruchów",
     "tagline": "Każdy ruch,",
     "taglineHighlight": "skatalogowany.",
-    "empty": "brak ruchów spełniających kryteria.",
+    "empty": "Brak ruchów spełniających kryteria.",
     "filters": {
       "label": "Filtry katalogu",
       "poleState": "Stan słupa",
@@ -186,7 +186,7 @@
     "removeFromFavButton": "Usuń",
     "removeFromFavError": "Coś poszło nie tak. Spróbuj ponownie.",
     "removeFromFav": "Usuń {title} z ulubionych",
-    "emptyFavourites": "Brak uluobionych.",
+    "emptyFavourites": "Brak ulubionych.",
     "emptyFavouritesHint": "Otwórz dowolny ruch w katalogu i naciśnij serce, aby zapisać go tutaj.",
     "savedLabel": "Zapisane",
     "saving": "zapisywanie…",
