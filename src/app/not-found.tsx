@@ -1,4 +1,3 @@
-import { Manrope, Space_Grotesk } from 'next/font/google';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
@@ -6,16 +5,11 @@ import { defaultLocale } from '@/i18n/routing';
 
 import '@/app/globals.css';
 
-const spaceGrotesk = Space_Grotesk({ variable: '--font-space-grotesk', subsets: ['latin'] });
-const manrope = Manrope({ variable: '--font-manrope', subsets: ['latin'] });
-
 export default async function NotFound() {
   const t = await getTranslations({ locale: defaultLocale, namespace: 'errors.notFound' });
 
   return (
-    <div
-      className={`${spaceGrotesk.variable} ${manrope.variable} relative flex min-h-screen flex-col overflow-hidden bg-surface`}
-    >
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-surface">
       <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary-container/20 blur-3xl" />
       <div className="pointer-events-none absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-primary/10 blur-3xl" />
 
@@ -29,7 +23,7 @@ export default async function NotFound() {
           </div>
 
           <div className="max-w-md space-y-5">
-            <div className="inline-block rounded-full border border-outline-variant/15 bg-secondary-container/30 px-4 py-1">
+            <div className="flex h-[34px] max-w-[130px] items-center justify-center rounded-full border border-outline-variant/15 bg-secondary-container/30">
               <span className="text-[10px] font-bold tracking-widest text-on-secondary-container uppercase">
                 {t('badge')}
               </span>

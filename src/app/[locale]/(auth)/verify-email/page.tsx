@@ -3,14 +3,9 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { resendVerificationAction } from '@/features/auth';
 import { getResendCooldownRemaining } from '@/features/auth/lib/cooldown';
 import { redirect, Link } from '@/i18n/navigation';
-import { defaultLocale, locales } from '@/i18n/routing';
+import { checkedLocale } from '@/i18n/routing';
+import type { Locale } from '@/i18n/routing';
 import { prisma } from '@/shared/lib/prisma';
-
-type Locale = (typeof locales)[number];
-
-function getCheckedLocale(raw: string): Locale {
-  return (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
-}
 
 import { ExpiredEmailForm } from './ExpiredEmailForm';
 import { ResendForm } from './ResendForm';
@@ -67,7 +62,7 @@ async function requireUnverifiedUser(email: string | undefined, locale: Locale):
 
 export default async function VerifyEmailPage({ searchParams }: Props) {
   const { sent, error, email } = await searchParams;
-  const locale = getCheckedLocale(await getLocale());
+  const locale = checkedLocale(await getLocale());
   const t = await getTranslations('auth.verifyEmail');
 
   if (sent) {

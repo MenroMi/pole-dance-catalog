@@ -1,5 +1,6 @@
 'use client';
 import { Globe } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useRouter, usePathname } from '@/i18n/navigation';
@@ -25,9 +26,13 @@ export default function LocaleSwitcher() {
     : defaultLocale;
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   function switchLocale(next: Locale) {
-    if (next !== locale) router.replace(pathname, { locale: next });
+    if (next !== locale) {
+      const qs = searchParams.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { locale: next });
+    }
   }
 
   return (

@@ -6,7 +6,10 @@ import { prisma } from '@/shared/lib/prisma';
 import { verifyRatelimit } from '@/shared/lib/ratelimit';
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success } = await verifyRatelimit.limit(ip);
   if (!success) {
     return NextResponse.redirect(new URL(`/${defaultLocale}/verify-email?error=invalid`, req.url));

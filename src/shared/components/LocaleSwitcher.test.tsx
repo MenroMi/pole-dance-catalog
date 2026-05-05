@@ -19,6 +19,12 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+const mockSearchParams = vi.fn(() => new URLSearchParams());
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => mockSearchParams(),
+}));
+
 vi.mock('@/shared/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -49,6 +55,7 @@ vi.mock('@/shared/components/ui/dropdown-menu', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockSearchParams.mockReturnValue(new URLSearchParams());
 });
 
 describe('LocaleSwitcher', () => {
@@ -76,5 +83,15 @@ describe('LocaleSwitcher', () => {
     fireEvent.click(screen.getByRole('button', { name: 'changeLanguage' }));
     fireEvent.click(screen.getByText('English'));
     expect(mockReplace).toHaveBeenCalledWith(mockPathname, { locale: 'en' });
+  });
+
+  it('preserves existing query params when switching locale', () => {
+    mockSearchParams.mockReturnValue(new URLSearchParams('search=spin&difficulty=advanced'));
+    render(<LocaleSwitcher />);
+    fireEvent.click(screen.getByRole('button', { name: 'changeLanguage' }));
+    fireEvent.click(screen.getByText('English'));
+    expect(mockReplace).toHaveBeenCalledWith(`${mockPathname}?search=spin&difficulty=advanced`, {
+      locale: 'en',
+    });
   });
 });

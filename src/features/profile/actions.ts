@@ -5,8 +5,7 @@ import { getLocale } from 'next-intl/server';
 import { z } from 'zod';
 
 import { applyPasswordComplexity } from '@/features/auth/lib/validation';
-import { locales, defaultLocale } from '@/i18n/routing';
-import type { Locale } from '@/i18n/routing';
+import { checkedLocale } from '@/i18n/routing';
 import { auth } from '@/shared/lib/auth';
 import { cloudinary } from '@/shared/lib/cloudinary';
 import { localizeMove, localizeTag } from '@/shared/lib/localize';
@@ -15,11 +14,6 @@ import type { LearnStatus } from '@/shared/types';
 
 import { profileSchema } from './lib/validation';
 import type { FavouriteWithMove, ProgressWithMove } from './types';
-
-async function getCheckedLocale(): Promise<Locale> {
-  const raw = await getLocale();
-  return (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
-}
 
 async function requireAuth() {
   const session = await auth();
@@ -35,7 +29,7 @@ const changePasswordSchema = z.object({
 });
 
 export async function getUserProgressAction(status?: LearnStatus): Promise<ProgressWithMove[]> {
-  const [userId, locale] = await Promise.all([requireAuth(), getCheckedLocale()]);
+  const [userId, locale] = await Promise.all([requireAuth(), getLocale().then(checkedLocale)]);
   const results = await prisma.userProgress.findMany({
     where: { userId, ...(status ? { status } : {}) },
     include: { move: true },
@@ -157,7 +151,7 @@ export async function removeFavouriteAction(moveId: string) {
 }
 
 export async function getUserFavouritesAction(): Promise<FavouriteWithMove[]> {
-  const [userId, locale] = await Promise.all([requireAuth(), getCheckedLocale()]);
+  const [userId, locale] = await Promise.all([requireAuth(), getLocale().then(checkedLocale)]);
   const results = await prisma.userFavourite.findMany({
     where: { userId },
     include: { move: { include: { tags: true } } },
@@ -208,7 +202,7 @@ export async function getProfileStatsAction() {
 }
 
 export async function getProfileOverviewAction() {
-  const [userId, locale] = await Promise.all([requireAuth(), getCheckedLocale()]);
+  const [userId, locale] = await Promise.all([requireAuth(), getLocale().then(checkedLocale)]);
   const [progressGroups, currentlyLearning, favouritesPreview, favouritesCount, user] =
     await Promise.all([
       prisma.userProgress.groupBy({ by: ['status'], where: { userId }, _count: true }),

@@ -2,11 +2,11 @@
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getLocale } from 'next-intl/server';
 import { AuthError } from 'next-auth';
+import { getLocale } from 'next-intl/server';
 import { z } from 'zod';
 
-import { locales, defaultLocale } from '@/i18n/routing';
+import { checkedLocale, defaultLocale } from '@/i18n/routing';
 import type { Locale } from '@/i18n/routing';
 import { signIn } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
@@ -25,13 +25,11 @@ import { generateVerificationToken, deleteUserTokens } from './lib/tokens';
 import { applyPasswordComplexity, signupSchema } from './lib/validation';
 import type { SignupFormData, LoginFormData } from './lib/validation';
 
-async function getCheckedLocale(): Promise<Locale> {
-  const raw = await getLocale();
-  return (locales as readonly string[]).includes(raw) ? (raw as Locale) : defaultLocale;
-}
-
 export async function signupAction(data: SignupFormData) {
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  const ip =
+    (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ??
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success: withinLimit } = await signupRatelimit.limit(ip);
   if (!withinLimit) return { error: 'Too many requests' };
 
@@ -41,7 +39,7 @@ export async function signupAction(data: SignupFormData) {
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) return { error: 'Email already in use' };
 
-  const locale = await getCheckedLocale();
+  const locale = checkedLocale(await getLocale());
 
   const hashed = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.create({
@@ -69,7 +67,7 @@ export async function signupAction(data: SignupFormData) {
 }
 
 export async function loginAction(data: LoginFormData) {
-  const locale = await getCheckedLocale();
+  const locale = checkedLocale(await getLocale());
   try {
     await signIn('credentials', {
       email: data.email,
@@ -91,7 +89,7 @@ export async function loginAction(data: LoginFormData) {
 
 export async function resendVerificationAction(email: string) {
   const { success: withinLimit } = await resendRatelimit.limit(email);
-  const locale = await getCheckedLocale();
+  const locale = checkedLocale(await getLocale());
   if (!withinLimit) redirect(`/${locale}/verify-email?error=rate-limited`);
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -138,7 +136,10 @@ const resetPasswordSchema = z
 export async function forgotPasswordAction(
   email: string,
 ): Promise<{ sent: true } | { error: string }> {
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  const ip =
+    (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ??
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success: withinLimit } = await forgotPasswordRatelimit.limit(ip);
   if (!withinLimit) return { sent: true };
 
@@ -152,7 +153,7 @@ export async function forgotPasswordAction(
 
   if (!user || user.password === null) return { sent: true };
 
-  const locale = await getCheckedLocale();
+  const locale = checkedLocale(await getLocale());
 
   await deleteResetTokensByEmail(email);
   const token = await generateResetToken(email, locale);

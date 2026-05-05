@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 
 import styles from '@/app/landing.module.css';
 import { Link, redirect } from '@/i18n/navigation';
-import { defaultLocale, locales } from '@/i18n/routing';
+import { checkedLocale } from '@/i18n/routing';
 import { auth } from '@/shared/lib/auth';
 
 export const metadata: Metadata = {
@@ -17,11 +17,7 @@ type Props = { params: Promise<{ locale: string }> };
 export default async function HomePage({ params: _params }: Props) {
   const session = await auth();
   if (session) {
-    const raw = await getLocale();
-    const locale = (locales as readonly string[]).includes(raw)
-      ? (raw as (typeof locales)[number])
-      : defaultLocale;
-    redirect({ href: '/catalog', locale });
+    redirect({ href: '/catalog', locale: checkedLocale(await getLocale()) });
   }
   const t = await getTranslations('landing');
 
