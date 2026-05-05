@@ -312,6 +312,13 @@ Worktree: `.worktrees/error-boundaries`
 - Post-launch: `SignupForm` геолокация — `timeout: 5000`, `enableHighAccuracy: false` (фикс гонки submit vs detectedLocation)
 - Финальный аудит: структура en/pl синхронизирована, битых ключей нет, 469/469 тестов
 - `global-error.tsx` — намеренно оставлен на английском (вне `[locale]` роутинга)
+- `LocaleSwitcher`: `useSearchParams` → query params сохраняются при смене locale; unit-тест добавлен (`LocaleSwitcher.test.tsx`)
+- `checkedLocale(raw): Locale` в `src/i18n/routing.ts` — дупликация из 5 мест убрана
+- `RATELIMIT_FALLBACK_IP=127.0.0.1` в `.env.example`; IP-фоллбэк через env var во всех трёх route handlers
+- CI фиксы: `admin/actions.ts` + `types.ts` обновлены под bilingual schema (`title_pl/en`, `name_pl/en`); `IntlMessages` augmentation с `eslint-disable-next-line`
+- Переводы: capitalize `auth.resetPassword.*`, `catalog.empty`; опечатка `profile.emptyFavourites` (pl) исправлена
+- Шрифты: CSS vars перенесены на `<html>` в root layout — font mismatch на 404 исправлен
+- 470 тестов, TypeScript чистый (2 pre-existing ошибки в LoginForm/SignupForm)
 
 **Manual e2e — i18n (feat/i18n)**
 
@@ -332,7 +339,7 @@ _Positive:_
 
 _Negative:_
 
-- [ ] Переключение locale сохраняет путь: `/pl/catalog?poleType=STATIC` → `/en/catalog?poleType=STATIC` (query не теряется)
+- [ ] Переключение locale сохраняет путь: `/pl/catalog?poleType=STATIC` → `/en/catalog?poleType=STATIC` (query не теряется) _(фикс реализован + unit-тест; ждёт browser-верификации)_
 - [ ] `/invalid-locale/catalog` — должен вернуть 404 или редирект на `/pl/catalog`
 - [ ] Переключение locale на залогиненном пользователе не разлогинивает (сессия сохраняется)
 
@@ -349,17 +356,11 @@ _Negative:_
 - Если кто-то напишет новый seed без этого — получит тихий P2011
 - Fix: создать дополнительную миграцию с `ALTER TABLE "Move" ALTER COLUMN "poleTypes" SET DEFAULT '{}'`; после проверки — убрать workaround
 
-**i18n — orphan-ключи в messages** (2026-05-04)
+~~**i18n — orphan-ключи в messages**~~ ✅ Resolved (2026-05-05)
 
-Выявлены при финальном аудите. Ключи присутствуют в `en.json`/`pl.json`, но не используются ни в одном компоненте:
+Все 5 orphan-ключей удалены из `en.json` и `pl.json`:
 
-- `nav.admin` — Admin-ссылка в навигации не реализована; HeaderNav и UserMenu этот ключ не читают
-- `profile.noProgress` — заменён более специфичными `profile.emptyInProgress` / `emptyInProgressHint`
-- `profile.noFavourites` — заменён `profile.emptyFavourites` / `emptyFavouritesHint`
-- `profile.editAvatar` — кнопка смены аватара не использует этот ключ; AvatarUpload управляет своими строками напрямую
-- `profile.inProgress` — строка «In Progress» используется как data-ключ в `ProfileProgressBreakdown`, не как перевод через `t()`
-
-Fix: удалить 5 ключей из обоих файлов messages, убедиться что тесты зелёные.
+- `nav.admin`, `profile.noProgress`, `profile.noFavourites`, `profile.editAvatar`, `profile.inProgress`
 
 **Контентные вопросы — подтвердить** (2026-05-03)
 
