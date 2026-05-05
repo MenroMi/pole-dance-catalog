@@ -26,8 +26,10 @@ const adminSession = { user: { role: 'ADMIN' } };
 const userSession = { user: { role: 'USER' } };
 
 const validInput = {
-  title: 'Test Move',
-  description: 'desc',
+  title_pl: 'Test Move PL',
+  title_en: 'Test Move EN',
+  description_pl: 'desc pl',
+  description_en: 'desc en',
   difficulty: 'BEGINNER' as const,
   category: 'SPINS' as const,
   youtubeUrl: 'https://youtu.be/dQw4w9WgXcQ',
@@ -73,7 +75,8 @@ describe('createMoveAction', () => {
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          title: validInput.title,
+          title_pl: validInput.title_pl,
+          title_en: validInput.title_en,
           difficulty: validInput.difficulty,
         }),
       }),
