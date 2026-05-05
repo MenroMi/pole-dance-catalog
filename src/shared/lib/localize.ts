@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import type { Difficulty, PoleType } from '@prisma/client';
 
 import type { Locale } from '@/i18n/routing';
@@ -8,8 +9,8 @@ export type RawMove = {
   title_en: string;
   description_pl: string | null;
   description_en: string | null;
-  stepsData_pl: unknown;
-  stepsData_en: unknown;
+  stepsData_pl: Prisma.JsonValue;
+  stepsData_en: Prisma.JsonValue;
   gripType_pl: string | null;
   gripType_en: string | null;
   entry_pl: string | null;
@@ -51,7 +52,7 @@ export type LocalizedMove = Omit<
 > & {
   title: string;
   description: string | null;
-  stepsData: unknown;
+  stepsData: Prisma.JsonValue;
   gripType: string | null;
   entry: string | null;
   coachNote: string | null;

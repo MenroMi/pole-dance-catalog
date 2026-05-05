@@ -1,8 +1,9 @@
 'use client';
-import type { Move } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 
-type MoveSpecsProps = Pick<Move, 'gripType' | 'entry' | 'duration' | 'poleTypes'>;
+import type { LocalizedMove } from '@/shared/lib/localize';
+
+type MoveSpecsProps = Pick<LocalizedMove, 'gripType' | 'entry' | 'duration' | 'poleTypes'>;
 type SpecItem = { label: string; value: string };
 
 function SpecCard({ label, value }: SpecItem) {

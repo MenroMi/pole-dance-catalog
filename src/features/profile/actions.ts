@@ -42,7 +42,7 @@ export async function getUserProgressAction(status?: LearnStatus): Promise<Progr
   });
   return results.map((p) => ({
     ...p,
-    move: localizeMove(p.move as Parameters<typeof localizeMove>[0], locale),
+    move: localizeMove(p.move, locale),
   }));
 }
 
@@ -166,8 +166,8 @@ export async function getUserFavouritesAction(): Promise<FavouriteWithMove[]> {
   return results.map((f) => ({
     ...f,
     move: {
-      ...localizeMove(f.move as Parameters<typeof localizeMove>[0], locale),
-      tags: f.move.tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale)),
+      ...localizeMove(f.move, locale),
+      tags: f.move.tags.map((tag) => localizeTag(tag, locale)),
     },
   }));
 }
@@ -255,19 +255,15 @@ export async function getProfileOverviewAction() {
     currentlyLearning: currentlyLearning.map((p) => ({
       ...p,
       move: {
-        ...localizeMove(p.move as Parameters<typeof localizeMove>[0], locale),
-        tags: p.move.tags.map((tag) =>
-          localizeTag(tag as Parameters<typeof localizeTag>[0], locale),
-        ),
+        ...localizeMove(p.move, locale),
+        tags: p.move.tags.map((tag) => localizeTag(tag, locale)),
       },
     })),
     favouritesPreview: favouritesPreview.map((f) => ({
       ...f,
       move: {
-        ...localizeMove(f.move as Parameters<typeof localizeMove>[0], locale),
-        tags: f.move.tags.map((tag) =>
-          localizeTag(tag as Parameters<typeof localizeTag>[0], locale),
-        ),
+        ...localizeMove(f.move, locale),
+        tags: f.move.tags.map((tag) => localizeTag(tag, locale)),
       },
     })),
   };

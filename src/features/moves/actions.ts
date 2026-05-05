@@ -24,7 +24,7 @@ export async function getMoveByIdAction(
       : Promise.resolve(null),
   ]);
 
-  const localized = localizeMove(move as Parameters<typeof localizeMove>[0], locale);
+  const localized = localizeMove(move, locale);
 
   const stepsData = (Array.isArray(localized.stepsData) ? localized.stepsData : []).filter(
     (s): s is StepItem => {
@@ -42,7 +42,7 @@ export async function getMoveByIdAction(
     favourites,
     stepsData,
     currentProgress: progressRecord?.status ?? null,
-    tags: move.tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale)),
+    tags: move.tags.map((tag) => localizeTag(tag, locale)),
   };
 }
 

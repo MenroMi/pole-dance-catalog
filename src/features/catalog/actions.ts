@@ -2,9 +2,9 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
-import { prisma } from '@/shared/lib/prisma';
-import { localizeMove, localizeTag } from '@/shared/lib/localize';
 import type { Locale } from '@/i18n/routing';
+import { localizeMove, localizeTag } from '@/shared/lib/localize';
+import { prisma } from '@/shared/lib/prisma';
 import type { MoveFilters, PaginatedResult } from '@/shared/types';
 import { Difficulty, PoleType } from '@/shared/types/enums';
 
@@ -71,8 +71,8 @@ export async function getMovesAction(
   ]);
 
   const items = rawItems.map((move) => ({
-    ...localizeMove(move as Parameters<typeof localizeMove>[0], locale),
-    tags: move.tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale)),
+    ...localizeMove(move, locale),
+    tags: move.tags.map((tag) => localizeTag(tag, locale)),
   }));
 
   return { items, total, page, pageSize };
@@ -81,5 +81,5 @@ export async function getMovesAction(
 export async function getTagsAction(locale: Locale = 'pl'): Promise<LocalizedTag[]> {
   const nameField = locale === 'pl' ? 'name_pl' : 'name_en';
   const tags = await prisma.tag.findMany({ orderBy: { [nameField]: 'asc' } });
-  return tags.map((tag) => localizeTag(tag as Parameters<typeof localizeTag>[0], locale));
+  return tags.map((tag) => localizeTag(tag, locale));
 }
