@@ -28,7 +28,8 @@ import type { SignupFormData, LoginFormData } from './lib/validation';
 export async function signupAction(data: SignupFormData) {
   const ip =
     (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ??
-    process.env.RATELIMIT_FALLBACK_IP!;
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success: withinLimit } = await signupRatelimit.limit(ip);
   if (!withinLimit) return { error: 'Too many requests' };
 
@@ -137,7 +138,8 @@ export async function forgotPasswordAction(
 ): Promise<{ sent: true } | { error: string }> {
   const ip =
     (await headers()).get('x-forwarded-for')?.split(',')[0].trim() ??
-    process.env.RATELIMIT_FALLBACK_IP!;
+    process.env.RATELIMIT_FALLBACK_IP ??
+    '';
   const { success: withinLimit } = await forgotPasswordRatelimit.limit(ip);
   if (!withinLimit) return { sent: true };
 
