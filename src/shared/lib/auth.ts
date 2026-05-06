@@ -36,16 +36,40 @@ export const authConfig = {
           where: { email: credentials.email as string },
         });
 
-        if (!user) throw new Error('We couldn’t find your account. Try signing up.');
+        if (!user) throw new Error("We couldn't find your account. Try signing up.");
         if (user.emailVerified === null) throw new Error('Please verify your email first.');
-        if (!user.password) return null;
+        if (!user.password) throw new Error('Please sign in with Google or Facebook');
 
         const valid = await bcrypt.compare(credentials.password as string, user.password);
-
         return valid ? user : null;
       },
     }),
   ],
+  callbacks: {
+    ...authBaseConfig.callbacks,
+    async signIn({ user, account, profile }) {
+      if ((account as { type?: string } | undefined)?.type === 'oauth' && user.email) {
+        const updates: { firstName?: string; image?: string } = {};
+        const existing = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { firstName: true },
+        });
+        if (existing && !existing.firstName && profile?.name) {
+          updates.firstName = profile.name as string;
+        }
+        const rawPicture = (profile as { picture?: unknown } | undefined)?.picture;
+        const picture =
+          typeof rawPicture === 'string'
+            ? rawPicture
+            : (rawPicture as { data?: { url?: string } } | undefined)?.data?.url;
+        if (picture) updates.image = picture;
+        if (Object.keys(updates).length > 0) {
+          await prisma.user.update({ where: { email: user.email }, data: updates });
+        }
+      }
+      return true;
+    },
+  },
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

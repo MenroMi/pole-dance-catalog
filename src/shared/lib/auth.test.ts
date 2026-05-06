@@ -17,6 +17,7 @@ vi.mock('@/shared/lib/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -35,6 +36,7 @@ import { authConfig } from './auth';
 const mockRatelimit = signinRatelimit.limit as ReturnType<typeof vi.fn>;
 
 const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockCompare = bcrypt.compare as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
@@ -207,6 +209,97 @@ describe('session callback', () => {
   });
 });
 
+describe('signIn callback', () => {
+  const getSignInCb = () =>
+    authConfig.callbacks?.signIn as (params: {
+      user: { email?: string | null };
+      account?: { type?: string } | null;
+      profile?: { name?: string; picture?: unknown } | null;
+    }) => Promise<boolean>;
+
+  beforeEach(() => {
+    mockFindUnique.mockResolvedValue({ firstName: null });
+    mockUpdate.mockResolvedValue({});
+  });
+
+  it('returns true for credentials sign-in without touching DB', async () => {
+    const cb = getSignInCb();
+    const result = await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'credentials' },
+    });
+    expect(result).toBe(true);
+    expect(mockFindUnique).not.toHaveBeenCalled();
+  });
+
+  it('sets firstName from profile.name when user has none', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania Kowalska', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'a@b.com' },
+        data: expect.objectContaining({ firstName: 'Ania Kowalska' }),
+      }),
+    );
+  });
+
+  it('skips firstName update when user already has one', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: 'Already Set' });
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://example.com/photo.jpg' },
+    });
+    // update still called (image sync), but data must not contain firstName
+    expect(mockUpdate).toHaveBeenCalled();
+    expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty('firstName');
+  });
+
+  it('always syncs image from profile.picture', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://new-photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ image: 'https://new-photo.jpg' }),
+      }),
+    );
+  });
+
+  it('extracts picture from Facebook nested object shape', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: { data: { url: 'https://fb-photo.jpg' } } },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ image: 'https://fb-photo.jpg' }),
+      }),
+    );
+  });
+
+  it('skips DB update when no updates needed', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: 'Set' });
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania' }, // no picture
+    });
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+});
+
 describe('authorize', () => {
   const getAuthorize = () => {
     const provider = authConfig.providers.find(
@@ -261,5 +354,13 @@ describe('authorize', () => {
     const authorize = getAuthorize();
     const result = await authorize({ email: 'a@b.com', password: 'correct' });
     expect(result).toEqual(user);
+  });
+
+  it('throws if user has no password (OAuth-only account)', async () => {
+    mockFindUnique.mockResolvedValue({ id: '1', password: null, emailVerified: new Date() });
+    const authorize = getAuthorize();
+    await expect(authorize({ email: 'a@b.com', password: 'pass' })).rejects.toThrow(
+      'Please sign in with Google or Facebook',
+    );
   });
 });
