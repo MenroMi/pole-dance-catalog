@@ -33,6 +33,22 @@ import { signinRatelimit } from '@/shared/lib/ratelimit';
 
 import { authConfig } from './auth';
 
+const getJwt = () =>
+  authConfig.callbacks?.jwt as (params: {
+    token: Record<string, unknown>;
+    user?: Record<string, unknown>;
+    account?: Record<string, unknown>;
+    profile?: Record<string, unknown>;
+    trigger?: string;
+    session?: unknown;
+  }) => Record<string, unknown>;
+
+const getSession = () =>
+  authConfig.callbacks?.session as (params: {
+    session: { user: Record<string, unknown>; expires: string };
+    token: Record<string, unknown>;
+  }) => { user: Record<string, unknown> };
+
 const mockRatelimit = signinRatelimit.limit as ReturnType<typeof vi.fn>;
 
 const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
@@ -58,16 +74,6 @@ describe('authConfig', () => {
 });
 
 describe('jwt callback', () => {
-  const getJwt = () =>
-    authConfig.callbacks?.jwt as (params: {
-      token: Record<string, unknown>;
-      user?: Record<string, unknown>;
-      account?: Record<string, unknown>;
-      profile?: Record<string, unknown>;
-      trigger?: string;
-      session?: unknown;
-    }) => Record<string, unknown>;
-
   it('sets name from firstName and lastName on sign-in', async () => {
     const jwt = getJwt();
     const token = await jwt({
@@ -108,16 +114,6 @@ describe('jwt callback', () => {
 });
 
 describe('jwt callback — OAuth branch', () => {
-  const getJwt = () =>
-    authConfig.callbacks?.jwt as (params: {
-      token: Record<string, unknown>;
-      user?: Record<string, unknown>;
-      account?: Record<string, unknown>;
-      profile?: Record<string, unknown>;
-      trigger?: string;
-      session?: unknown;
-    }) => Record<string, unknown>;
-
   it('sets name and picture from OAuth profile', async () => {
     const jwt = getJwt();
     const token = await jwt({
@@ -145,16 +141,6 @@ describe('jwt callback — OAuth branch', () => {
 });
 
 describe('jwt callback — credentials branch', () => {
-  const getJwt = () =>
-    authConfig.callbacks?.jwt as (params: {
-      token: Record<string, unknown>;
-      user?: Record<string, unknown>;
-      account?: Record<string, unknown>;
-      profile?: Record<string, unknown>;
-      trigger?: string;
-      session?: unknown;
-    }) => Record<string, unknown>;
-
   it('sets picture from user.image', async () => {
     const jwt = getJwt();
     const token = await jwt({
@@ -184,12 +170,6 @@ describe('jwt callback — credentials branch', () => {
 });
 
 describe('session callback', () => {
-  const getSession = () =>
-    authConfig.callbacks?.session as (params: {
-      session: { user: Record<string, unknown>; expires: string };
-      token: Record<string, unknown>;
-    }) => { user: Record<string, unknown> };
-
   it('sets session.user.image from token.picture', () => {
     const session = getSession();
     const result = session({
@@ -288,15 +268,42 @@ describe('signIn callback', () => {
     );
   });
 
-  it('skips DB update when no updates needed', async () => {
+  it('skips DB update when firstName is already set and no picture', async () => {
     mockFindUnique.mockResolvedValue({ firstName: 'Set' });
     const cb = getSignInCb();
     await cb({
       user: { email: 'a@b.com' },
       account: { type: 'oauth' },
-      profile: { name: 'Ania' }, // no picture
+      profile: { name: 'Ania' },
     });
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('calls update for firstName only when user has none and picture is absent', async () => {
+    // beforeEach sets firstName: null
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'New Name' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'a@b.com' },
+        data: { firstName: 'New Name' },
+      }),
+    );
+  });
+
+  it('returns true without touching DB when user.email is absent', async () => {
+    const cb = getSignInCb();
+    const result = await cb({
+      user: { email: null },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://pic.jpg' },
+    });
+    expect(result).toBe(true);
+    expect(mockFindUnique).not.toHaveBeenCalled();
   });
 });
 

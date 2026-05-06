@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { Account, NextAuthConfig } from 'next-auth';
 
 export const authBaseConfig = {
   providers: [],
@@ -8,7 +8,7 @@ export const authBaseConfig = {
     jwt({ token, user, account, profile, trigger, session }) {
       if (user) {
         token.role = (user as { role?: string }).role;
-        if ((account as { type?: string } | undefined)?.type === 'oauth') {
+        if ((account as Account | null)?.type === 'oauth') {
           token.name = (profile as { name?: string } | undefined)?.name ?? null;
           token.picture = (profile as { picture?: string } | undefined)?.picture ?? null;
         } else {
