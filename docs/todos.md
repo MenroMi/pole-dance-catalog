@@ -1,13 +1,11 @@
 # Project TODOs
 
-## Error Boundaries (feat/error-boundaries — в работе)
+## ~~Error Boundaries (feat/error-boundaries)~~ ✅ Done — смерджено в main
 
-Worktree: `.worktrees/error-boundaries`
-
-- [x] `src/app/global-error.tsx` — root error boundary (`'use client'`, включает `<html><body>`, заменяет root layout при краше; импортирует globals.css для CSS vars)
-- [x] `src/app/(main)/error.tsx` — error boundary для main route group (каталог, профиль и т.д.); пропы: `error`, `unstable_retry` (Next.js 16 API)
-- [x] `src/app/(auth)/error.tsx` — error boundary для auth route group; минималистичная карточка внутри split-panel layout
-- [x] **Email в URL** (`route.ts` + `verify-email/page.tsx` + `ExpiredEmailForm.tsx`) — убрать email из `?error=expired&email=...`, добавить email input на expired-экране
+- `src/app/global-error.tsx` — root error boundary (`'use client'`, включает `<html><body>`, заменяет root layout при краше; импортирует globals.css для CSS vars)
+- `src/app/(main)/error.tsx` — error boundary для main route group (каталог, профиль и т.д.); пропы: `error`, `unstable_retry` (Next.js 16 API)
+- `src/app/(auth)/error.tsx` — error boundary для auth route group; минималистичная карточка внутри split-panel layout
+- **Email в URL** (`route.ts` + `verify-email/page.tsx` + `ExpiredEmailForm.tsx`) — email убран из `?error=expired`, добавлен email input на expired-экране
 
 ## Security
 
@@ -185,6 +183,13 @@ Worktree: `.worktrees/error-boundaries`
 
 ## Feature Gaps
 
+**Admin panel — UI not implemented** (2026-05-05)
+
+- `src/app/[locale]/admin/page.tsx` рендерит только `t('title')` — заглушка
+- `createMoveAction` и `deleteMoveAction` реализованы и покрыты тестами, UI отсутствует
+- Нужно: форма создания движения (title_pl/en, description_pl/en, difficulty, category, youtubeUrl, imageUrl, tags), список существующих движений с кнопкой удаления
+- `SessionGuard` добавить в `/admin` layout (аналогично `/profile`) — todo из cross-tab auth sync
+
 **Profile Settings — Preferences section not implemented** (2026-04-24)
 
 - Секция Preferences (тема, язык, уведомления и пр.) пропущена при Settings redesign — в дизайне Stitch присутствует, но требования не определены
@@ -227,11 +232,12 @@ Worktree: `.worktrees/error-boundaries`
 
 - `PasswordResetToken` Prisma model, `forgotPasswordAction`, `resetPasswordAction`, `/forgot-password` + `/reset-password` pages — смёржено в pre-launch blockers
 
-**OAuth login buttons (Google / Facebook)** (2026-04-22)
+**OAuth login buttons (Google / Facebook)** 🚧 In progress — `feat/google-oauth` (2026-05-06)
 
-- `LoginForm` and `SignupForm` render Google/Facebook buttons but they have no `onClick` handler — clicking does nothing
-- Providers are already configured in `auth.ts` (`GOOGLE_CLIENT_ID` etc.)
-- Fix: wire up `signIn('google')` / `signIn('facebook')` calls, or hide buttons until credentials are set in env
+- Spec: `docs/superpowers/specs/2026-05-06-google-oauth-design.md`
+- Plan: `docs/superpowers/plans/2026-05-06-google-oauth.md` (6 tasks, not started)
+- Google: fully functional; Facebook: env-guarded (`NEXT_PUBLIC_FACEBOOK_ENABLED=true`), blocked by Meta account restrictions
+- Key: `signInWithOAuthAction`, JWT/session callback fixes (picture), `signIn` callback (firstName+image sync), loading states, error banner, callbackUrl support, i18n
 
 ~~**`src/features/catalog/actions.ts`**~~ ✅ Resolved (2026-04-24)
 
