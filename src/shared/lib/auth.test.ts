@@ -60,6 +60,8 @@ describe('jwt callback', () => {
     authConfig.callbacks?.jwt as (params: {
       token: Record<string, unknown>;
       user?: Record<string, unknown>;
+      account?: Record<string, unknown>;
+      profile?: Record<string, unknown>;
       trigger?: string;
       session?: unknown;
     }) => Record<string, unknown>;
@@ -100,6 +102,108 @@ describe('jwt callback', () => {
       session: {},
     });
     expect(token.name).toBe('Old Name');
+  });
+});
+
+describe('jwt callback — OAuth branch', () => {
+  const getJwt = () =>
+    authConfig.callbacks?.jwt as (params: {
+      token: Record<string, unknown>;
+      user?: Record<string, unknown>;
+      account?: Record<string, unknown>;
+      profile?: Record<string, unknown>;
+      trigger?: string;
+      session?: unknown;
+    }) => Record<string, unknown>;
+
+  it('sets name and picture from OAuth profile', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { role: 'USER' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania Kowalska', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(token.name).toBe('Ania Kowalska');
+    expect(token.picture).toBe('https://example.com/photo.jpg');
+    expect(token.role).toBe('USER');
+  });
+
+  it('sets picture to null when profile has no picture', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { role: 'USER' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania' },
+    });
+    expect(token.name).toBe('Ania');
+    expect(token.picture).toBeNull();
+  });
+});
+
+describe('jwt callback — credentials branch', () => {
+  const getJwt = () =>
+    authConfig.callbacks?.jwt as (params: {
+      token: Record<string, unknown>;
+      user?: Record<string, unknown>;
+      account?: Record<string, unknown>;
+      profile?: Record<string, unknown>;
+      trigger?: string;
+      session?: unknown;
+    }) => Record<string, unknown>;
+
+  it('sets picture from user.image', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: {
+        firstName: 'Anna',
+        lastName: 'Kowalska',
+        role: 'USER',
+        image: 'https://example.com/avatar.jpg',
+      },
+      account: { type: 'credentials' },
+    });
+    expect(token.name).toBe('Anna Kowalska');
+    expect(token.picture).toBe('https://example.com/avatar.jpg');
+  });
+
+  it('sets picture to null when user.image is null', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { firstName: 'Anna', lastName: null, role: 'USER', image: null },
+      account: { type: 'credentials' },
+    });
+    expect(token.name).toBe('Anna');
+    expect(token.picture).toBeNull();
+  });
+});
+
+describe('session callback', () => {
+  const getSession = () =>
+    authConfig.callbacks?.session as (params: {
+      session: { user: Record<string, unknown>; expires: string };
+      token: Record<string, unknown>;
+    }) => { user: Record<string, unknown> };
+
+  it('sets session.user.image from token.picture', () => {
+    const session = getSession();
+    const result = session({
+      session: { user: { name: 'Test', email: 'test@test.com' }, expires: '' },
+      token: { sub: 'user-1', role: 'USER', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(result.user.image).toBe('https://example.com/photo.jpg');
+  });
+
+  it('does not set image when token.picture is absent', () => {
+    const session = getSession();
+    const result = session({
+      session: { user: { name: 'Test', email: 'test@test.com' }, expires: '' },
+      token: { sub: 'user-1', role: 'USER' },
+    });
+    expect(result.user.image).toBeUndefined();
   });
 });
 
