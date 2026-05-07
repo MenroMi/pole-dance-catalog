@@ -1,22 +1,26 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
-import { signupAction } from '../actions';
+import { signupAction, signInWithOAuthAction } from '../actions';
 import { signupSchema } from '../lib/validation';
 import type { SignupFormData } from '../lib/validation';
 
 import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
+const facebookEnabled = process.env.NEXT_PUBLIC_FACEBOOK_ENABLED === 'true';
+
 export function SignupForm() {
   const t = useTranslations('auth.signup');
   const te = useTranslations('auth.errors');
   const [detectedLocation, setDetectedLocation] = useState<string | undefined>(undefined);
+  const [isPending, startTransition] = useTransition();
+  const [pendingProvider, setPendingProvider] = useState<'google' | 'facebook' | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -54,6 +58,17 @@ export function SignupForm() {
     if (result?.error) {
       setError('root', { message: result.error });
     }
+  };
+
+  const handleOAuthSignIn = (provider: 'google' | 'facebook') => {
+    setPendingProvider(provider);
+    startTransition(async () => {
+      try {
+        await signInWithOAuthAction(provider, undefined);
+      } finally {
+        setPendingProvider(null);
+      }
+    });
   };
 
   return (
@@ -233,22 +248,38 @@ export function SignupForm() {
           <div className="h-px grow bg-outline-variant/20" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        {facebookEnabled ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleOAuthSignIn('google')}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <GoogleIcon />
+              {pendingProvider === 'google' ? '...' : t('continueWithGoogle')}
+            </button>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleOAuthSignIn('facebook')}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FacebookIcon />
+              {pendingProvider === 'facebook' ? '...' : t('continueWithFacebook')}
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0"
+            disabled={isPending}
+            onClick={() => handleOAuthSignIn('google')}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <GoogleIcon />
-            google
+            {pendingProvider === 'google' ? '...' : t('continueWithGoogle')}
           </button>
-          <button
-            type="button"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0"
-          >
-            <FacebookIcon />
-            facebook
-          </button>
-        </div>
+        )}
       </div>
 
       <p className="text-center text-xs text-on-surface-variant">
