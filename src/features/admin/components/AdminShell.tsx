@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from '@/shared/components/LocaleSwitcher';
@@ -98,10 +98,13 @@ export function AdminShell({
   onSectionChange,
   currentUserName,
 }: AdminShellProps) {
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem(SIDEBAR_KEY) === 'true';
-  });
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(SIDEBAR_KEY) === 'true';
+    const t = setTimeout(() => setCollapsed(stored), 0);
+    return () => clearTimeout(t);
+  }, []);
   const t = useTranslations('admin');
 
   function toggleCollapsed() {
