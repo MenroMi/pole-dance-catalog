@@ -64,7 +64,7 @@ export const authConfig = {
             where: { email: user.email },
             select: { firstName: true, image: true, blockedAt: true },
           });
-          if (existing?.blockedAt) return false;
+          if (existing?.blockedAt) return '/login?error=AccountBlocked';
           if (existing) {
             const updates: { firstName?: string; image?: string } = {};
             if (!existing.firstName && profile?.name) {

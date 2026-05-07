@@ -113,6 +113,7 @@
       "oauthCallbackError": "Authentication failed. Please try again.",
       "oauthSignin": "Could not start sign-in. Please try again.",
       "oauthGeneric": "Sign-in failed. Please try again.",
+      "accountBlocked": "Your account has been blocked. If you believe this is a mistake, contact us at support@pole-space.com.",
       "pleaseSignInWithOAuth": "This account uses Google or Facebook sign-in. Please use one of the buttons below."
     },
     "layout": {

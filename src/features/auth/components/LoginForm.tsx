@@ -19,6 +19,7 @@ const OAUTH_ERROR_MAP: Record<string, string> = {
   OAuthAccountNotLinked: 'oauthAccountNotLinked',
   OAuthCallbackError: 'oauthCallbackError',
   OAuthSignin: 'oauthSignin',
+  AccountBlocked: 'accountBlocked',
 };
 
 const facebookEnabled = process.env.NEXT_PUBLIC_FACEBOOK_ENABLED === 'true';

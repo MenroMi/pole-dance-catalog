@@ -113,6 +113,7 @@
       "oauthCallbackError": "Uwierzytelnianie nie powiodło się. Spróbuj ponownie.",
       "oauthSignin": "Nie można rozpocząć logowania. Spróbuj ponownie.",
       "oauthGeneric": "Logowanie nie powiodło się. Spróbuj ponownie.",
+      "accountBlocked": "Twoje konto zostało zablokowane. Jeśli uważasz, że to pomyłka, napisz do nas na support@pole-space.com.",
       "pleaseSignInWithOAuth": "To konto używa logowania przez Google lub Facebook. Użyj jednego z przycisków poniżej."
     },
     "layout": {
