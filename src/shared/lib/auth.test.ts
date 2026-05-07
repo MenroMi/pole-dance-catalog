@@ -325,6 +325,17 @@ describe('signIn callback', () => {
     );
   });
 
+  it('skips update when user does not exist yet (new OAuth user)', async () => {
+    mockFindUnique.mockResolvedValue(null);
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'new@user.com' },
+      account: { type: 'oidc' },
+      profile: { name: 'New User', picture: 'https://pic.jpg' },
+    });
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
   it('returns true without touching DB when user.email is absent', async () => {
     const cb = getSignInCb();
     const result = await cb({
