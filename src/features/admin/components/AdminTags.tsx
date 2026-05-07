@@ -114,7 +114,7 @@ function TagCard({
             height: 36,
             borderRadius: 8,
             background: tag.color ? `${tag.color}28` : 'rgba(75,68,80,0.2)',
-            border: `1px solid ${tag.color || '#4b4450'}40`,
+            border: `1px solid ${tag.color || '#6b6270'}40`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -126,10 +126,10 @@ function TagCard({
         </div>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.12em',
-            color: '#4b4450',
+            color: '#6b6270',
             fontFamily: 'var(--font-manrope)',
             textTransform: 'uppercase',
           }}
@@ -150,7 +150,7 @@ function TagCard({
         >
           {tag.name_en}
         </div>
-        <div style={{ fontSize: 12, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+        <div style={{ fontSize: 13, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
           {tag.name_pl}
         </div>
       </div>
@@ -178,7 +178,7 @@ function TagCard({
           />
           <span
             style={{
-              fontSize: 10,
+              fontSize: 11,
               fontFamily: 'var(--font-manrope)',
               color: tag.color,
               fontWeight: 600,
@@ -201,7 +201,7 @@ function TagCard({
             color: '#978e9b',
             cursor: 'pointer',
             fontFamily: 'var(--font-manrope)',
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 500,
             display: 'flex',
             alignItems: 'center',
@@ -321,7 +321,7 @@ function TagModal({
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.16em',
                 textTransform: 'uppercase',
@@ -357,7 +357,7 @@ function TagModal({
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.16em',
                 textTransform: 'uppercase',
@@ -393,7 +393,7 @@ function TagModal({
           <div>
             <div
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.16em',
                 textTransform: 'uppercase',
@@ -461,7 +461,7 @@ function TagModal({
                   borderRadius: 8,
                   color: '#e2e2e2',
                   fontFamily: 'var(--font-manrope)',
-                  fontSize: 13,
+                  fontSize: 14,
                   padding: '9px 14px',
                   outline: 'none',
                   width: 110,
@@ -519,12 +519,12 @@ function TagModal({
             </div>
             {form.name_en && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-                <span style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+                <span style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
                   {t('tags.preview')}
                 </span>
                 <span
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: 600,
                     padding: '3px 10px',
                     borderRadius: 9999,
@@ -549,7 +549,7 @@ function TagModal({
               padding: '9px 22px',
               color: '#cdc3d2',
               fontFamily: 'var(--font-manrope)',
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 500,
               cursor: 'pointer',
             }}
@@ -571,7 +571,7 @@ function TagModal({
               padding: '9px 26px',
               color: '#f8ebff',
               fontFamily: 'var(--font-manrope)',
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 600,
               cursor: form.name_en && form.name_pl && !saving ? 'pointer' : 'not-allowed',
               opacity: form.name_en && form.name_pl ? 1 : 0.5,
@@ -692,11 +692,11 @@ export function AdminTags() {
         <div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 700,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
-              color: '#4b4450',
+              color: '#6b6270',
               fontFamily: 'var(--font-manrope)',
               marginBottom: 8,
             }}
@@ -727,7 +727,7 @@ export function AdminTags() {
             padding: '11px 22px',
             color: '#f8ebff',
             fontFamily: 'var(--font-manrope)',
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
@@ -773,7 +773,7 @@ export function AdminTags() {
             border: 'none',
             color: '#e2e2e2',
             fontFamily: 'var(--font-manrope)',
-            fontSize: 13,
+            fontSize: 14,
             outline: 'none',
             flex: 1,
           }}
@@ -873,7 +873,7 @@ export function AdminTags() {
                   padding: '9px 20px',
                   color: '#cdc3d2',
                   fontFamily: 'var(--font-manrope)',
-                  fontSize: 13,
+                  fontSize: 14,
                   cursor: 'pointer',
                 }}
               >
@@ -889,7 +889,7 @@ export function AdminTags() {
                   padding: '9px 22px',
                   color: '#fff',
                   fontFamily: 'var(--font-manrope)',
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 600,
                   cursor: deleting ? 'not-allowed' : 'pointer',
                   opacity: deleting ? 0.7 : 1,

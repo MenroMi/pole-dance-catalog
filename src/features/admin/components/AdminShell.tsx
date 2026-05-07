@@ -178,7 +178,7 @@ export function AdminShell({
             <span
               style={{
                 marginLeft: 10,
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
@@ -223,7 +223,7 @@ export function AdminShell({
                   cursor: 'pointer',
                   color: active ? '#dcb8ff' : '#978e9b',
                   fontFamily: 'var(--font-manrope)',
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 500,
                   transition: 'all 180ms ease',
                   whiteSpace: 'nowrap',
@@ -286,7 +286,7 @@ export function AdminShell({
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontFamily: 'var(--font-space-grotesk)',
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
                 color: '#1b1b1b',
               }}
@@ -297,7 +297,7 @@ export function AdminShell({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: '#e2e2e2',
                     fontFamily: 'var(--font-manrope)',
@@ -310,7 +310,7 @@ export function AdminShell({
                 </div>
                 <div
                   style={{
-                    fontSize: 10,
+                    fontSize: 11,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
                     color: '#8458b3',

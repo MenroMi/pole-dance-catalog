@@ -75,7 +75,7 @@ function Chip({ label, bg, fg }: { label: string; bg: string; fg: string }) {
   return (
     <span
       style={{
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: 700,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
@@ -165,8 +165,8 @@ function MoveRow({
           </div>
           <div
             style={{
-              fontSize: 11,
-              color: '#4b4450',
+              fontSize: 12,
+              color: '#6b6270',
               fontFamily: 'var(--font-manrope)',
               marginTop: 1,
             }}
@@ -182,7 +182,7 @@ function MoveRow({
       </div>
 
       {/* Category */}
-      <div style={{ fontSize: 12, color: '#978e9b', fontFamily: 'var(--font-manrope)' }}>
+      <div style={{ fontSize: 13, color: '#978e9b', fontFamily: 'var(--font-manrope)' }}>
         {move.category}
       </div>
 
@@ -192,7 +192,7 @@ function MoveRow({
           <Chip key={tag.id} label={tag.name_en} bg="rgba(75,68,80,0.2)" fg="#cdc3d2" />
         ))}
         {move.tags.length > 3 && (
-          <span style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+          <span style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
             +{move.tags.length - 3}
           </span>
         )}
@@ -340,7 +340,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
         {error && (
           <p
             style={{
-              fontSize: 13,
+              fontSize: 14,
               color: '#ef4444',
               fontFamily: 'var(--font-manrope)',
               margin: '0 0 16px',
@@ -359,7 +359,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
               padding: '9px 20px',
               color: '#cdc3d2',
               fontFamily: 'var(--font-manrope)',
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 500,
               cursor: 'pointer',
               transition: 'border-color 150ms',
@@ -383,7 +383,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
               padding: '9px 20px',
               color: '#fff',
               fontFamily: 'var(--font-manrope)',
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 600,
               cursor: loading ? 'wait' : 'pointer',
               opacity: loading ? 0.7 : 1,
@@ -499,11 +499,11 @@ export function AdminMoves() {
         <div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 700,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
-              color: '#4b4450',
+              color: '#6b6270',
               fontFamily: 'var(--font-manrope)',
               marginBottom: 8,
             }}
@@ -534,7 +534,7 @@ export function AdminMoves() {
             padding: '11px 22px',
             color: '#f8ebff',
             fontFamily: 'var(--font-manrope)',
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
@@ -583,7 +583,7 @@ export function AdminMoves() {
               border: 'none',
               color: '#e2e2e2',
               fontFamily: 'var(--font-manrope)',
-              fontSize: 13,
+              fontSize: 14,
               outline: 'none',
               flex: 1,
             }}
@@ -600,7 +600,7 @@ export function AdminMoves() {
                 style={{
                   padding: '7px 14px',
                   borderRadius: 6,
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 700,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
@@ -647,11 +647,11 @@ export function AdminMoves() {
             <span
               key={i}
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.16em',
                 textTransform: 'uppercase',
-                color: '#4b4450',
+                color: '#6b6270',
                 fontFamily: 'var(--font-manrope)',
               }}
             >
@@ -665,7 +665,7 @@ export function AdminMoves() {
             style={{
               padding: '60px 0',
               textAlign: 'center',
-              color: '#4b4450',
+              color: '#6b6270',
               fontFamily: 'var(--font-manrope)',
               fontSize: 14,
             }}
@@ -679,7 +679,7 @@ export function AdminMoves() {
             style={{
               padding: '60px 0',
               textAlign: 'center',
-              color: '#4b4450',
+              color: '#6b6270',
               fontFamily: 'var(--font-manrope)',
               fontSize: 14,
             }}

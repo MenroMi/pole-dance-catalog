@@ -131,7 +131,7 @@ const fieldStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: 'block',
   color: '#888',
-  fontSize: 12,
+  fontSize: 13,
   marginBottom: 4,
   fontWeight: 500,
 };
@@ -376,14 +376,14 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     ...fieldStyle,
                     minHeight: 80,
                     fontFamily: 'monospace',
-                    fontSize: 12,
+                    fontSize: 13,
                     resize: 'vertical',
                     borderColor: stepsEnError ? '#f87171' : 'rgba(255,255,255,0.1)',
                   }}
                   placeholder={'[\n  {"time": 0, "label": "Start"}\n]'}
                 />
                 {stepsEnError && (
-                  <span style={{ color: '#f87171', fontSize: 12, marginTop: 4, display: 'block' }}>
+                  <span style={{ color: '#f87171', fontSize: 13, marginTop: 4, display: 'block' }}>
                     {t('invalidJson')}
                   </span>
                 )}
@@ -457,14 +457,14 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     ...fieldStyle,
                     minHeight: 80,
                     fontFamily: 'monospace',
-                    fontSize: 12,
+                    fontSize: 13,
                     resize: 'vertical',
                     borderColor: stepsPlError ? '#f87171' : 'rgba(255,255,255,0.1)',
                   }}
                   placeholder={'[\n  {"time": 0, "label": "Start"}\n]'}
                 />
                 {stepsPlError && (
-                  <span style={{ color: '#f87171', fontSize: 12, marginTop: 4, display: 'block' }}>
+                  <span style={{ color: '#f87171', fontSize: 13, marginTop: 4, display: 'block' }}>
                     {t('invalidJson')}
                   </span>
                 )}
@@ -570,7 +570,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                           : 'transparent',
                         color: form.tagIds.includes(tag.id) ? '#dcb8ff' : '#888',
                         cursor: 'pointer',
-                        fontSize: 13,
+                        fontSize: 14,
                         transition: 'all 150ms',
                       }}
                     >
@@ -593,7 +593,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
             alignItems: 'center',
           }}
         >
-          {error && <span style={{ color: '#f87171', fontSize: 13 }}>{error}</span>}
+          {error && <span style={{ color: '#f87171', fontSize: 14 }}>{error}</span>}
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
             <Button
               variant="outline"

@@ -129,7 +129,7 @@ function UserRow({
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--font-space-grotesk)',
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
             color: '#1b1b1b',
             opacity: isBlocked ? 0.5 : 1,
@@ -142,7 +142,7 @@ function UserRow({
             style={{
               fontFamily: 'var(--font-manrope)',
               fontSize: 14,
-              color: isBlocked ? '#4b4450' : '#e2e2e2',
+              color: isBlocked ? '#6b6270' : '#e2e2e2',
               fontWeight: 500,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -154,8 +154,8 @@ function UserRow({
           {fullName && (
             <div
               style={{
-                fontSize: 11,
-                color: '#4b4450',
+                fontSize: 12,
+                color: '#6b6270',
                 fontFamily: 'var(--font-manrope)',
                 marginTop: 1,
               }}
@@ -169,7 +169,7 @@ function UserRow({
       {/* Location */}
       <div
         style={{
-          fontSize: 12,
+          fontSize: 13,
           color: '#978e9b',
           fontFamily: 'var(--font-manrope)',
           overflow: 'hidden',
@@ -183,7 +183,7 @@ function UserRow({
       {/* Moves (placeholder) */}
       <div
         style={{
-          fontSize: 13,
+          fontSize: 14,
           color: '#cdc3d2',
           fontFamily: 'var(--font-space-grotesk)',
           fontWeight: 500,
@@ -193,7 +193,7 @@ function UserRow({
       </div>
 
       {/* Joined */}
-      <div style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+      <div style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
         {new Date(user.createdAt).toLocaleDateString().slice(0, 7)}
       </div>
 
@@ -201,7 +201,7 @@ function UserRow({
       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -216,7 +216,7 @@ function UserRow({
         </span>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -458,11 +458,11 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       <div style={{ marginBottom: 28 }}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: '#4b4450',
+            color: '#6b6270',
             fontFamily: 'var(--font-manrope)',
             marginBottom: 8,
           }}
@@ -511,7 +511,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               border: 'none',
               color: '#e2e2e2',
               fontFamily: 'var(--font-manrope)',
-              fontSize: 13,
+              fontSize: 14,
               outline: 'none',
               flex: 1,
             }}
@@ -525,7 +525,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               style={{
                 padding: '7px 14px',
                 borderRadius: 6,
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',
@@ -548,8 +548,8 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         </div>
         <span
           style={{
-            color: '#4b4450',
-            fontSize: 12,
+            color: '#6b6270',
+            fontSize: 13,
             fontFamily: 'var(--font-manrope)',
             whiteSpace: 'nowrap',
           }}
@@ -603,11 +603,11 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             <span
               key={i}
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.16em',
                 textTransform: 'uppercase',
-                color: '#4b4450',
+                color: '#6b6270',
                 fontFamily: 'var(--font-manrope)',
               }}
             >
@@ -625,7 +625,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             style={{
               padding: 60,
               textAlign: 'center',
-              color: '#4b4450',
+              color: '#6b6270',
               fontFamily: 'var(--font-manrope)',
               fontSize: 14,
             }}

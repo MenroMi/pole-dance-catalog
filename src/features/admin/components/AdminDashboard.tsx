@@ -96,7 +96,7 @@ function StatCard({
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.16em',
             textTransform: 'uppercase',
@@ -133,7 +133,7 @@ function StatCard({
         {sub && (
           <div
             style={{
-              fontSize: 12,
+              fontSize: 13,
               color: trend === 'up' ? '#84d099' : '#978e9b',
               fontFamily: 'var(--font-manrope)',
               marginTop: 6,
@@ -184,7 +184,7 @@ function ActivityChart() {
         <div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 700,
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
@@ -209,7 +209,7 @@ function ActivityChart() {
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 11,
             color: '#978e9b',
             fontFamily: 'var(--font-manrope)',
             display: 'flex',
@@ -289,7 +289,7 @@ function ActivityChart() {
                     top: -22,
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 600,
                     color: '#dcb8ff',
                     fontFamily: 'var(--font-manrope)',
@@ -302,7 +302,7 @@ function ActivityChart() {
             </div>
             <div
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 color: '#978e9b',
                 fontFamily: 'var(--font-manrope)',
                 fontWeight: 600,
@@ -360,11 +360,11 @@ export function AdminDashboard() {
       <div style={{ marginBottom: 36 }}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: '#4b4450',
+            color: '#6b6270',
             fontFamily: 'var(--font-manrope)',
             marginBottom: 8,
           }}
@@ -498,7 +498,7 @@ export function AdminDashboard() {
             <div>
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.16em',
                   textTransform: 'uppercase',
@@ -574,7 +574,7 @@ export function AdminDashboard() {
                   </div>
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 12,
                       color: '#978e9b',
                       fontFamily: 'var(--font-manrope)',
                       marginTop: 2,
@@ -585,7 +585,7 @@ export function AdminDashboard() {
                 </div>
                 <span
                   style={{
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 700,
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
