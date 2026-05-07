@@ -63,7 +63,7 @@ function UserAvatar({ user }: { user: AdminUserRow }) {
   );
 }
 
-export function AdminUsers() {
+export function AdminUsers({ currentUserId }: { currentUserId: string | null }) {
   const t = useTranslations('admin');
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -237,7 +237,7 @@ export function AdminUsers() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '2.5fr 1fr 100px 140px 100px',
+            gridTemplateColumns: '2.5fr 1fr 100px 140px 48px',
             gap: 16,
             padding: '12px 20px',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -252,7 +252,7 @@ export function AdminUsers() {
           <span>{t('users.cols.location')}</span>
           <span>{t('users.cols.joined')}</span>
           <span>{t('users.cols.role')}</span>
-          <span>{t('users.cols.actions')}</span>
+          <span />
         </div>
 
         {loading && (
@@ -268,6 +268,7 @@ export function AdminUsers() {
         {!loading &&
           filtered.map((user, i) => {
             const isBlocked = Boolean(user.blockedAt);
+            const isSelf = user.id === currentUserId;
             const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
 
             return (
@@ -346,7 +347,7 @@ export function AdminUsers() {
                 {/* Role badge + dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger
-                    disabled={changingRole === user.id}
+                    disabled={changingRole === user.id || isSelf}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -357,11 +358,12 @@ export function AdminUsers() {
                       background:
                         user.role === 'ADMIN' ? 'rgba(220,184,255,0.1)' : 'rgba(255,255,255,0.04)',
                       color: user.role === 'ADMIN' ? '#dcb8ff' : '#888',
-                      cursor: changingRole === user.id ? 'wait' : 'pointer',
+                      cursor: changingRole === user.id || isSelf ? 'default' : 'pointer',
                       fontSize: 12,
                       fontWeight: 600,
                       letterSpacing: '0.03em',
                       transition: 'all 150ms',
+                      opacity: isSelf ? 0.5 : 1,
                     }}
                     asChild={false}
                   >
@@ -395,44 +397,63 @@ export function AdminUsers() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Actions: block + delete */}
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button
-                    onClick={() => handleToggleBlock(user)}
-                    disabled={togglingBlock === user.id}
-                    title={isBlocked ? t('users.unblock') : t('users.block')}
+                {/* Actions dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    disabled={togglingBlock === user.id || isSelf}
                     style={{
-                      background: isBlocked ? 'rgba(74,222,128,0.1)' : 'rgba(255,255,255,0.06)',
-                      border: 'none',
-                      borderRadius: 6,
-                      color: isBlocked ? '#4ade80' : '#888',
-                      padding: '5px 8px',
-                      cursor: togglingBlock === user.id ? 'wait' : 'pointer',
-                      fontSize: 14,
-                      lineHeight: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 32,
+                      height: 32,
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 8,
+                      color: '#888',
+                      cursor: togglingBlock === user.id || isSelf ? 'default' : 'pointer',
+                      opacity: isSelf ? 0.3 : 1,
+                      fontSize: 16,
+                      letterSpacing: 1,
                       transition: 'all 150ms',
                     }}
+                    asChild={false}
                   >
-                    {isBlocked ? '⊘' : '◉'}
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget(user.id)}
-                    title={t('users.deleteUser')}
+                    ···
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
                     style={{
-                      background: 'rgba(248,113,113,0.08)',
-                      border: 'none',
-                      borderRadius: 6,
-                      color: '#f87171',
-                      padding: '5px 8px',
-                      cursor: 'pointer',
-                      fontSize: 14,
-                      lineHeight: 1,
-                      transition: 'all 150ms',
+                      background: '#222',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 10,
+                      minWidth: 160,
+                      padding: '4px 0',
                     }}
                   >
-                    ✕
-                  </button>
-                </div>
+                    {isBlocked ? (
+                      <DropdownMenuItem
+                        onClick={() => handleToggleBlock(user)}
+                        style={{ color: '#4ade80', cursor: 'pointer', fontSize: 13, gap: 8 }}
+                      >
+                        <span>◉</span> {t('users.unblock')}
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => handleToggleBlock(user)}
+                        style={{ color: '#facc15', cursor: 'pointer', fontSize: 13, gap: 8 }}
+                      >
+                        <span>⊘</span> {t('users.block')}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={() => setDeleteTarget(user.id)}
+                      style={{ color: '#f87171', cursor: 'pointer', fontSize: 13, gap: 8 }}
+                    >
+                      <span>✕</span> {t('users.deleteUser')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             );
           })}
