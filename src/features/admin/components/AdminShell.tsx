@@ -18,9 +18,22 @@ const NAV_ITEMS: { key: Section; label: string }[] = [
   { key: 'tags', label: '⬡' },
 ];
 
+const SIDEBAR_KEY = 'admin-sidebar-collapsed';
+
 export function AdminShell({ children, activeSection, onSectionChange }: AdminShellProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(SIDEBAR_KEY) === 'true';
+  });
   const t = useTranslations('admin');
+
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem(SIDEBAR_KEY, String(next));
+      return next;
+    });
+  }
 
   const sidebarWidth = collapsed ? 64 : 240;
 
@@ -57,7 +70,7 @@ export function AdminShell({ children, activeSection, onSectionChange }: AdminSh
             </span>
           )}
           <button
-            onClick={() => setCollapsed((c) => !c)}
+            onClick={toggleCollapsed}
             style={{
               marginLeft: 'auto',
               background: 'none',

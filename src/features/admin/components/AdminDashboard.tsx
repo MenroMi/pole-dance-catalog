@@ -4,29 +4,43 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { getAdminStatsAction } from '../actions';
+import { DIFFICULTY_COLORS } from '../constants';
 import type { AdminStats } from '../types';
-
-const DIFFICULTY_COLORS: Record<string, string> = {
-  BEGINNER: '#4ade80',
-  INTERMEDIATE: '#facc15',
-  ADVANCED: '#f87171',
-};
 
 export function AdminDashboard() {
   const t = useTranslations('admin');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getAdminStatsAction()
       .then(setStats)
-      .catch(console.error)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load stats'))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
     return <div style={{ color: '#888', padding: 40, textAlign: 'center' }}>Loading...</div>;
   }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          background: 'rgba(248,113,113,0.1)',
+          border: '1px solid rgba(248,113,113,0.3)',
+          borderRadius: 12,
+          padding: '24px 28px',
+          color: '#f87171',
+          fontSize: 14,
+        }}
+      >
+        {error}
+      </div>
+    );
+  }
+
   if (!stats) return null;
 
   const statCards = [

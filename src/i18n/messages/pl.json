@@ -21,7 +21,8 @@
     "logOutConfirmAction": "Wyloguj się",
     "logOutError": "Coś poszło nie tak. Spróbuj ponownie.",
     "changeLanguage": "Zmień język",
-    "favouriteMovesLabel": "Ulubione ruchy"
+    "favouriteMovesLabel": "Ulubione ruchy",
+    "admin": "Panel Admina"
   },
   "auth": {
     "login": {
@@ -257,6 +258,7 @@
     "save": "Zapisz",
     "cancel": "Anuluj",
     "delete": "Usuń",
+    "edit": "Edytuj",
     "nav": {
       "dashboard": "Dashboard",
       "moves": "Ruchy",
@@ -273,10 +275,18 @@
       "title": "Ruchy",
       "search": "Szukaj ruchów...",
       "noResults": "Nie znaleziono ruchów",
+      "allDifficulties": "Wszystkie poziomy",
       "addMove": "Dodaj ruch",
       "editMove": "Edytuj ruch",
       "deleteMove": "Usuń ruch",
       "confirmDelete": "Czy na pewno chcesz usunąć ten ruch? Tej operacji nie można cofnąć.",
+      "cols": {
+        "title": "Tytuł",
+        "difficulty": "Poziom",
+        "category": "Kategoria",
+        "tags": "Tagi",
+        "actions": "Akcje"
+      },
       "tabs": {
         "en": "Angielski",
         "pl": "Polski",
@@ -293,9 +303,17 @@
     },
     "users": {
       "title": "Użytkownicy",
+      "search": "Szukaj użytkowników...",
+      "noUsers": "Nie znaleziono użytkowników",
       "changeRole": "Zmień rolę",
       "makeAdmin": "Zrób adminem",
-      "makeUser": "Zrób użytkownikiem"
+      "makeUser": "Zrób użytkownikiem",
+      "cols": {
+        "email": "Email",
+        "name": "Imię i nazwisko",
+        "joined": "Dołączył",
+        "role": "Rola"
+      }
     }
   },
   "enums": {

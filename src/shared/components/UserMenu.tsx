@@ -26,9 +26,10 @@ import {
 
 type UserMenuProps = {
   user: { name: string | null; image: string | null } | null;
+  role?: string | null;
 };
 
-export default function UserMenu({ user }: UserMenuProps) {
+export default function UserMenu({ user, role }: UserMenuProps) {
   const t = useTranslations('nav');
   const tc = useTranslations('common');
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -37,6 +38,7 @@ export default function UserMenu({ user }: UserMenuProps) {
   const NAV_ITEMS = [
     { label: t('profile'), href: '/profile' },
     { label: t('settings'), href: '/profile/settings' },
+    ...(role === 'ADMIN' ? [{ label: t('admin'), href: '/admin' }] : []),
   ];
 
   const handleDialogOpenChange = (open: boolean) => {

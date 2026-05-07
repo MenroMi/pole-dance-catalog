@@ -50,6 +50,7 @@ export function AdminTags() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,12 +114,13 @@ export function AdminTags() {
   async function handleDeleteConfirm() {
     if (!deleteTarget) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await deleteTagAction(deleteTarget);
       setDeleteTarget(null);
       refresh();
     } catch (e) {
-      console.error(e);
+      setDeleteError(e instanceof Error ? e.message : 'Delete failed');
     } finally {
       setDeleting(false);
     }
@@ -204,7 +206,7 @@ export function AdminTags() {
                   fontSize: 13,
                 }}
               >
-                Edit
+                {t('edit')}
               </button>
               <button
                 onClick={() => setDeleteTarget(tag.id)}
@@ -219,7 +221,7 @@ export function AdminTags() {
                   fontSize: 13,
                 }}
               >
-                Delete
+                {t('delete')}
               </button>
             </div>
           </div>
@@ -333,8 +335,12 @@ export function AdminTags() {
         title={t('tags.deleteTag')}
         description={t('tags.confirmDelete')}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
+        onCancel={() => {
+          setDeleteTarget(null);
+          setDeleteError(null);
+        }}
         loading={deleting}
+        error={deleteError}
       />
     </div>
   );

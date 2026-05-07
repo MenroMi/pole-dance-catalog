@@ -65,8 +65,8 @@ const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockUserUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockUserCount = prisma.user.count as ReturnType<typeof vi.fn>;
 
-const adminSession = { user: { role: 'ADMIN' } };
-const userSession = { user: { role: 'USER' } };
+const adminSession = { user: { id: 'admin-1', role: 'ADMIN' } };
+const userSession = { user: { id: 'user-1', role: 'USER' } };
 
 const validCreateInput = {
   title_pl: 'Test PL',
@@ -335,6 +335,22 @@ describe('changeUserRoleAction', () => {
   it('throws Unauthorized when not authenticated', async () => {
     mockAuth.mockResolvedValue(null);
     await expect(changeUserRoleAction('u-1', 'ADMIN')).rejects.toThrow('Unauthorized');
+  });
+
+  it('throws Invalid input when role is not USER or ADMIN', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(changeUserRoleAction('u-1', 'SUPERADMIN' as 'ADMIN')).rejects.toThrow(
+      'Invalid input',
+    );
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it('throws when admin tries to change their own role', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(changeUserRoleAction('admin-1', 'USER')).rejects.toThrow(
+      'Cannot change your own role',
+    );
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it('updates user role when ADMIN', async () => {

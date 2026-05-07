@@ -10,14 +10,16 @@ import UserMenu from './UserMenu';
 export default async function Header() {
   const session = await auth();
   let user: { name: string | null; image: string | null } | null = null;
+  let role: string | null = null;
   if (session?.user?.id) {
     const dbUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { firstName: true, lastName: true, image: true },
+      select: { firstName: true, lastName: true, image: true, role: true },
     });
     if (dbUser) {
       const name = [dbUser.firstName, dbUser.lastName].filter(Boolean).join(' ') || null;
       user = { name, image: dbUser.image ?? null };
+      role = dbUser.role;
     }
   }
 
@@ -40,7 +42,7 @@ export default async function Header() {
 
         <div className="flex items-center gap-1 justify-self-end">
           <FavouritesButton />
-          <UserMenu user={user} />
+          <UserMenu user={user} role={role} />
           <LocaleSwitcher />
         </div>
       </div>

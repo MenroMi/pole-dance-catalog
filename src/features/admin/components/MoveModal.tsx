@@ -144,6 +144,8 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [form, setForm] = useState<FormState>(() => initForm(move));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stepsEnError, setStepsEnError] = useState(false);
+  const [stepsPlError, setStepsPlError] = useState(false);
 
   function set(field: keyof FormState, value: string | string[]) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -199,6 +201,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
+      setTab('en');
     } finally {
       setSaving(false);
     }
@@ -356,16 +359,36 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 </label>
                 <textarea
                   value={form.stepsData_en}
-                  onChange={(e) => set('stepsData_en', e.target.value)}
+                  onChange={(e) => {
+                    set('stepsData_en', e.target.value);
+                    setStepsEnError(false);
+                  }}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim();
+                    if (v) {
+                      try {
+                        JSON.parse(v);
+                        setStepsEnError(false);
+                      } catch {
+                        setStepsEnError(true);
+                      }
+                    }
+                  }}
                   style={{
                     ...fieldStyle,
                     minHeight: 80,
                     fontFamily: 'monospace',
                     fontSize: 12,
                     resize: 'vertical',
+                    borderColor: stepsEnError ? '#f87171' : 'rgba(255,255,255,0.1)',
                   }}
                   placeholder={'[\n  {"time": 0, "label": "Start"}\n]'}
                 />
+                {stepsEnError && (
+                  <span style={{ color: '#f87171', fontSize: 12, marginTop: 4, display: 'block' }}>
+                    Invalid JSON
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -417,16 +440,36 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <label style={labelStyle}>Kroki (PL) — JSON array of {`{ time, label }`}</label>
                 <textarea
                   value={form.stepsData_pl}
-                  onChange={(e) => set('stepsData_pl', e.target.value)}
+                  onChange={(e) => {
+                    set('stepsData_pl', e.target.value);
+                    setStepsPlError(false);
+                  }}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim();
+                    if (v) {
+                      try {
+                        JSON.parse(v);
+                        setStepsPlError(false);
+                      } catch {
+                        setStepsPlError(true);
+                      }
+                    }
+                  }}
                   style={{
                     ...fieldStyle,
                     minHeight: 80,
                     fontFamily: 'monospace',
                     fontSize: 12,
                     resize: 'vertical',
+                    borderColor: stepsPlError ? '#f87171' : 'rgba(255,255,255,0.1)',
                   }}
                   placeholder={'[\n  {"time": 0, "label": "Start"}\n]'}
                 />
+                {stepsPlError && (
+                  <span style={{ color: '#f87171', fontSize: 12, marginTop: 4, display: 'block' }}>
+                    Invalid JSON
+                  </span>
+                )}
               </div>
             </div>
           )}

@@ -21,7 +21,8 @@
     "logOutConfirmAction": "Log out",
     "logOutError": "Something went wrong. Please try again.",
     "changeLanguage": "Change language",
-    "favouriteMovesLabel": "Favourite moves"
+    "favouriteMovesLabel": "Favourite moves",
+    "admin": "Admin Panel"
   },
   "auth": {
     "login": {
@@ -257,6 +258,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "edit": "Edit",
     "nav": {
       "dashboard": "Dashboard",
       "moves": "Moves",
@@ -273,10 +275,18 @@
       "title": "Moves",
       "search": "Search moves...",
       "noResults": "No moves found",
+      "allDifficulties": "All difficulties",
       "addMove": "Add Move",
       "editMove": "Edit Move",
       "deleteMove": "Delete Move",
       "confirmDelete": "Are you sure you want to delete this move? This action cannot be undone.",
+      "cols": {
+        "title": "Title",
+        "difficulty": "Difficulty",
+        "category": "Category",
+        "tags": "Tags",
+        "actions": "Actions"
+      },
       "tabs": {
         "en": "English",
         "pl": "Polish",
@@ -293,9 +303,17 @@
     },
     "users": {
       "title": "Users",
+      "search": "Search users...",
+      "noUsers": "No users found",
       "changeRole": "Change Role",
       "makeAdmin": "Make Admin",
-      "makeUser": "Make User"
+      "makeUser": "Make User",
+      "cols": {
+        "email": "Email",
+        "name": "Name",
+        "joined": "Joined",
+        "role": "Role"
+      }
     }
   },
   "enums": {

@@ -19,6 +19,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
+  error?: string | null;
 }
 
 export function ConfirmDialog({
@@ -29,6 +30,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   loading,
+  error,
 }: ConfirmDialogProps) {
   return (
     <AlertDialog
@@ -48,9 +50,9 @@ export function ConfirmDialog({
           <AlertDialogTitle style={{ color: '#e0e0e0' }}>{title}</AlertDialogTitle>
           <AlertDialogDescription style={{ color: '#888' }}>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {error && <p style={{ color: '#f87171', fontSize: 13, margin: '4px 0 0' }}>{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel
-            onClick={onCancel}
             style={{
               background: 'transparent',
               border: '1px solid rgba(255,255,255,0.15)',

@@ -23,6 +23,7 @@ async function requireAdmin() {
   if (!session || session.user?.role !== 'ADMIN') {
     throw new Error('Unauthorized');
   }
+  return session;
 }
 
 const moveSchema = z.object({
@@ -195,6 +196,9 @@ export async function getUsersForAdminAction(): Promise<AdminUserRow[]> {
 }
 
 export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN') {
-  await requireAdmin();
-  return prisma.user.update({ where: { id: userId }, data: { role } });
+  const session = await requireAdmin();
+  const parsedRole = z.enum(['USER', 'ADMIN']).safeParse(role);
+  if (!parsedRole.success) throw new Error('Invalid input');
+  if (session.user?.id === userId) throw new Error('Cannot change your own role');
+  return prisma.user.update({ where: { id: userId }, data: { role: parsedRole.data } });
 }

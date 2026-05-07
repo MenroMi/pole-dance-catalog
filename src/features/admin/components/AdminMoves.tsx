@@ -12,17 +12,13 @@ import {
   getMovesForAdminAction,
   getTagsForAdminAction,
 } from '../actions';
+import { DIFFICULTY_COLORS } from '../constants';
 import type { AdminMoveRow, AdminTagRow, FullAdminMove } from '../types';
 
 import { ConfirmDialog } from './ConfirmDialog';
 import { MoveModal } from './MoveModal';
 
 const DIFFICULTIES = ['', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const;
-const DIFFICULTY_COLORS: Record<string, string> = {
-  BEGINNER: '#4ade80',
-  INTERMEDIATE: '#facc15',
-  ADVANCED: '#f87171',
-};
 
 export function AdminMoves() {
   const t = useTranslations('admin');
@@ -36,6 +32,7 @@ export function AdminMoves() {
   const [availableTags, setAvailableTags] = useState<AdminTagRow[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,12 +75,13 @@ export function AdminMoves() {
   async function handleDeleteConfirm() {
     if (!deleteTarget) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await deleteMoveAction(deleteTarget);
       setDeleteTarget(null);
       refresh();
     } catch (e) {
-      console.error(e);
+      setDeleteError(e instanceof Error ? e.message : 'Delete failed');
     } finally {
       setDeleting(false);
     }
@@ -135,7 +133,7 @@ export function AdminMoves() {
         >
           {DIFFICULTIES.map((d) => (
             <option key={d} value={d} style={{ background: '#1a1a1a' }}>
-              {d || 'All difficulties'}
+              {d || t('moves.allDifficulties')}
             </option>
           ))}
         </select>
@@ -170,11 +168,11 @@ export function AdminMoves() {
             textTransform: 'uppercase',
           }}
         >
-          <span>Title</span>
-          <span>Difficulty</span>
-          <span>Category</span>
-          <span>Tags</span>
-          <span>Actions</span>
+          <span>{t('moves.cols.title')}</span>
+          <span>{t('moves.cols.difficulty')}</span>
+          <span>{t('moves.cols.category')}</span>
+          <span>{t('moves.cols.tags')}</span>
+          <span>{t('moves.cols.actions')}</span>
         </div>
 
         {loading && (
@@ -253,7 +251,7 @@ export function AdminMoves() {
                     fontSize: 13,
                   }}
                 >
-                  Edit
+                  {t('edit')}
                 </button>
                 <button
                   onClick={() => setDeleteTarget(move.id)}
@@ -267,7 +265,7 @@ export function AdminMoves() {
                     fontSize: 13,
                   }}
                 >
-                  Delete
+                  {t('delete')}
                 </button>
               </div>
             </div>
@@ -288,8 +286,12 @@ export function AdminMoves() {
         title={t('moves.deleteMove')}
         description={t('moves.confirmDelete')}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
+        onCancel={() => {
+          setDeleteTarget(null);
+          setDeleteError(null);
+        }}
         loading={deleting}
+        error={deleteError}
       />
     </div>
   );
