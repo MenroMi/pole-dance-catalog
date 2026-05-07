@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   createTagAction,
@@ -11,20 +11,7 @@ import {
 } from '../actions';
 import type { AdminTagRow } from '../types';
 
-const PRESET_COLORS = [
-  '#dcb8ff',
-  '#8458b3',
-  '#84d099',
-  '#fbbf24',
-  '#f87171',
-  '#60a5fa',
-  '#a78bfa',
-  '#34d399',
-  '#fb923c',
-  '#e879f9',
-  '#38bdf8',
-  '#4ade80',
-];
+const DEFAULT_COLOR = '#dcb8ff';
 
 function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
@@ -75,42 +62,13 @@ function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
   );
 }
 
-function ColorDot({
-  color,
-  selected,
-  onClick,
-}: {
-  color: string;
-  selected: boolean;
-  onClick: (c: string) => void;
-}) {
-  return (
-    <button
-      onClick={() => onClick(color)}
-      style={{
-        width: 26,
-        height: 26,
-        borderRadius: '50%',
-        background: color,
-        border: selected ? '2px solid #e2e2e2' : '2px solid transparent',
-        cursor: 'pointer',
-        padding: 0,
-        flexShrink: 0,
-        boxShadow: selected ? '0 0 0 2px rgba(220,184,255,0.5)' : 'none',
-        transition: 'box-shadow 150ms, transform 150ms',
-        transform: selected ? 'scale(1.15)' : 'scale(1)',
-      }}
-    />
-  );
-}
-
 interface TagFormState {
   name_en: string;
   name_pl: string;
   color: string;
 }
 
-const emptyForm: TagFormState = { name_en: '', name_pl: '', color: PRESET_COLORS[0] };
+const emptyForm: TagFormState = { name_en: '', name_pl: '', color: DEFAULT_COLOR };
 
 function TagCard({
   tag,
@@ -297,10 +255,14 @@ function TagModal({
   const t = useTranslations('admin');
   const isEdit = !!tag;
   const [form, setForm] = useState<TagFormState>(
-    tag ? { name_en: tag.name_en, name_pl: tag.name_pl, color: tag.color ?? '' } : { ...emptyForm },
+    tag
+      ? { name_en: tag.name_en, name_pl: tag.name_pl, color: tag.color ?? DEFAULT_COLOR }
+      : { ...emptyForm },
   );
   const [focusEn, setFocusEn] = useState(false);
   const [focusPl, setFocusPl] = useState(false);
+  const [focusHex, setFocusHex] = useState(false);
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   function set(k: keyof TagFormState, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -433,18 +395,73 @@ function TagModal({
             >
               {t('tags.colorLabel')}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-              {PRESET_COLORS.map((c) => (
-                <ColorDot
-                  key={c}
-                  color={c}
-                  selected={form.color === c}
-                  onClick={(v) => set('color', v)}
-                />
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Swatch — clicks native color picker */}
+              <button
+                type="button"
+                onClick={() => colorInputRef.current?.click()}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  background: form.color || DEFAULT_COLOR,
+                  border: '2px solid rgba(75,68,80,0.4)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  flexShrink: 0,
+                  transition: 'border-color 150ms',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(220,184,255,0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+                }}
+              />
+              {/* Hidden native color input */}
+              <input
+                ref={colorInputRef}
+                type="color"
+                value={form.color || DEFAULT_COLOR}
+                onChange={(e) => set('color', e.target.value)}
+                style={{
+                  position: 'absolute',
+                  opacity: 0,
+                  pointerEvents: 'none',
+                  width: 0,
+                  height: 0,
+                }}
+              />
+              {/* Hex text field */}
+              <input
+                value={form.color}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set('color', v);
+                }}
+                onFocus={() => setFocusHex(true)}
+                onBlur={() => setFocusHex(false)}
+                placeholder={DEFAULT_COLOR}
+                maxLength={7}
+                style={{
+                  background: '#131313',
+                  border: focusHex
+                    ? '1px solid rgba(220,184,255,0.5)'
+                    : '1px solid rgba(75,68,80,0.4)',
+                  borderRadius: 8,
+                  color: '#e2e2e2',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 13,
+                  padding: '9px 14px',
+                  outline: 'none',
+                  width: 110,
+                  letterSpacing: '0.04em',
+                  transition: 'border-color 180ms',
+                }}
+              />
             </div>
             {form.name_en && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
                 <span style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
                   {t('tags.preview')}
                 </span>
