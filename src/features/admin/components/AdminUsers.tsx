@@ -89,6 +89,7 @@ function UserRow({
   isSelf: boolean;
   onAction: (type: ConfirmState['type'], user: AdminUserRow, newRole?: 'USER' | 'ADMIN') => void;
 }) {
+  const t = useTranslations('admin');
   const [hov, setHov] = useState(false);
   const isBlocked = Boolean(user.blockedAt);
   const initials =
@@ -226,7 +227,7 @@ function UserRow({
             color: isBlocked ? '#ef4444' : '#84d099',
           }}
         >
-          {isBlocked ? 'blocked' : 'active'}
+          {isBlocked ? t('users.blocked') : t('users.active')}
         </span>
       </div>
 
@@ -590,7 +591,14 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             borderBottom: '1px solid rgba(75,68,80,0.2)',
           }}
         >
-          {['User', 'Location', 'Moves', 'Joined', 'Role & Status', ''].map((h, i) => (
+          {[
+            t('users.cols.user'),
+            t('users.cols.location'),
+            t('users.cols.moves'),
+            t('users.cols.joined'),
+            t('users.cols.roleStatus'),
+            '',
+          ].map((h, i) => (
             <span
               key={i}
               style={{

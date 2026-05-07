@@ -1,7 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+
+import LocaleSwitcher from '@/shared/components/LocaleSwitcher';
 
 type Section = 'dashboard' | 'moves' | 'users' | 'tags';
 
@@ -377,76 +379,9 @@ export function AdminShell({
             </span>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                background: '#1b1b1b',
-                border: '1px solid rgba(75,68,80,0.3)',
-                borderRadius: 8,
-                padding: '7px 14px',
-              }}
-            >
-              <span style={{ color: '#978e9b', display: 'flex' }}>
-                <NavIcon name="Search" size={14} />
-              </span>
-              <span
-                style={{
-                  fontSize: 13,
-                  color: '#4b4450',
-                  fontFamily: 'var(--font-manrope)',
-                }}
-              >
-                Search…
-              </span>
-              <kbd
-                style={{
-                  fontSize: 10,
-                  fontFamily: 'var(--font-manrope)',
-                  color: '#4b4450',
-                  background: '#0e0e0e',
-                  border: '1px solid rgba(75,68,80,0.4)',
-                  borderRadius: 4,
-                  padding: '1px 5px',
-                }}
-              >
-                ⌘K
-              </kbd>
-            </div>
-            <button
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#978e9b',
-                cursor: 'pointer',
-                display: 'flex',
-                padding: 8,
-                borderRadius: 8,
-                position: 'relative',
-                transition: 'color 150ms',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#e2e2e2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#978e9b';
-              }}
-            >
-              <NavIcon name="Bell" size={18} />
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 6,
-                  right: 6,
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  background: '#dcb8ff',
-                  border: '1.5px solid #0d0d0d',
-                }}
-              />
-            </button>
+            <Suspense fallback={null}>
+              <LocaleSwitcher />
+            </Suspense>
           </div>
         </header>
         <main style={{ flex: 1, overflowY: 'auto' }}>{children}</main>

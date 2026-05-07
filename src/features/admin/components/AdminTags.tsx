@@ -121,6 +121,7 @@ function TagCard({
   onEdit: (t: AdminTagRow) => void;
   onDelete: (t: AdminTagRow) => void;
 }) {
+  const t = useTranslations('admin');
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -250,7 +251,7 @@ function TagCard({
             e.currentTarget.style.color = '#978e9b';
           }}
         >
-          <NavIcon name="Edit" size={12} /> Edit
+          <NavIcon name="Edit" size={12} /> {t('edit')}
         </button>
         <button
           onClick={() => onDelete(tag)}
@@ -293,6 +294,7 @@ function TagModal({
   onClose: () => void;
   saving: boolean;
 }) {
+  const t = useTranslations('admin');
   const isEdit = !!tag;
   const [form, setForm] = useState<TagFormState>(
     tag ? { name_en: tag.name_en, name_pl: tag.name_pl, color: tag.color ?? '' } : { ...emptyForm },
@@ -341,7 +343,7 @@ function TagModal({
             letterSpacing: '-0.02em',
           }}
         >
-          {isEdit ? 'edit tag' : 'create tag'}
+          {isEdit ? t('tags.editTag') : t('tags.addTag')}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* EN */}
@@ -478,7 +480,7 @@ function TagModal({
               cursor: 'pointer',
             }}
           >
-            cancel
+            {t('cancel')}
           </button>
           <button
             onClick={() => onSave(form)}
@@ -510,7 +512,7 @@ function TagModal({
               e.currentTarget.style.backgroundPosition = 'left center';
             }}
           >
-            {saving ? '…' : isEdit ? 'save changes' : 'create tag'}
+            {saving ? '…' : isEdit ? t('save') : t('tags.addTag')}
           </button>
         </div>
       </div>

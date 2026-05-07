@@ -300,7 +300,7 @@
       "addTag": "Dodaj tag",
       "editTag": "Edytuj tag",
       "deleteTag": "Usuń tag",
-      "confirmDelete": "Czy na pewno chcesz usunąć ten tag?",
+      "confirmDelete": "zostanie usunięty ze wszystkich ruchów.",
       "movesCount": "{count} ruchów"
     },
     "users": {
@@ -316,12 +316,15 @@
       "confirmDelete": "Czy na pewno chcesz usunąć tego użytkownika? Wszystkie jego dane zostaną trwale usunięte.",
       "confirmBlock": "Zablokować tego użytkownika? Nie będzie mógł się zalogować do momentu odblokowania.",
       "blocked": "Zablokowany",
+      "active": "Aktywny",
       "noLocation": "—",
       "cols": {
         "user": "Użytkownik",
         "location": "Lokalizacja",
+        "moves": "Ruchy",
         "joined": "Dołączył",
         "role": "Rola",
+        "roleStatus": "Rola i status",
         "actions": "Akcje"
       }
     }

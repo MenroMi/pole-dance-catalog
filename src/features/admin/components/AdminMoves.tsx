@@ -269,6 +269,7 @@ interface DeleteConfirmProps {
 }
 
 function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConfirmProps) {
+  const t = useTranslations('admin');
   return (
     <div
       style={{
@@ -370,7 +371,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
               e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
             }}
           >
-            cancel
+            {t('cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -395,7 +396,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
               e.currentTarget.style.background = '#b3261e';
             }}
           >
-            {loading ? '…' : 'delete move'}
+            {loading ? '…' : t('moves.deleteMove')}
           </button>
         </div>
       </div>
