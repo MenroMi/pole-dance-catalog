@@ -44,7 +44,7 @@ const getJwt = () =>
   }) => Record<string, unknown>;
 
 const getSession = () =>
-  authConfig.callbacks?.session as (params: {
+  authConfig.callbacks?.session as unknown as (params: {
     session: { user: Record<string, unknown>; expires: string };
     token: Record<string, unknown>;
   }) => { user: Record<string, unknown> };

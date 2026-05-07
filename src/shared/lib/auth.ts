@@ -9,9 +9,18 @@ import { authBaseConfig } from './auth.config';
 import { prisma } from './prisma';
 import { signinRatelimit } from './ratelimit';
 
+const baseAdapter = PrismaAdapter(prisma);
+
 export const authConfig = {
   ...authBaseConfig,
-  adapter: PrismaAdapter(prisma),
+  adapter: {
+    ...baseAdapter,
+    // Our schema uses firstName instead of the standard NextAuth 'name' field
+    createUser: (user: Parameters<NonNullable<typeof baseAdapter.createUser>>[0]) => {
+      const { name, ...rest } = user;
+      return baseAdapter.createUser!({ ...rest, firstName: name ?? null } as typeof user);
+    },
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
