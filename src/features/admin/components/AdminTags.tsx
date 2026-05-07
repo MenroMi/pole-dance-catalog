@@ -13,6 +13,15 @@ import type { AdminTagRow } from '../types';
 
 const DEFAULT_COLOR = '#dcb8ff';
 
+function randomHex() {
+  return (
+    '#' +
+    Math.floor(Math.random() * 0xffffff)
+      .toString(16)
+      .padStart(6, '0')
+  );
+}
+
 function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
     Search: (
@@ -459,6 +468,51 @@ function TagModal({
                   transition: 'border-color 180ms',
                 }}
               />
+              {/* Randomize button */}
+              <button
+                type="button"
+                onClick={() => set('color', randomHex())}
+                title="Random color"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: 'transparent',
+                  border: '1px solid rgba(75,68,80,0.4)',
+                  color: '#978e9b',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  flexShrink: 0,
+                  transition: 'border-color 150ms, color 150ms',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(220,184,255,0.5)';
+                  e.currentTarget.style.color = '#dcb8ff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+                  e.currentTarget.style.color = '#978e9b';
+                }}
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="16 3 21 3 21 8" />
+                  <line x1="4" y1="20" x2="21" y2="3" />
+                  <polyline points="21 16 21 21 16 21" />
+                  <line x1="15" y1="15" x2="21" y2="21" />
+                </svg>
+              </button>
             </div>
             {form.name_en && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
