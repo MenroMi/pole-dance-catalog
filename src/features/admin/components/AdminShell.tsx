@@ -114,7 +114,16 @@ export function AdminShell({
     : 'A';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0d0d0d' }}>
+    <div
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        background: '#0d0d0d',
+        maxWidth: 2560,
+        margin: '0 auto',
+        width: '100%',
+      }}
+    >
       {/* Sidebar */}
       <aside
         style={{
