@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import {
@@ -90,6 +90,7 @@ function UserRow({
   onAction: (type: ConfirmState['type'], user: AdminUserRow, newRole?: 'USER' | 'ADMIN') => void;
 }) {
   const t = useTranslations('admin');
+  const locale = useLocale();
   const [hov, setHov] = useState(false);
   const isBlocked = Boolean(user.blockedAt);
   const initials =
@@ -194,7 +195,7 @@ function UserRow({
 
       {/* Joined */}
       <div style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
-        {new Date(user.createdAt).toLocaleDateString(undefined, {
+        {new Date(user.createdAt).toLocaleDateString(locale, {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
