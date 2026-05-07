@@ -245,7 +245,7 @@ function UserRow({
         <button
           disabled={isSelf}
           onClick={() => onAction('role', user, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
-          title={user.role === 'ADMIN' ? 'Revoke admin' : 'Make admin'}
+          title={user.role === 'ADMIN' ? t('users.revokeAdmin') : t('users.makeAdmin')}
           style={{
             background: 'transparent',
             border: '1px solid rgba(75,68,80,0.4)',
@@ -274,7 +274,7 @@ function UserRow({
         <button
           disabled={isSelf}
           onClick={() => onAction(isBlocked ? 'unblock' : 'block', user)}
-          title={isBlocked ? 'Unblock' : 'Block'}
+          title={isBlocked ? t('users.unblock') : t('users.block')}
           style={{
             background: 'transparent',
             border: '1px solid rgba(75,68,80,0.4)',
@@ -303,7 +303,7 @@ function UserRow({
         <button
           disabled={isSelf}
           onClick={() => onAction('delete', user)}
-          title="Delete user"
+          title={t('users.deleteUser')}
           style={{
             background: 'transparent',
             border: '1px solid rgba(75,68,80,0.4)',
@@ -467,7 +467,8 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             marginBottom: 8,
           }}
         >
-          Community · {users.length} members · {adminCount} admins · {blockedCount} blocked
+          {t('users.community')} · {users.length} {t('users.members')} · {adminCount}{' '}
+          {t('users.adminsCount')} · {blockedCount} {t('users.blocked')}
         </div>
         <h1
           style={{
@@ -615,7 +616,9 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           ))}
         </div>
 
-        {loading && <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>Loading…</div>}
+        {loading && (
+          <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
+        )}
 
         {!loading && filtered.length === 0 && (
           <div

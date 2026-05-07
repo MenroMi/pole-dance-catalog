@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { getAdminStatsAction } from '../actions';
@@ -161,6 +162,7 @@ const WEEK_DATA = [
 ];
 
 function ActivityChart() {
+  const t = useTranslations('admin');
   const max = Math.max(...WEEK_DATA.map((d) => d.users));
   return (
     <div
@@ -191,7 +193,7 @@ function ActivityChart() {
               marginBottom: 4,
             }}
           >
-            Weekly Activity
+            {t('dashboard.weeklyActivity')}
           </div>
           <div
             style={{
@@ -202,7 +204,7 @@ function ActivityChart() {
               letterSpacing: '-0.02em',
             }}
           >
-            Active users
+            {t('dashboard.activeUsers')}
           </div>
         </div>
         <div
@@ -224,7 +226,7 @@ function ActivityChart() {
               display: 'inline-block',
             }}
           />
-          users
+          {t('dashboard.usersLegend')}
           <span
             style={{
               width: 8,
@@ -235,7 +237,7 @@ function ActivityChart() {
               marginLeft: 8,
             }}
           />
-          moves added
+          {t('dashboard.movesAddedLegend')}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100 }}>
@@ -316,6 +318,7 @@ function ActivityChart() {
 }
 
 export function AdminDashboard() {
+  const t = useTranslations('admin');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -323,12 +326,12 @@ export function AdminDashboard() {
   useEffect(() => {
     getAdminStatsAction()
       .then(setStats)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load stats'))
+      .catch((e) => setError(e instanceof Error ? e.message : t('dashboard.loadError')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   if (loading) {
-    return <div style={{ color: '#978e9b', padding: 40, textAlign: 'center' }}>Loading…</div>;
+    return <div style={{ color: '#978e9b', padding: 40, textAlign: 'center' }}>{t('loading')}</div>;
   }
 
   if (error || !stats) {
@@ -343,7 +346,7 @@ export function AdminDashboard() {
           margin: 32,
         }}
       >
-        {error ?? 'Failed to load stats'}
+        {error ?? t('dashboard.loadError')}
       </div>
     );
   }
@@ -379,8 +382,10 @@ export function AdminDashboard() {
             lineHeight: 1.1,
           }}
         >
-          good morning,{' '}
-          <em style={{ color: '#dcb8ff', fontStyle: 'italic', fontWeight: 500 }}>admin.</em>
+          {t('dashboard.greeting')}{' '}
+          <em style={{ color: '#dcb8ff', fontStyle: 'italic', fontWeight: 500 }}>
+            {t('dashboard.greetingAdmin')}
+          </em>
         </h1>
         <p
           style={{
@@ -390,7 +395,7 @@ export function AdminDashboard() {
             margin: '10px 0 0',
           }}
         >
-          Here is an overview of your catalog and community.
+          {t('dashboard.overview')}
         </p>
       </div>
 
@@ -404,29 +409,29 @@ export function AdminDashboard() {
         }}
       >
         <StatCard
-          label="Total Users"
+          label={t('dashboard.totalUsers')}
           value={stats.totalUsers}
-          sub="+23 this week"
+          sub={`+23 ${t('dashboard.thisWeek')}`}
           trend="up"
           icon="Users"
         />
         <StatCard
-          label="Total Moves"
+          label={t('dashboard.totalMoves')}
           value={stats.totalMoves}
-          sub="Across 5 categories"
+          sub={t('dashboard.acrossCategories')}
           icon="Play"
         />
         <StatCard
-          label="Active Today"
+          label={t('dashboard.activeToday')}
           value="—"
-          sub="94 sessions open"
+          sub={`94 ${t('dashboard.sessionsOpen')}`}
           trend="up"
           icon="Activity"
         />
         <StatCard
-          label="Favourited"
+          label={t('dashboard.favourited')}
           value="—"
-          sub="Across all moves"
+          sub={t('dashboard.acrossAllMoves')}
           trend="up"
           icon="Heart"
           accent="#dcb8ff"
@@ -443,23 +448,23 @@ export function AdminDashboard() {
         }}
       >
         <StatCard
-          label="Tags"
+          label={t('dashboard.totalTags')}
           value={stats.totalTags}
-          sub="Across the catalog"
+          sub={t('dashboard.acrossCatalog')}
           icon="Tag"
           accent="#84d099"
         />
         <StatCard
-          label="Progress Records"
+          label={t('dashboard.progressRecords')}
           value="—"
-          sub="User × Move links"
+          sub={t('dashboard.userMovieLinks')}
           icon="Award"
           accent="#fbbf24"
         />
         <StatCard
-          label="New Users"
+          label={t('dashboard.newUsers')}
           value="—"
-          sub="This week"
+          sub={t('dashboard.thisWeek')}
           trend="up"
           icon="TrendingUp"
           accent="#c5afe2"
@@ -502,7 +507,7 @@ export function AdminDashboard() {
                   marginBottom: 4,
                 }}
               >
-                Catalog
+                {t('moves.catalog')}
               </div>
               <div
                 style={{
@@ -513,7 +518,7 @@ export function AdminDashboard() {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Recent moves
+                {t('dashboard.recentMovesSection')}
               </div>
             </div>
           </div>

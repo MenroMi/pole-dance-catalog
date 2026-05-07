@@ -167,7 +167,7 @@ function TagCard({
             textTransform: 'uppercase',
           }}
         >
-          {tag._count.moves} moves
+          {t('tags.movesCount', { count: tag._count.moves })}
         </span>
       </div>
       {/* Names */}
@@ -359,7 +359,7 @@ function TagModal({
                 transition: 'color 180ms',
               }}
             >
-              Name (EN)
+              {t('tags.nameEnLabel')}
             </span>
             <input
               value={form.name_en}
@@ -395,7 +395,7 @@ function TagModal({
                 transition: 'color 180ms',
               }}
             >
-              Name (PL)
+              {t('tags.namePlLabel')}
             </span>
             <input
               value={form.name_pl}
@@ -431,7 +431,7 @@ function TagModal({
                 marginBottom: 10,
               }}
             >
-              Color
+              {t('tags.colorLabel')}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               {PRESET_COLORS.map((c) => (
@@ -446,7 +446,7 @@ function TagModal({
             {form.name_en && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
-                  preview:
+                  {t('tags.preview')}
                 </span>
                 <span
                   style={{
@@ -627,7 +627,7 @@ export function AdminTags() {
               marginBottom: 8,
             }}
           >
-            Taxonomy · {tags.length} {t('tags.title').toLowerCase()}
+            {t('tags.taxonomy')} · {tags.length} {t('tags.title').toLowerCase()}
           </div>
           <h1
             style={{
@@ -693,7 +693,7 @@ export function AdminTags() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search tags…"
+          placeholder={t('tags.search')}
           style={{
             background: 'transparent',
             border: 'none',
@@ -706,7 +706,9 @@ export function AdminTags() {
         />
       </div>
 
-      {loading && <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>Loading…</div>}
+      {loading && (
+        <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
+      )}
 
       {/* Grid */}
       {!loading && (

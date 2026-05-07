@@ -303,7 +303,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           {tab === 'en' && (
             <div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Title (EN) *</label>
+                <label style={labelStyle}>{t('moves.fields.titleEn')} *</label>
                 <Input
                   value={form.title_en}
                   onChange={(e) => set('title_en', e.target.value)}
@@ -312,16 +312,16 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Description (EN)</label>
+                <label style={labelStyle}>{t('moves.fields.descriptionEn')}</label>
                 <textarea
                   value={form.description_en}
                   onChange={(e) => set('description_en', e.target.value)}
                   style={{ ...fieldStyle, minHeight: 72, resize: 'vertical' }}
-                  placeholder="Optional description"
+                  placeholder={t('moves.fields.optionalDescription')}
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>YouTube URL *</label>
+                <label style={labelStyle}>{t('moves.fields.youtubeUrl')} *</label>
                 <Input
                   value={form.youtubeUrl}
                   onChange={(e) => set('youtubeUrl', e.target.value)}
@@ -330,7 +330,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Grip Type (EN)</label>
+                <label style={labelStyle}>{t('moves.fields.gripTypeEn')}</label>
                 <Input
                   value={form.gripType_en}
                   onChange={(e) => set('gripType_en', e.target.value)}
@@ -338,7 +338,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Entry (EN)</label>
+                <label style={labelStyle}>{t('moves.fields.entryEn')}</label>
                 <Input
                   value={form.entry_en}
                   onChange={(e) => set('entry_en', e.target.value)}
@@ -346,7 +346,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Coach Note (EN)</label>
+                <label style={labelStyle}>{t('moves.fields.coachNoteEn')}</label>
                 <textarea
                   value={form.coachNote_en}
                   onChange={(e) => set('coachNote_en', e.target.value)}
@@ -354,9 +354,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>
-                  Steps Data (EN) — JSON array of {`{ time, label }`}
-                </label>
+                <label style={labelStyle}>{t('moves.fields.stepsEn')}</label>
                 <textarea
                   value={form.stepsData_en}
                   onChange={(e) => {
@@ -386,7 +384,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
                 {stepsEnError && (
                   <span style={{ color: '#f87171', fontSize: 12, marginTop: 4, display: 'block' }}>
-                    Invalid JSON
+                    {t('invalidJson')}
                   </span>
                 )}
               </div>
@@ -396,7 +394,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           {tab === 'pl' && (
             <div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Tytuł (PL) *</label>
+                <label style={labelStyle}>{t('moves.fields.titlePl')} *</label>
                 <Input
                   value={form.title_pl}
                   onChange={(e) => set('title_pl', e.target.value)}
@@ -405,7 +403,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Opis (PL)</label>
+                <label style={labelStyle}>{t('moves.fields.descriptionPl')}</label>
                 <textarea
                   value={form.description_pl}
                   onChange={(e) => set('description_pl', e.target.value)}
@@ -413,7 +411,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Chwyt (PL)</label>
+                <label style={labelStyle}>{t('moves.fields.gripTypePl')}</label>
                 <Input
                   value={form.gripType_pl}
                   onChange={(e) => set('gripType_pl', e.target.value)}
@@ -421,7 +419,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Wejście (PL)</label>
+                <label style={labelStyle}>{t('moves.fields.entryPl')}</label>
                 <Input
                   value={form.entry_pl}
                   onChange={(e) => set('entry_pl', e.target.value)}
@@ -429,7 +427,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Notatka trenera (PL)</label>
+                <label style={labelStyle}>{t('moves.fields.coachNotePl')}</label>
                 <textarea
                   value={form.coachNote_pl}
                   onChange={(e) => set('coachNote_pl', e.target.value)}
@@ -437,7 +435,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Kroki (PL) — JSON array of {`{ time, label }`}</label>
+                <label style={labelStyle}>{t('moves.fields.stepsPl')}</label>
                 <textarea
                   value={form.stepsData_pl}
                   onChange={(e) => {
@@ -467,7 +465,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
                 {stepsPlError && (
                   <span style={{ color: '#f87171', fontSize: 12, marginTop: 4, display: 'block' }}>
-                    Invalid JSON
+                    {t('invalidJson')}
                   </span>
                 )}
               </div>
@@ -477,7 +475,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           {tab === 'meta' && (
             <div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Difficulty *</label>
+                <label style={labelStyle}>{t('moves.fields.difficulty')} *</label>
                 <select
                   value={form.difficulty}
                   onChange={(e) => set('difficulty', e.target.value)}
@@ -491,7 +489,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 </select>
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Category *</label>
+                <label style={labelStyle}>{t('moves.fields.category')} *</label>
                 <select
                   value={form.category}
                   onChange={(e) => set('category', e.target.value)}
@@ -505,7 +503,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 </select>
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Pole Types</label>
+                <label style={labelStyle}>{t('moves.fields.poleTypes')}</label>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {POLE_TYPES.map((pt) => (
                     <label
@@ -530,7 +528,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 </div>
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Image URL</label>
+                <label style={labelStyle}>{t('moves.fields.imageUrl')}</label>
                 <Input
                   value={form.imageUrl}
                   onChange={(e) => set('imageUrl', e.target.value)}
@@ -539,7 +537,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Duration</label>
+                <label style={labelStyle}>{t('moves.fields.duration')}</label>
                 <Input
                   value={form.duration}
                   onChange={(e) => set('duration', e.target.value)}
@@ -548,7 +546,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Coach Note Author</label>
+                <label style={labelStyle}>{t('moves.fields.coachNoteAuthor')}</label>
                 <Input
                   value={form.coachNoteAuthor}
                   onChange={(e) => set('coachNoteAuthor', e.target.value)}
@@ -556,7 +554,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>Tags</label>
+                <label style={labelStyle}>{t('moves.fields.tags')}</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
                   {availableTags.map((tag) => (
                     <button
@@ -614,7 +612,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
               disabled={saving || !form.title_en || !form.title_pl || !form.youtubeUrl}
               style={{ background: '#8458b3', color: '#fff' }}
             >
-              {saving ? 'Saving...' : t('save')}
+              {saving ? t('moves.saving') : t('save')}
             </Button>
           </div>
         </div>

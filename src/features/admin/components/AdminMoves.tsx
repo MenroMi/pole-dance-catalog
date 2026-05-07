@@ -106,6 +106,7 @@ function MoveRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const t = useTranslations('admin');
   const [hov, setHov] = useState(false);
   const dc = DIFF_STYLES[move.difficulty] ?? DIFF_STYLES.BEGINNER;
 
@@ -209,7 +210,7 @@ function MoveRow({
       >
         <button
           onClick={onEdit}
-          title="Edit"
+          title={t('edit')}
           style={{
             background: 'transparent',
             border: '1px solid rgba(75,68,80,0.4)',
@@ -233,7 +234,7 @@ function MoveRow({
         </button>
         <button
           onClick={onDelete}
-          title="Delete"
+          title={t('delete')}
           style={{
             background: 'transparent',
             border: '1px solid rgba(75,68,80,0.4)',
@@ -323,7 +324,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
             letterSpacing: '-0.02em',
           }}
         >
-          delete move?
+          {t('moves.deleteTitle')}
         </h2>
         <p
           style={{
@@ -334,8 +335,7 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
             lineHeight: 1.6,
           }}
         >
-          <strong style={{ color: '#e2e2e2' }}>{move.title_en}</strong> will be permanently removed
-          from the catalog. This action cannot be undone.
+          <strong style={{ color: '#e2e2e2' }}>{move.title_en}</strong> {t('moves.deleteBody')}
         </p>
         {error && (
           <p
@@ -670,7 +670,7 @@ export function AdminMoves() {
               fontSize: 14,
             }}
           >
-            Loading…
+            {t('loading')}
           </div>
         )}
 
