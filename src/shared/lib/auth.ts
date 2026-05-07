@@ -46,6 +46,7 @@ export const authConfig = {
         });
 
         if (!user) throw new Error("We couldn't find your account. Try signing up.");
+        if (user.blockedAt) throw new Error('Your account has been blocked. Contact support.');
         if (user.emailVerified === null) throw new Error('Please verify your email first.');
         if (!user.password) throw new Error('Please sign in with Google or Facebook');
 
@@ -61,8 +62,9 @@ export const authConfig = {
         try {
           const existing = await prisma.user.findUnique({
             where: { email: user.email },
-            select: { firstName: true, image: true },
+            select: { firstName: true, image: true, blockedAt: true },
           });
+          if (existing?.blockedAt) return false;
           if (existing) {
             const updates: { firstName?: string; image?: string } = {};
             if (!existing.firstName && profile?.name) {

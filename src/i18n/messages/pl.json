@@ -308,11 +308,19 @@
       "changeRole": "Zmień rolę",
       "makeAdmin": "Zrób adminem",
       "makeUser": "Zrób użytkownikiem",
+      "block": "Zablokuj",
+      "unblock": "Odblokuj",
+      "deleteUser": "Usuń użytkownika",
+      "confirmDelete": "Czy na pewno chcesz usunąć tego użytkownika? Wszystkie jego dane zostaną trwale usunięte.",
+      "confirmBlock": "Zablokować tego użytkownika? Nie będzie mógł się zalogować do momentu odblokowania.",
+      "blocked": "Zablokowany",
+      "noLocation": "—",
       "cols": {
-        "email": "Email",
-        "name": "Imię i nazwisko",
+        "user": "Użytkownik",
+        "location": "Lokalizacja",
         "joined": "Dołączył",
-        "role": "Rola"
+        "role": "Rola",
+        "actions": "Akcje"
       }
     }
   },

@@ -20,6 +20,7 @@ vi.mock('@/shared/lib/prisma', () => ({
     user: {
       findMany: vi.fn(),
       update: vi.fn(),
+      delete: vi.fn(),
       count: vi.fn(),
     },
   },
@@ -35,16 +36,19 @@ import { auth } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
 
 import {
+  blockUserAction,
   changeUserRoleAction,
   createMoveAction,
   createTagAction,
   deleteTagAction,
   deleteMoveAction,
+  deleteUserAction,
   getAdminStatsAction,
   getMoveByIdAction,
   getMovesForAdminAction,
   getTagsForAdminAction,
   getUsersForAdminAction,
+  unblockUserAction,
   updateMoveAction,
   updateTagAction,
 } from './actions';
@@ -63,6 +67,7 @@ const mockTagDelete = prisma.tag.delete as ReturnType<typeof vi.fn>;
 const mockTagCount = prisma.tag.count as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockUserUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
+const mockUserDelete = prisma.user.delete as ReturnType<typeof vi.fn>;
 const mockUserCount = prisma.user.count as ReturnType<typeof vi.fn>;
 
 const adminSession = { user: { id: 'admin-1', role: 'ADMIN' } };
@@ -358,5 +363,67 @@ describe('changeUserRoleAction', () => {
     mockUserUpdate.mockResolvedValue({ id: 'u-1', role: 'ADMIN' });
     await changeUserRoleAction('u-1', 'ADMIN');
     expect(mockUserUpdate).toHaveBeenCalledWith({ where: { id: 'u-1' }, data: { role: 'ADMIN' } });
+  });
+});
+
+describe('blockUserAction', () => {
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    await expect(blockUserAction('u-1')).rejects.toThrow('Unauthorized');
+  });
+
+  it('throws when admin tries to block themselves', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(blockUserAction('admin-1')).rejects.toThrow('Cannot block yourself');
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it('sets blockedAt when ADMIN', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserUpdate.mockResolvedValue({ id: 'u-1' });
+    await blockUserAction('u-1');
+    expect(mockUserUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'u-1' },
+        data: expect.objectContaining({ blockedAt: expect.any(Date) }),
+      }),
+    );
+  });
+});
+
+describe('unblockUserAction', () => {
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    await expect(unblockUserAction('u-1')).rejects.toThrow('Unauthorized');
+  });
+
+  it('clears blockedAt when ADMIN', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserUpdate.mockResolvedValue({ id: 'u-1' });
+    await unblockUserAction('u-1');
+    expect(mockUserUpdate).toHaveBeenCalledWith({
+      where: { id: 'u-1' },
+      data: { blockedAt: null },
+    });
+  });
+});
+
+describe('deleteUserAction', () => {
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    await expect(deleteUserAction('u-1')).rejects.toThrow('Unauthorized');
+  });
+
+  it('throws when admin tries to delete themselves', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(deleteUserAction('admin-1')).rejects.toThrow('Cannot delete yourself');
+    expect(mockUserDelete).not.toHaveBeenCalled();
+  });
+
+  it('deletes user when ADMIN', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserDelete.mockResolvedValue({ id: 'u-1' });
+    await deleteUserAction('u-1');
+    expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'u-1' } });
   });
 });

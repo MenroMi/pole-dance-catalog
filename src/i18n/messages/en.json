@@ -308,11 +308,19 @@
       "changeRole": "Change Role",
       "makeAdmin": "Make Admin",
       "makeUser": "Make User",
+      "block": "Block",
+      "unblock": "Unblock",
+      "deleteUser": "Delete User",
+      "confirmDelete": "Are you sure you want to delete this user? All their data will be removed permanently.",
+      "confirmBlock": "Block this user? They will not be able to log in until unblocked.",
+      "blocked": "Blocked",
+      "noLocation": "—",
       "cols": {
-        "email": "Email",
-        "name": "Name",
+        "user": "User",
+        "location": "Location",
         "joined": "Joined",
-        "role": "Role"
+        "role": "Role",
+        "actions": "Actions"
       }
     }
   },

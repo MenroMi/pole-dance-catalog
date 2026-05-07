@@ -74,7 +74,10 @@ export interface AdminUserRow {
   email: string;
   firstName: string | null;
   lastName: string | null;
+  image: string | null;
+  location: string | null;
   role: User['role'];
+  blockedAt: Date | null;
   createdAt: Date;
 }
 
