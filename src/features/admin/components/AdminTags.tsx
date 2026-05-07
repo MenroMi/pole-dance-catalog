@@ -472,9 +472,7 @@ function TagModal({
               <button
                 type="button"
                 onClick={() => set('color', randomHex())}
-                title="Random color"
                 style={{
-                  width: 36,
                   height: 36,
                   borderRadius: 8,
                   background: 'transparent',
@@ -483,9 +481,12 @@ function TagModal({
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
+                  gap: 6,
+                  padding: '0 12px',
                   flexShrink: 0,
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 12,
+                  fontWeight: 500,
                   transition: 'border-color 150ms, color 150ms',
                 }}
                 onMouseEnter={(e) => {
@@ -512,6 +513,7 @@ function TagModal({
                   <polyline points="21 16 21 21 16 21" />
                   <line x1="15" y1="15" x2="21" y2="21" />
                 </svg>
+                {t('tags.randomColor')}
               </button>
             </div>
             {form.name_en && (

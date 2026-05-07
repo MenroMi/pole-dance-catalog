@@ -355,7 +355,8 @@
       "namePlLabel": "Name (PL)",
       "colorLabel": "Color",
       "preview": "preview:",
-      "movesLabel": "moves"
+      "movesLabel": "moves",
+      "randomColor": "random"
     },
     "users": {
       "title": "Users",

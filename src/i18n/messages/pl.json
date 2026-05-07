@@ -355,7 +355,8 @@
       "namePlLabel": "Nazwa (PL)",
       "colorLabel": "Kolor",
       "preview": "podgląd:",
-      "movesLabel": "ruchów"
+      "movesLabel": "ruchów",
+      "randomColor": "losowy"
     },
     "users": {
       "title": "Użytkownicy",
