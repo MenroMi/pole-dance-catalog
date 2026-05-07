@@ -61,7 +61,7 @@ function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
   );
 }
 
-const GRID = '2.5fr 1fr 80px 120px 1fr 120px';
+const GRID = '2.5fr 1fr 120px 1fr 120px';
 
 const ROLE_STYLES: Record<string, { bg: string; fg: string }> = {
   ADMIN: { bg: 'rgba(220,184,255,0.15)', fg: '#dcb8ff' },
@@ -180,18 +180,6 @@ function UserRow({
         }}
       >
         {user.location || '—'}
-      </div>
-
-      {/* Moves (placeholder) */}
-      <div
-        style={{
-          fontSize: 14,
-          color: '#cdc3d2',
-          fontFamily: 'var(--font-space-grotesk)',
-          fontWeight: 500,
-        }}
-      >
-        —
       </div>
 
       {/* Joined */}
@@ -662,7 +650,6 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             {[
               t('users.cols.user'),
               t('users.cols.location'),
-              t('users.cols.moves'),
               t('users.cols.joined'),
               t('users.cols.roleStatus'),
               '',
