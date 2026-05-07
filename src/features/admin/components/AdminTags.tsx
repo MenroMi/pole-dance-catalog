@@ -16,20 +16,27 @@ import type { AdminTagRow } from '../types';
 
 import { ConfirmDialog } from './ConfirmDialog';
 
-const PRESET_COLORS = [
-  '#f87171',
-  '#fb923c',
-  '#fbbf24',
-  '#a3e635',
-  '#34d399',
-  '#22d3ee',
-  '#60a5fa',
-  '#a78bfa',
-  '#e879f9',
-  '#f472b6',
-  '#94a3b8',
-  '#dcb8ff',
-];
+function hslToHex(h: number, s: number, l: number): string {
+  const sl = s / 100;
+  const ll = l / 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = sl * Math.min(ll, 1 - ll);
+  const f = (n: number) => ll - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const hex = (x: number) =>
+    Math.round(x * 255)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${hex(f(0))}${hex(f(8))}${hex(f(4))}`;
+}
+
+function generateSuggestions(count = 8): string[] {
+  return Array.from({ length: count }, () => {
+    const hue = Math.floor(Math.random() * 110) + 230; // 230–340: blue-purple → pink
+    const sat = Math.floor(Math.random() * 30) + 60; // 60–90%
+    const lit = Math.floor(Math.random() * 20) + 55; // 55–75%
+    return hslToHex(hue, sat, lit);
+  });
+}
 
 interface TagFormState {
   name_en: string;
@@ -51,6 +58,7 @@ export function AdminTags() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [colorSuggestions, setColorSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,12 +83,14 @@ export function AdminTags() {
   function openCreate() {
     setEditTag(null);
     setForm(emptyForm);
+    setColorSuggestions(generateSuggestions());
     setModalOpen(true);
   }
 
   function openEdit(tag: AdminTagRow) {
     setEditTag(tag);
     setForm({ name_en: tag.name_en, name_pl: tag.name_pl, color: tag.color ?? '' });
+    setColorSuggestions(generateSuggestions());
     setModalOpen(true);
   }
 
@@ -339,9 +349,9 @@ export function AdminTags() {
                   </button>
                 )}
               </div>
-              {/* Quick presets */}
+              {/* Random tint suggestions */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {PRESET_COLORS.map((c) => (
+                {colorSuggestions.map((c) => (
                   <button
                     key={c}
                     type="button"
@@ -357,7 +367,6 @@ export function AdminTags() {
                       outline: 'none',
                       flexShrink: 0,
                     }}
-                    aria-label={c}
                     title={c}
                   />
                 ))}
