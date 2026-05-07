@@ -230,6 +230,7 @@ export async function getUsersForAdminAction(
     location: true,
     role: true,
     blockedAt: true,
+    blockReason: true,
     createdAt: true,
   };
 
@@ -258,10 +259,13 @@ export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN
   return prisma.user.update({ where: { id: userId }, data: { role: parsedRole.data } });
 }
 
-export async function blockUserAction(userId: string) {
+export async function blockUserAction(userId: string, reason?: string) {
   const session = await requireAdmin();
   if (session.user?.id === userId) throw new Error('Cannot block yourself');
-  return prisma.user.update({ where: { id: userId }, data: { blockedAt: new Date() } });
+  return prisma.user.update({
+    where: { id: userId },
+    data: { blockedAt: new Date(), blockReason: reason ?? null },
+  });
 }
 
 export async function unblockUserAction(userId: string) {

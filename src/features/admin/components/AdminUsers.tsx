@@ -76,6 +76,7 @@ interface ConfirmState {
   label: string;
   danger: boolean;
   newRole?: 'USER' | 'ADMIN';
+  existingReason?: string | null;
 }
 
 function UserRow({
@@ -348,6 +349,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
   const [acting, setActing] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalAll, setTotalAll] = useState(0);
@@ -413,6 +415,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         danger: newRole !== 'ADMIN',
       });
     } else if (type === 'block') {
+      setBlockReason('');
       setConfirm({
         type,
         userId: user.id,
@@ -429,6 +432,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         body: t('users.unblockBody', { name }),
         label: t('users.unblock'),
         danger: false,
+        existingReason: user.blockReason,
       });
     } else if (type === 'delete') {
       setConfirm({
@@ -449,7 +453,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       if (confirm.type === 'role' && confirm.newRole) {
         await changeUserRoleAction(confirm.userId, confirm.newRole);
       } else if (confirm.type === 'block') {
-        await blockUserAction(confirm.userId);
+        await blockUserAction(confirm.userId, blockReason.trim() || undefined);
       } else if (confirm.type === 'unblock') {
         await unblockUserAction(confirm.userId);
       } else if (confirm.type === 'delete') {
@@ -787,7 +791,64 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           onConfirm={applyConfirm}
           onCancel={() => setConfirm(null)}
           loading={acting}
-        />
+        >
+          {confirm.type === 'block' && (
+            <textarea
+              value={blockReason}
+              onChange={(e) => setBlockReason(e.target.value)}
+              placeholder={t('users.blockReasonPlaceholder')}
+              rows={3}
+              style={{
+                width: '100%',
+                marginTop: 12,
+                background: '#2a2a2a',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 8,
+                padding: '10px 12px',
+                color: '#e2e2e2',
+                fontFamily: 'var(--font-manrope)',
+                fontSize: 13,
+                resize: 'vertical',
+                outline: 'none',
+              }}
+            />
+          )}
+          {confirm.type === 'unblock' && confirm.existingReason && (
+            <div
+              style={{
+                marginTop: 12,
+                background: '#2a2a2a',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 8,
+                padding: '10px 12px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: '#6b6270',
+                  fontFamily: 'var(--font-manrope)',
+                  marginBottom: 6,
+                }}
+              >
+                {t('users.blockReasonLabel')}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: '#cdc3d2',
+                  fontFamily: 'var(--font-manrope)',
+                  lineHeight: 1.5,
+                }}
+              >
+                {confirm.existingReason}
+              </div>
+            </div>
+          )}
+        </ConfirmDialog>
       )}
     </div>
   );

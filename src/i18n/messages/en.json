@@ -389,6 +389,8 @@
       "blockBody": "{name} will be prevented from signing in. Their data is preserved.",
       "unblockTitle": "unblock user?",
       "unblockBody": "{name} will be able to sign in again.",
+      "blockReasonPlaceholder": "Reason for blocking (optional)…",
+      "blockReasonLabel": "Block reason",
       "roleAdmin": "Admin",
       "roleUser": "User",
       "filterAll": "All",

@@ -19,6 +19,7 @@ model User {
   password      String?
   role          Role      @default(USER)
   blockedAt     DateTime?
+  blockReason   String?
   createdAt     DateTime  @default(now())
 
   progress   UserProgress[]

@@ -78,6 +78,7 @@ export interface AdminUserRow {
   location: string | null;
   role: User['role'];
   blockedAt: Date | null;
+  blockReason: string | null;
   createdAt: Date;
 }
 

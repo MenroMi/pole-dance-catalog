@@ -20,6 +20,7 @@ interface ConfirmDialogProps {
   onCancel: () => void;
   loading?: boolean;
   error?: string | null;
+  children?: React.ReactNode;
 }
 
 export function ConfirmDialog({
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   onCancel,
   loading,
   error,
+  children,
 }: ConfirmDialogProps) {
   return (
     <AlertDialog
@@ -50,6 +52,7 @@ export function ConfirmDialog({
           <AlertDialogTitle style={{ color: '#e0e0e0' }}>{title}</AlertDialogTitle>
           <AlertDialogDescription style={{ color: '#888' }}>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         {error && <p style={{ color: '#f87171', fontSize: 13, margin: '4px 0 0' }}>{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel
