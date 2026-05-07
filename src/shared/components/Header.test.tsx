@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { auth } from '@/shared/lib/auth';
+import { prisma } from '@/shared/lib/prisma';
 
 import Header from './Header';
 
@@ -20,6 +21,9 @@ vi.mock('@/i18n/navigation', () => ({
   redirect: vi.fn(),
 }));
 vi.mock('@/shared/lib/auth', () => ({ auth: vi.fn() }));
+vi.mock('@/shared/lib/prisma', () => ({
+  prisma: { user: { findUnique: vi.fn() } },
+}));
 vi.mock('./FavouritesButton', () => ({ default: () => <div data-testid="favourites-button" /> }));
 vi.mock('./HeaderNav', () => ({ default: () => <nav data-testid="header-nav" /> }));
 vi.mock('./LocaleSwitcher', () => ({ default: () => <div data-testid="locale-switcher" /> }));
@@ -30,8 +34,12 @@ vi.mock('./UserMenu', () => ({
 }));
 
 const mockAuth = auth as ReturnType<typeof vi.fn>;
+const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockFindUnique.mockResolvedValue(null);
+});
 
 describe('Header', () => {
   it('renders wordmark linking to / when unauthenticated', async () => {
@@ -41,7 +49,8 @@ describe('Header', () => {
   });
 
   it('renders wordmark linking to /catalog when authenticated', async () => {
-    mockAuth.mockResolvedValue({ user: { id: '1', role: 'USER', name: 'Alice', image: null } });
+    mockAuth.mockResolvedValue({ user: { id: '1', role: 'USER' } });
+    mockFindUnique.mockResolvedValue({ firstName: 'Alice', lastName: null, image: null });
     render(await Header());
     expect(screen.getByRole('link', { name: /pole space/i })).toHaveAttribute('href', '/catalog');
   });
@@ -60,8 +69,11 @@ describe('Header', () => {
   });
 
   it('passes user object to UserMenu when session exists', async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: '1', role: 'USER', name: 'Alice', image: 'https://example.com/avatar.jpg' },
+    mockAuth.mockResolvedValue({ user: { id: '1', role: 'USER' } });
+    mockFindUnique.mockResolvedValue({
+      firstName: 'Alice',
+      lastName: null,
+      image: 'https://example.com/avatar.jpg',
     });
     render(await Header());
     const menu = screen.getByTestId('user-menu');
