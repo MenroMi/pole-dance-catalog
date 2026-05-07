@@ -188,6 +188,7 @@ export function LoginForm() {
               {(
                 {
                   'Invalid credentials': te('invalidCredentials'),
+                  AccountBlocked: te('accountBlocked'),
                   'Please verify your email first': te('verifyEmailFirst'),
                   'Please sign in with Google or Facebook': te('pleaseSignInWithOAuth'),
                 } as Record<string, string>

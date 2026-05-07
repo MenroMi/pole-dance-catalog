@@ -46,7 +46,7 @@ export const authConfig = {
         });
 
         if (!user) throw new Error("We couldn't find your account. Try signing up.");
-        if (user.blockedAt) throw new Error('Your account has been blocked. Contact support.');
+        if (user.blockedAt) throw new Error('AccountBlocked');
         if (user.emailVerified === null) throw new Error('Please verify your email first.');
         if (!user.password) throw new Error('Please sign in with Google or Facebook');
 
