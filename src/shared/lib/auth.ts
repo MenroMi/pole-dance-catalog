@@ -1,6 +1,6 @@
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
-import NextAuth, { type Account, type NextAuthConfig } from 'next-auth';
+import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Facebook from 'next-auth/providers/facebook';
 import Google from 'next-auth/providers/google';
@@ -48,7 +48,7 @@ export const authConfig = {
   callbacks: {
     ...authBaseConfig.callbacks,
     async signIn({ user, account, profile }) {
-      if ((account as Account | null)?.type === 'oauth' && user.email) {
+      if (account?.type === 'oauth' && user.email) {
         try {
           const updates: { firstName?: string; image?: string } = {};
           const existing = await prisma.user.findUnique({
