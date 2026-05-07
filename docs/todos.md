@@ -239,6 +239,20 @@
 - Google: fully functional; Facebook: env-guarded (`NEXT_PUBLIC_FACEBOOK_ENABLED=true`), blocked by Meta account restrictions
 - Key: `signInWithOAuthAction`, JWT/session callback fixes (picture), `signIn` callback (firstName+image sync), loading states, error banner, callbackUrl support, i18n
 
+**Facebook OAuth — полная реализация** (отложено — нет доступа к Meta Business Portfolio)
+
+- Facebook-провайдер уже добавлен в `auth.ts` и env-guarded (`NEXT_PUBLIC_FACEBOOK_ENABLED=true`)
+- Для активации нужно: создать приложение в Meta for Developers, привязать Business Portfolio, получить `FACEBOOK_CLIENT_ID` + `FACEBOOK_CLIENT_SECRET`
+- Заблокировано: аккаунт k.shchasny@gmail.com имеет ограничение рекламного доступа → невозможно создать Business Portfolio
+- Код готов, включая обработку вложенного формата `profile.picture.data.url`
+- После получения ключей: убрать env-guard, добавить тест с `'facebook'` провайдером в `signInWithOAuthAction`, задокументировать redirect URI в Meta Dashboard
+
+**Tech-debt: `signInWithOAuthAction` — неполное покрытие тестами**
+
+- `src/features/auth/actions.test.ts` — нет теста с провайдером `'facebook'` (trivial passthrough, но документирует контракт)
+- Нет теста для пустой строки `callbackUrl = ''` (падает на `startsWith('/')`, корректно возвращает fallback — стоит задокументировать явно)
+- Fix: добавить 2 теста в `describe('signInWithOAuthAction', ...)`
+
 ~~**`src/features/catalog/actions.ts`**~~ ✅ Resolved (2026-04-24)
 
 - ~~`getMovesAction` ignores `filters.tags` — tag-based filtering not implemented~~
