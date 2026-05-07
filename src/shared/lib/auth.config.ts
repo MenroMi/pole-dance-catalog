@@ -8,7 +8,7 @@ export const authBaseConfig = {
     jwt({ token, user, account, profile, trigger, session }) {
       if (user) {
         token.role = (user as { role?: string }).role;
-        if (account?.type === 'oauth') {
+        if (account?.type === 'oauth' || account?.type === 'oidc') {
           token.name = profile?.name ?? null;
           token.picture = profile?.picture ?? null;
         } else {

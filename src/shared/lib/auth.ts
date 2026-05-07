@@ -48,7 +48,7 @@ export const authConfig = {
   callbacks: {
     ...authBaseConfig.callbacks,
     async signIn({ user, account, profile }) {
-      if (account?.type === 'oauth' && user.email) {
+      if ((account?.type === 'oidc' || account?.type === 'oauth') && user.email) {
         try {
           const updates: { firstName?: string; image?: string } = {};
           const existing = await prisma.user.findUnique({

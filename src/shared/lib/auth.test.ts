@@ -114,7 +114,7 @@ describe('jwt callback', () => {
 });
 
 describe('jwt callback — OAuth branch', () => {
-  it('sets name and picture from OAuth profile', async () => {
+  it('sets name and picture from OAuth profile (type: oauth)', async () => {
     const jwt = getJwt();
     const token = await jwt({
       token: {},
@@ -127,12 +127,24 @@ describe('jwt callback — OAuth branch', () => {
     expect(token.role).toBe('USER');
   });
 
+  it('sets name and picture from Google profile (type: oidc)', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { role: 'USER' },
+      account: { type: 'oidc' },
+      profile: { name: 'Ania Kowalska', picture: 'https://googleusercontent.com/photo.jpg' },
+    });
+    expect(token.name).toBe('Ania Kowalska');
+    expect(token.picture).toBe('https://googleusercontent.com/photo.jpg');
+  });
+
   it('sets picture to null when profile has no picture', async () => {
     const jwt = getJwt();
     const token = await jwt({
       token: {},
       user: { role: 'USER' },
-      account: { type: 'oauth' },
+      account: { type: 'oidc' },
       profile: { name: 'Ania' },
     });
     expect(token.name).toBe('Ania');
@@ -295,11 +307,29 @@ describe('signIn callback', () => {
     );
   });
 
+  it('syncs firstName and image for Google (type: oidc)', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oidc' },
+      profile: { name: 'Google User', picture: 'https://googleusercontent.com/photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'a@b.com' },
+        data: expect.objectContaining({
+          firstName: 'Google User',
+          image: 'https://googleusercontent.com/photo.jpg',
+        }),
+      }),
+    );
+  });
+
   it('returns true without touching DB when user.email is absent', async () => {
     const cb = getSignInCb();
     const result = await cb({
       user: { email: null },
-      account: { type: 'oauth' },
+      account: { type: 'oidc' },
       profile: { name: 'Ania', picture: 'https://pic.jpg' },
     });
     expect(result).toBe(true);
