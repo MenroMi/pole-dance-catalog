@@ -1,5 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
@@ -208,8 +209,9 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+          className="kinetic-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
+          {isSubmitting && <Loader2 className="animate-spin" />}
           {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
@@ -231,8 +233,8 @@ export function LoginForm() {
               onClick={() => handleOAuthSignIn('google')}
               className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <GoogleIcon />
-              {pendingProvider === 'google' ? '...' : t('continueWithGoogle')}
+              {pendingProvider === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon />}
+              {t('continueWithGoogle')}
             </button>
             <button
               type="button"
@@ -240,8 +242,12 @@ export function LoginForm() {
               onClick={() => handleOAuthSignIn('facebook')}
               className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <FacebookIcon />
-              {pendingProvider === 'facebook' ? '...' : t('continueWithFacebook')}
+              {pendingProvider === 'facebook' ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <FacebookIcon />
+              )}
+              {t('continueWithFacebook')}
             </button>
           </div>
         ) : (
@@ -251,8 +257,8 @@ export function LoginForm() {
             onClick={() => handleOAuthSignIn('google')}
             className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <GoogleIcon />
-            {pendingProvider === 'google' ? '...' : t('continueWithGoogle')}
+            {pendingProvider === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon />}
+            {t('continueWithGoogle')}
           </button>
         )}
       </div>
