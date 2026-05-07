@@ -61,7 +61,7 @@ export const authConfig = {
         try {
           const existing = await prisma.user.findUnique({
             where: { email: user.email },
-            select: { firstName: true },
+            select: { firstName: true, image: true },
           });
           if (existing) {
             const updates: { firstName?: string; image?: string } = {};
@@ -75,7 +75,7 @@ export const authConfig = {
                 : rawPicture !== null && typeof rawPicture === 'object' && 'data' in rawPicture
                   ? (rawPicture as { data?: { url?: string } }).data?.url
                   : undefined;
-            if (picture) updates.image = picture;
+            if (picture && !existing.image) updates.image = picture;
             if (Object.keys(updates).length > 0) {
               await prisma.user.update({ where: { email: user.email }, data: updates });
             }

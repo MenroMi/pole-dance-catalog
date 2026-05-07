@@ -210,7 +210,7 @@ describe('signIn callback', () => {
     }) => Promise<boolean>;
 
   beforeEach(() => {
-    mockFindUnique.mockResolvedValue({ firstName: null });
+    mockFindUnique.mockResolvedValue({ firstName: null, image: null });
     mockUpdate.mockResolvedValue({});
   });
 
@@ -239,20 +239,20 @@ describe('signIn callback', () => {
     );
   });
 
-  it('skips firstName update when user already has one', async () => {
-    mockFindUnique.mockResolvedValue({ firstName: 'Already Set' });
+  it('skips firstName update when user already has one but syncs image when null', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: 'Already Set', image: null });
     const cb = getSignInCb();
     await cb({
       user: { email: 'a@b.com' },
       account: { type: 'oauth' },
       profile: { name: 'Ania', picture: 'https://example.com/photo.jpg' },
     });
-    // update still called (image sync), but data must not contain firstName
     expect(mockUpdate).toHaveBeenCalled();
     expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty('firstName');
+    expect(mockUpdate.mock.calls[0][0].data).toHaveProperty('image');
   });
 
-  it('always syncs image from profile.picture', async () => {
+  it('syncs image from profile.picture when image is not set', async () => {
     const cb = getSignInCb();
     await cb({
       user: { email: 'a@b.com' },
@@ -262,6 +262,21 @@ describe('signIn callback', () => {
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ image: 'https://new-photo.jpg' }),
+      }),
+    );
+  });
+
+  it('skips image sync when user already has a manually set image', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: null, image: 'https://manual.jpg' });
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://oauth-photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({ image: expect.anything() }),
       }),
     );
   });
@@ -281,7 +296,7 @@ describe('signIn callback', () => {
   });
 
   it('skips DB update when firstName is already set and no picture', async () => {
-    mockFindUnique.mockResolvedValue({ firstName: 'Set' });
+    mockFindUnique.mockResolvedValue({ firstName: 'Set', image: null });
     const cb = getSignInCb();
     await cb({
       user: { email: 'a@b.com' },
