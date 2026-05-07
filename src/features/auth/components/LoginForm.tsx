@@ -2,17 +2,25 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
-import { loginAction } from '../actions';
+import { loginAction, signInWithOAuthAction } from '../actions';
 import { loginSchema } from '../lib/validation';
 import type { LoginFormData } from '../lib/validation';
 
 import { FacebookIcon, GoogleIcon } from './SocialIcons';
+
+const OAUTH_ERROR_MAP: Record<string, string> = {
+  OAuthAccountNotLinked: 'oauthAccountNotLinked',
+  OAuthCallbackError: 'oauthCallbackError',
+  OAuthSignin: 'oauthSignin',
+};
+
+const facebookEnabled = process.env.NEXT_PUBLIC_FACEBOOK_ENABLED === 'true';
 
 export function LoginForm() {
   const t = useTranslations('auth.login');
@@ -20,6 +28,8 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const showResetBanner = searchParams.get('reset') === 'true';
   const showVerifiedBanner = searchParams.get('verified') === 'true';
+  const oauthErrorCode = searchParams.get('error');
+  const callbackUrl = searchParams.get('callbackUrl') ?? undefined;
 
   const {
     register,
@@ -28,6 +38,8 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [pendingProvider, setPendingProvider] = useState<'google' | 'facebook' | null>(null);
 
   const onSubmit = async (data: LoginFormData) => {
     setUnverifiedEmail(null);
@@ -36,6 +48,13 @@ export function LoginForm() {
       setError('root', { message: result.error });
       if (result.email) setUnverifiedEmail(result.email);
     }
+  };
+
+  const handleOAuthSignIn = (provider: 'google' | 'facebook') => {
+    setPendingProvider(provider);
+    startTransition(async () => {
+      await signInWithOAuthAction(provider, callbackUrl);
+    });
   };
 
   return (
@@ -63,6 +82,15 @@ export function LoginForm() {
         >
           {t('verifiedBanner')}
         </p>
+      )}
+
+      {oauthErrorCode && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-500/20 bg-red-500/8 px-3.5 py-3 text-sm text-red-400"
+        >
+          {te(OAUTH_ERROR_MAP[oauthErrorCode] ?? 'oauthGeneric')}
+        </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -155,6 +183,7 @@ export function LoginForm() {
                 {
                   'Invalid credentials': te('invalidCredentials'),
                   'Please verify your email first': te('verifyEmailFirst'),
+                  'Please sign in with Google or Facebook': te('pleaseSignInWithOAuth'),
                 } as Record<string, string>
               )[errors.root.message ?? ''] ?? errors.root.message}
               {unverifiedEmail && (
@@ -190,22 +219,38 @@ export function LoginForm() {
           <div className="h-px grow bg-outline-variant/20" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        {facebookEnabled ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleOAuthSignIn('google')}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <GoogleIcon />
+              {pendingProvider === 'google' ? '...' : t('continueWithGoogle')}
+            </button>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleOAuthSignIn('facebook')}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FacebookIcon />
+              {pendingProvider === 'facebook' ? '...' : t('continueWithFacebook')}
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0"
+            disabled={isPending}
+            onClick={() => handleOAuthSignIn('google')}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <GoogleIcon />
-            google
+            {pendingProvider === 'google' ? '...' : t('continueWithGoogle')}
           </button>
-          <button
-            type="button"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0"
-          >
-            <FacebookIcon />
-            facebook
-          </button>
-        </div>
+        )}
       </div>
 
       <p className="text-center text-xs text-on-surface-variant">
