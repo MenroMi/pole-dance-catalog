@@ -283,6 +283,63 @@ export function AdminTags() {
               <label style={{ display: 'block', color: '#888', fontSize: 12, marginBottom: 8 }}>
                 Color
               </label>
+              {/* Color picker row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      background: form.color || 'rgba(255,255,255,0.08)',
+                      border: '2px solid rgba(255,255,255,0.15)',
+                      cursor: 'pointer',
+                    }}
+                  />
+                  <input
+                    type="color"
+                    value={form.color || '#ffffff'}
+                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      opacity: 0,
+                      cursor: 'pointer',
+                      width: '100%',
+                      height: '100%',
+                    }}
+                    title="Pick a color"
+                  />
+                </div>
+                <span
+                  style={{
+                    color: form.color ? '#e0e0e0' : '#555',
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {form.color || 'no color'}
+                </span>
+                {form.color && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, color: '' }))}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#666',
+                      cursor: 'pointer',
+                      fontSize: 18,
+                      lineHeight: 1,
+                      padding: 0,
+                    }}
+                    title="Clear color"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              {/* Quick presets */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {PRESET_COLORS.map((c) => (
                   <button
@@ -290,16 +347,18 @@ export function AdminTags() {
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, color: f.color === c ? '' : c }))}
                     style={{
-                      width: 28,
-                      height: 28,
+                      width: 24,
+                      height: 24,
                       borderRadius: '50%',
                       background: c,
-                      border: form.color === c ? '3px solid #fff' : '3px solid transparent',
+                      border: form.color === c ? '3px solid #fff' : '2px solid transparent',
                       cursor: 'pointer',
                       padding: 0,
                       outline: 'none',
+                      flexShrink: 0,
                     }}
                     aria-label={c}
+                    title={c}
                   />
                 ))}
               </div>
