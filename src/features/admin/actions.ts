@@ -190,6 +190,7 @@ export async function getUsersForAdminAction(
 ): Promise<{
   users: AdminUserRow[];
   total: number;
+  totalAll: number;
   totalAdmins: number;
   totalBlocked: number;
 }> {
@@ -232,7 +233,7 @@ export async function getUsersForAdminAction(
     createdAt: true,
   };
 
-  const [users, total, totalAdmins, totalBlocked] = await Promise.all([
+  const [users, total, totalAll, totalAdmins, totalBlocked] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -241,11 +242,12 @@ export async function getUsersForAdminAction(
       select,
     }),
     prisma.user.count({ where }),
+    prisma.user.count(),
     prisma.user.count({ where: { role: 'ADMIN' } }),
     prisma.user.count({ where: { blockedAt: { not: null } } }),
   ]);
 
-  return { users, total, totalAdmins, totalBlocked };
+  return { users, total, totalAll, totalAdmins, totalBlocked };
 }
 
 export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN') {

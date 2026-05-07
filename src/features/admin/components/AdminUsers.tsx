@@ -350,6 +350,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const [acting, setActing] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [totalAll, setTotalAll] = useState(0);
   const [totalAdmins, setTotalAdmins] = useState(0);
   const [totalBlocked, setTotalBlocked] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -364,6 +365,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             if (!cancelled) {
               setUsers(data.users);
               setTotal(data.total);
+              setTotalAll(data.totalAll);
               setTotalAdmins(data.totalAdmins);
               setTotalBlocked(data.totalBlocked);
               setError(null);
@@ -486,7 +488,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             marginBottom: 8,
           }}
         >
-          {t('users.community')} · {total} {t('users.members')} · {totalAdmins}{' '}
+          {t('users.community')} · {totalAll} {t('users.members')} · {totalAdmins}{' '}
           {t('users.adminsCount')} · {totalBlocked} {t('users.blocked')}
         </div>
         <h1
@@ -600,7 +602,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             whiteSpace: 'nowrap',
           }}
         >
-          {total}
+          {query || roleFilter !== 'ALL' ? `${total} / ${totalAll}` : totalAll}
         </span>
       </div>
 
