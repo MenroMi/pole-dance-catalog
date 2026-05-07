@@ -1,23 +1,22 @@
 'use server';
-import { Difficulty, Category } from '@prisma/client';
+import { Category, Difficulty, PoleType } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { auth } from '@/shared/lib/auth';
 import { prisma } from '@/shared/lib/prisma';
 
-import type { CreateMoveInput } from './types';
-
-const createMoveSchema = z.object({
-  title_pl: z.string().min(1),
-  title_en: z.string().min(1),
-  description_pl: z.string().optional(),
-  description_en: z.string().optional(),
-  difficulty: z.nativeEnum(Difficulty),
-  category: z.nativeEnum(Category),
-  youtubeUrl: z.string().url(),
-  imageUrl: z.string().url().optional(),
-  tags: z.array(z.string()).optional(),
-});
+import type {
+  AdminMoveRow,
+  AdminStats,
+  AdminTagRow,
+  AdminUserRow,
+  CreateMoveInput,
+  CreateTagInput,
+  FullAdminMove,
+  UpdateMoveInput,
+  UpdateTagInput,
+} from './types';
 
 async function requireAdmin() {
   const session = await auth();
@@ -26,31 +25,176 @@ async function requireAdmin() {
   }
 }
 
+const moveSchema = z.object({
+  title_pl: z.string().min(1),
+  title_en: z.string().min(1),
+  description_pl: z.string().optional(),
+  description_en: z.string().optional(),
+  difficulty: z.nativeEnum(Difficulty),
+  category: z.nativeEnum(Category),
+  poleTypes: z.array(z.nativeEnum(PoleType)).default([]),
+  youtubeUrl: z.string().url(),
+  imageUrl: z
+    .string()
+    .url()
+    .optional()
+    .or(z.literal(''))
+    .transform((v) => (v === '' ? undefined : v)),
+  gripType_pl: z.string().optional(),
+  gripType_en: z.string().optional(),
+  entry_pl: z.string().optional(),
+  entry_en: z.string().optional(),
+  duration: z.string().optional(),
+  coachNote_pl: z.string().optional(),
+  coachNote_en: z.string().optional(),
+  coachNoteAuthor: z.string().optional(),
+  stepsData_pl: z.array(z.object({ time: z.number(), label: z.string() })).default([]),
+  stepsData_en: z.array(z.object({ time: z.number(), label: z.string() })).default([]),
+  tagIds: z.array(z.string()).default([]),
+});
+
+const tagSchema = z.object({
+  name_en: z.string().min(1),
+  name_pl: z.string().min(1),
+  color: z.string().optional(),
+});
+
 export async function createMoveAction(input: CreateMoveInput) {
   await requireAdmin();
-  const parsed = createMoveSchema.safeParse(input);
+  const parsed = moveSchema.safeParse(input);
   if (!parsed.success) throw new Error('Invalid input');
-  return prisma.move.create({
+  const { tagIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+  const result = await prisma.move.create({
     data: {
-      title_pl: parsed.data.title_pl,
-      title_en: parsed.data.title_en,
-      description_pl: parsed.data.description_pl,
-      description_en: parsed.data.description_en,
-      difficulty: parsed.data.difficulty,
-      category: parsed.data.category,
-      youtubeUrl: parsed.data.youtubeUrl,
-      imageUrl: parsed.data.imageUrl,
-      tags: {
-        connectOrCreate: (parsed.data.tags ?? []).map((name) => ({
-          where: { name_en: name },
-          create: { name_pl: name, name_en: name },
-        })),
-      },
+      ...data,
+      poleTypes,
+      stepsData_pl,
+      stepsData_en,
+      tags: { connect: tagIds.map((id) => ({ id })) },
     },
   });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function updateMoveAction(input: UpdateMoveInput) {
+  await requireAdmin();
+  const { id, ...rest } = input;
+  const parsed = moveSchema.safeParse(rest);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { tagIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+  const result = await prisma.move.update({
+    where: { id },
+    data: {
+      ...data,
+      poleTypes,
+      stepsData_pl,
+      stepsData_en,
+      tags: { set: [], connect: tagIds.map((id) => ({ id })) },
+    },
+  });
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function deleteMoveAction(id: string) {
   await requireAdmin();
-  return prisma.move.delete({ where: { id } });
+  const result = await prisma.move.delete({ where: { id } });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function getMovesForAdminAction(): Promise<AdminMoveRow[]> {
+  await requireAdmin();
+  return prisma.move.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title_en: true,
+      title_pl: true,
+      difficulty: true,
+      category: true,
+      createdAt: true,
+      tags: { select: { id: true, name_en: true } },
+    },
+  });
+}
+
+export async function getMoveByIdAction(id: string): Promise<FullAdminMove | null> {
+  await requireAdmin();
+  return prisma.move.findUnique({
+    where: { id },
+    include: { tags: { select: { id: true, name_en: true, name_pl: true } } },
+  });
+}
+
+export async function getAdminStatsAction(): Promise<AdminStats> {
+  await requireAdmin();
+  const [totalMoves, totalUsers, totalTags, recentMoves] = await Promise.all([
+    prisma.move.count(),
+    prisma.user.count(),
+    prisma.tag.count(),
+    prisma.move.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title_en: true,
+        title_pl: true,
+        difficulty: true,
+        category: true,
+        createdAt: true,
+        tags: { select: { id: true, name_en: true } },
+      },
+    }),
+  ]);
+  return { totalMoves, totalUsers, totalTags, recentMoves };
+}
+
+export async function getTagsForAdminAction(): Promise<AdminTagRow[]> {
+  await requireAdmin();
+  return prisma.tag.findMany({
+    orderBy: { name_en: 'asc' },
+    include: { _count: { select: { moves: true } } },
+  });
+}
+
+export async function createTagAction(input: CreateTagInput) {
+  await requireAdmin();
+  const parsed = tagSchema.safeParse(input);
+  if (!parsed.success) throw new Error('Invalid input');
+  return prisma.tag.create({ data: parsed.data });
+}
+
+export async function updateTagAction(input: UpdateTagInput) {
+  await requireAdmin();
+  const { id, ...rest } = input;
+  const parsed = tagSchema.safeParse(rest);
+  if (!parsed.success) throw new Error('Invalid input');
+  return prisma.tag.update({ where: { id }, data: parsed.data });
+}
+
+export async function deleteTagAction(id: string) {
+  await requireAdmin();
+  return prisma.tag.delete({ where: { id } });
+}
+
+export async function getUsersForAdminAction(): Promise<AdminUserRow[]> {
+  await requireAdmin();
+  return prisma.user.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      createdAt: true,
+    },
+  });
+}
+
+export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN') {
+  await requireAdmin();
+  return prisma.user.update({ where: { id: userId }, data: { role } });
 }

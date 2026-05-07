@@ -1,2 +1,25 @@
-export { createMoveAction, deleteMoveAction } from './actions';
-export type { CreateMoveInput } from './types';
+export {
+  changeUserRoleAction,
+  createMoveAction,
+  createTagAction,
+  deleteMoveAction,
+  deleteTagAction,
+  getAdminStatsAction,
+  getMoveByIdAction,
+  getMovesForAdminAction,
+  getTagsForAdminAction,
+  getUsersForAdminAction,
+  updateMoveAction,
+  updateTagAction,
+} from './actions';
+export type {
+  AdminMoveRow,
+  AdminStats,
+  AdminTagRow,
+  AdminUserRow,
+  CreateMoveInput,
+  CreateTagInput,
+  FullAdminMove,
+  UpdateMoveInput,
+  UpdateTagInput,
+} from './types';
