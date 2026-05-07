@@ -250,8 +250,8 @@
 **Tech-debt: `signInWithOAuthAction` — неполное покрытие тестами**
 
 - `src/features/auth/actions.test.ts` — нет теста с провайдером `'facebook'` (trivial passthrough, но документирует контракт)
-- Нет теста для пустой строки `callbackUrl = ''` (падает на `startsWith('/')`, корректно возвращает fallback — стоит задокументировать явно)
-- Fix: добавить 2 теста в `describe('signInWithOAuthAction', ...)`
+- ~~Нет теста для пустой строки `callbackUrl = ''`~~ ✅ Resolved (ccc4079)
+- Fix: добавить тест с `'facebook'` провайдером после реализации Facebook OAuth
 
 ~~**`src/features/catalog/actions.ts`**~~ ✅ Resolved (2026-04-24)
 
