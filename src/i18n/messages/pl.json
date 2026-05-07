@@ -265,7 +265,8 @@
       "dashboard": "Dashboard",
       "moves": "Ruchy",
       "users": "Użytkownicy",
-      "tags": "Tagi"
+      "tags": "Tagi",
+      "backToCatalog": "Wróć do katalogu"
     },
     "dashboard": {
       "totalMoves": "Wszystkie ruchy",

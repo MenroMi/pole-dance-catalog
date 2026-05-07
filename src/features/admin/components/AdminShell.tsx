@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Suspense, useState } from 'react';
 
+import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from '@/shared/components/LocaleSwitcher';
 
 type Section = 'dashboard' | 'moves' | 'users' | 'tags';
@@ -59,6 +60,12 @@ function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
       </>
     ),
     ChevronRight: <polyline points="9 18 15 12 9 6" />,
+    ArrowLeft: (
+      <>
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </>
+    ),
   };
   return (
     <svg
@@ -255,6 +262,42 @@ export function AdminShell({
             );
           })}
         </nav>
+
+        {/* Back to catalog */}
+        <div style={{ padding: '0 10px 8px', flexShrink: 0 }}>
+          <Link
+            href="/catalog"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: collapsed ? 0 : 10,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '10px 0' : '10px 14px',
+              borderRadius: 8,
+              color: '#6b6270',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              fontWeight: 500,
+              textDecoration: 'none',
+              transition: 'color 150ms, background 150ms',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.color = '#e2e2e2';
+              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.04)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.color = '#6b6270';
+              (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
+            }}
+          >
+            <span style={{ flexShrink: 0 }}>
+              <NavIcon name="ArrowLeft" size={15} />
+            </span>
+            {!collapsed && <span>{t('nav.backToCatalog')}</span>}
+          </Link>
+        </div>
 
         {/* Bottom: current admin user */}
         <div

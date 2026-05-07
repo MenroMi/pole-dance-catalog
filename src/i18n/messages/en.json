@@ -265,7 +265,8 @@
       "dashboard": "Dashboard",
       "moves": "Moves",
       "users": "Users",
-      "tags": "Tags"
+      "tags": "Tags",
+      "backToCatalog": "Back to catalog"
     },
     "dashboard": {
       "totalMoves": "Total Moves",
