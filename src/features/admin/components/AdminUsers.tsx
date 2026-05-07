@@ -212,7 +212,7 @@ function UserRow({
             color: rs.fg,
           }}
         >
-          {user.role}
+          {user.role === 'ADMIN' ? t('users.roleAdmin') : t('users.roleUser')}
         </span>
         <span
           style={{
@@ -349,7 +349,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         if (!cancelled) setUsers(data);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load users');
+        if (!cancelled) setError(e instanceof Error ? e.message : t('users.loadError'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -370,27 +370,27 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         type,
         userId: user.id,
         newRole,
-        title: newRole === 'ADMIN' ? 'grant admin access?' : 'revoke admin access?',
-        body: `${name} will ${newRole === 'ADMIN' ? 'gain full admin access to the panel' : 'lose admin privileges and revert to a regular user'}.`,
-        label: newRole === 'ADMIN' ? 'grant admin' : 'revoke admin',
+        title: t(newRole === 'ADMIN' ? 'users.grantAdminTitle' : 'users.revokeAdminTitle'),
+        body: t(newRole === 'ADMIN' ? 'users.grantAdminBody' : 'users.revokeAdminBody', { name }),
+        label: t(newRole === 'ADMIN' ? 'users.makeAdmin' : 'users.revokeAdmin'),
         danger: newRole !== 'ADMIN',
       });
     } else if (type === 'block') {
       setConfirm({
         type,
         userId: user.id,
-        title: 'block user?',
-        body: `${name} will be prevented from signing in. Their data is preserved.`,
-        label: 'block user',
+        title: t('users.blockTitle'),
+        body: t('users.blockBody', { name }),
+        label: t('users.block'),
         danger: true,
       });
     } else if (type === 'unblock') {
       setConfirm({
         type,
         userId: user.id,
-        title: 'unblock user?',
-        body: `${name} will be able to sign in again.`,
-        label: 'unblock user',
+        title: t('users.unblockTitle'),
+        body: t('users.unblockBody', { name }),
+        label: t('users.unblock'),
         danger: false,
       });
     } else if (type === 'delete') {
@@ -542,7 +542,11 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
                 color: roleFilter === r ? (r === 'ADMIN' ? '#dcb8ff' : '#cdc3d2') : '#978e9b',
               }}
             >
-              {r}
+              {r === 'ALL'
+                ? t('users.filterAll')
+                : r === 'ADMIN'
+                  ? t('users.roleAdmin')
+                  : t('users.roleUser')}
             </button>
           ))}
         </div>
