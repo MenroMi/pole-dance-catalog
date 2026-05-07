@@ -37,7 +37,9 @@
       "orContinueWith": "lub kontynuuj przez",
       "resetBanner": "Hasło zaktualizowane — zaloguj się.",
       "verifiedBanner": "Email zweryfikowany — zaloguj się.",
-      "resendVerificationLink": "wyślij email weryfikacyjny ponownie"
+      "resendVerificationLink": "wyślij email weryfikacyjny ponownie",
+      "continueWithGoogle": "Kontynuuj z Google",
+      "continueWithFacebook": "Kontynuuj z Facebook"
     },
     "signup": {
       "title": "dołącz do pole space.",
@@ -52,7 +54,9 @@
       "signIn": "zaloguj się",
       "orContinueWith": "lub kontynuuj przez",
       "firstNamePlaceholder": "twoje imię",
-      "lastNamePlaceholder": "twoje nazwisko"
+      "lastNamePlaceholder": "twoje nazwisko",
+      "continueWithGoogle": "Kontynuuj z Google",
+      "continueWithFacebook": "Kontynuuj z Facebook"
     },
     "verifyEmail": {
       "sentHeading": "sprawdź swoją skrzynkę.",
@@ -103,7 +107,12 @@
       "tooManyRequests": "Zbyt wiele prób. Spróbuj ponownie później.",
       "invalidInput": "Nieprawidłowe dane.",
       "emailAlreadyInUse": "Ten adres e-mail jest już zarejestrowany.",
-      "sendEmailFailed": "Nie udało się wysłać e-maila. Spróbuj ponownie."
+      "sendEmailFailed": "Nie udało się wysłać e-maila. Spróbuj ponownie.",
+      "oauthAccountNotLinked": "Konto z tym adresem e-mail już istnieje. Zaloguj się przy użyciu adresu e-mail i hasła.",
+      "oauthCallbackError": "Uwierzytelnianie nie powiodło się. Spróbuj ponownie.",
+      "oauthSignin": "Nie można rozpocząć logowania. Spróbuj ponownie.",
+      "oauthGeneric": "Logowanie nie powiodło się. Spróbuj ponownie.",
+      "pleaseSignInWithOAuth": "To konto używa logowania przez Google lub Facebook. Użyj jednego z przycisków poniżej."
     },
     "layout": {
       "version": "v.0.1 — galeria kinetyczna",

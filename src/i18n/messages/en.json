@@ -37,7 +37,9 @@
       "orContinueWith": "or continue with",
       "resetBanner": "Password updated — please sign in.",
       "verifiedBanner": "Email verified — please sign in.",
-      "resendVerificationLink": "resend verification email"
+      "resendVerificationLink": "resend verification email",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithFacebook": "Continue with Facebook"
     },
     "signup": {
       "title": "join pole space.",
@@ -52,7 +54,9 @@
       "signIn": "sign in",
       "orContinueWith": "or continue with",
       "firstNamePlaceholder": "your first name",
-      "lastNamePlaceholder": "your last name"
+      "lastNamePlaceholder": "your last name",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithFacebook": "Continue with Facebook"
     },
     "verifyEmail": {
       "sentHeading": "check your inbox.",
@@ -103,7 +107,12 @@
       "tooManyRequests": "Too many attempts. Please try again later.",
       "invalidInput": "Invalid input.",
       "emailAlreadyInUse": "This email is already registered.",
-      "sendEmailFailed": "Failed to send email. Please try again."
+      "sendEmailFailed": "Failed to send email. Please try again.",
+      "oauthAccountNotLinked": "An account with this email already exists. Please sign in with your email and password.",
+      "oauthCallbackError": "Authentication failed. Please try again.",
+      "oauthSignin": "Could not start sign-in. Please try again.",
+      "oauthGeneric": "Sign-in failed. Please try again.",
+      "pleaseSignInWithOAuth": "This account uses Google or Facebook sign-in. Please use one of the buttons below."
     },
     "layout": {
       "version": "v.0.1 — kinetic gallery",
