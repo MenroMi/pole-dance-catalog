@@ -231,6 +231,7 @@
     "avatarOnlyImages": "Only image files are allowed",
     "avatarMaxSize": "File size must be under 5MB",
     "avatarUploadFailed": "Upload failed",
+    "removePhoto": "Remove photo",
     "heroSettingsLabel": "Profile settings",
     "joinedYear": "Joined {year}",
     "journeyHeading": "your",

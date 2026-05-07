@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 
-import { uploadAvatarAction } from '../actions';
+import { removeAvatarAction, uploadAvatarAction } from '../actions';
 
 type AvatarUploadProps = {
   currentImage: string | null;
@@ -38,6 +38,20 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
     }
     setError(null);
     setPreview(URL.createObjectURL(file));
+  }
+
+  async function handleRemove() {
+    setIsPending(true);
+    setError(null);
+    try {
+      await removeAvatarAction();
+      setPreview(null);
+      onUploadSuccess();
+    } catch {
+      setError(t('avatarUploadFailed'));
+    } finally {
+      setIsPending(false);
+    }
   }
 
   async function handleUpload() {
@@ -90,6 +104,17 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
         {preview && (
           <Button type="button" size="sm" onClick={handleUpload} disabled={isPending}>
             {isPending ? t('uploadingPhoto') : t('uploadPhoto')}
+          </Button>
+        )}
+        {currentImage && !preview && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleRemove}
+            disabled={isPending}
+          >
+            {t('removePhoto')}
           </Button>
         )}
       </div>

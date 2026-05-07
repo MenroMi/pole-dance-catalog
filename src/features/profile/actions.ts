@@ -106,6 +106,14 @@ export async function uploadAvatarAction(formData: FormData) {
   return { success: true as const, imageUrl: result.secure_url };
 }
 
+export async function removeAvatarAction() {
+  const userId = await requireAuth();
+  await prisma.user.update({ where: { id: userId }, data: { image: null } });
+  revalidatePath('/profile');
+  revalidatePath('/profile/settings');
+  return { success: true as const };
+}
+
 export async function changePasswordAction(data: { currentPassword: string; newPassword: string }) {
   const userId = await requireAuth();
   const parsed = changePasswordSchema.safeParse(data);

@@ -231,6 +231,7 @@
     "avatarOnlyImages": "Dozwolone są tylko pliki graficzne",
     "avatarMaxSize": "Plik musi być mniejszy niż 5 MB",
     "avatarUploadFailed": "Przesyłanie nie powiodło się",
+    "removePhoto": "Usuń zdjęcie",
     "heroSettingsLabel": "Ustawienia profilu",
     "joinedYear": "Dołączono w {year}",
     "journeyHeading": "twoja",

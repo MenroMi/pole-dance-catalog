@@ -63,6 +63,7 @@ import {
   updateProfileAction,
   changePasswordAction,
   uploadAvatarAction,
+  removeAvatarAction,
   addFavouriteAction,
   removeFavouriteAction,
   getUserFavouritesAction,
@@ -255,6 +256,26 @@ describe('uploadAvatarAction', () => {
       where: { id: 'user-123' },
       data: { image: 'https://res.cloudinary.com/test/image/upload/user-user-123' },
     });
+  });
+});
+
+describe('removeAvatarAction', () => {
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    await expect(removeAvatarAction()).rejects.toThrow('Unauthorized');
+  });
+
+  it('sets image to null and revalidates paths', async () => {
+    mockAuth.mockResolvedValue(session);
+    mockUserUpdate.mockResolvedValue({});
+    const result = await removeAvatarAction();
+    expect(result).toEqual({ success: true });
+    expect(mockUserUpdate).toHaveBeenCalledWith({
+      where: { id: 'user-123' },
+      data: { image: null },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/profile');
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/profile/settings');
   });
 });
 
