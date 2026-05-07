@@ -112,6 +112,13 @@ async function main() {
       .replace(/ń/g, 'n');
     const isAdmin = i < 3;
     const isBlocked = !isAdmin && i >= 55;
+    const BLOCK_REASONS = [
+      'Spam in comments',
+      'Inappropriate content upload',
+      'Multiple accounts violation',
+      'Harassment of other users',
+      'Payment fraud',
+    ];
     return {
       email: `${slug}@example.com`,
       firstName,
@@ -119,6 +126,7 @@ async function main() {
       location: pick(LOCATIONS),
       role: isAdmin ? ('ADMIN' as const) : ('USER' as const),
       blockedAt: isBlocked ? daysAgo(Math.floor(Math.random() * 30) + 1) : null,
+      blockReason: isBlocked ? pick(BLOCK_REASONS) : null,
       createdAt: daysAgo(Math.floor(Math.random() * 365) + 1),
       emailVerified: Math.random() > 0.2 ? daysAgo(Math.floor(Math.random() * 300)) : null,
     };
