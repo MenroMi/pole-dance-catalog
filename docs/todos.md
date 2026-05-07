@@ -246,6 +246,7 @@
 - Заблокировано: аккаунт k.shchasny@gmail.com имеет ограничение рекламного доступа → невозможно создать Business Portfolio
 - Код готов, включая обработку вложенного формата `profile.picture.data.url`
 - После получения ключей: убрать env-guard, добавить тест с `'facebook'` провайдером в `signInWithOAuthAction`, задокументировать redirect URI в Meta Dashboard
+- **Известный баг:** `src/shared/lib/auth.config.ts` — JWT callback хранит `profile.picture` напрямую; для Facebook это объект `{ data: { url } }`, а не строка → `session.user.image` получит `"[object Object]"`. Fix: добавить то же разворачивание что в `signIn` callback. Исправить перед активацией Facebook.
 
 **Tech-debt: `signInWithOAuthAction` — неполное покрытие тестами**
 
