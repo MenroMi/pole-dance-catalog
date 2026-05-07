@@ -253,7 +253,50 @@
   },
   "admin": {
     "title": "Admin Dashboard",
-    "createMove": "Create move"
+    "createMove": "Create move",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "nav": {
+      "dashboard": "Dashboard",
+      "moves": "Moves",
+      "users": "Users",
+      "tags": "Tags"
+    },
+    "dashboard": {
+      "totalMoves": "Total Moves",
+      "totalUsers": "Total Users",
+      "totalTags": "Total Tags",
+      "recentMoves": "Recent Moves"
+    },
+    "moves": {
+      "title": "Moves",
+      "search": "Search moves...",
+      "noResults": "No moves found",
+      "addMove": "Add Move",
+      "editMove": "Edit Move",
+      "deleteMove": "Delete Move",
+      "confirmDelete": "Are you sure you want to delete this move? This action cannot be undone.",
+      "tabs": {
+        "en": "English",
+        "pl": "Polish",
+        "meta": "Meta"
+      }
+    },
+    "tags": {
+      "title": "Tags",
+      "addTag": "Add Tag",
+      "editTag": "Edit Tag",
+      "deleteTag": "Delete Tag",
+      "confirmDelete": "Are you sure you want to delete this tag?",
+      "movesCount": "{count} moves"
+    },
+    "users": {
+      "title": "Users",
+      "changeRole": "Change Role",
+      "makeAdmin": "Make Admin",
+      "makeUser": "Make User"
+    }
   },
   "enums": {
     "difficulty": {

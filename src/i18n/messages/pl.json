@@ -252,8 +252,51 @@
     "hint": "Za darmo. Bez zaproszenia."
   },
   "admin": {
-    "title": "Panel admina",
-    "createMove": "Utwórz ruch"
+    "title": "Panel Admina",
+    "createMove": "Utwórz ruch",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "nav": {
+      "dashboard": "Dashboard",
+      "moves": "Ruchy",
+      "users": "Użytkownicy",
+      "tags": "Tagi"
+    },
+    "dashboard": {
+      "totalMoves": "Wszystkie ruchy",
+      "totalUsers": "Wszyscy użytkownicy",
+      "totalTags": "Wszystkie tagi",
+      "recentMoves": "Ostatnie ruchy"
+    },
+    "moves": {
+      "title": "Ruchy",
+      "search": "Szukaj ruchów...",
+      "noResults": "Nie znaleziono ruchów",
+      "addMove": "Dodaj ruch",
+      "editMove": "Edytuj ruch",
+      "deleteMove": "Usuń ruch",
+      "confirmDelete": "Czy na pewno chcesz usunąć ten ruch? Tej operacji nie można cofnąć.",
+      "tabs": {
+        "en": "Angielski",
+        "pl": "Polski",
+        "meta": "Meta"
+      }
+    },
+    "tags": {
+      "title": "Tagi",
+      "addTag": "Dodaj tag",
+      "editTag": "Edytuj tag",
+      "deleteTag": "Usuń tag",
+      "confirmDelete": "Czy na pewno chcesz usunąć ten tag?",
+      "movesCount": "{count} ruchów"
+    },
+    "users": {
+      "title": "Użytkownicy",
+      "changeRole": "Zmień rolę",
+      "makeAdmin": "Zrób adminem",
+      "makeUser": "Zrób użytkownikiem"
+    }
   },
   "enums": {
     "difficulty": {
