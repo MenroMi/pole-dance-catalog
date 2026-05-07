@@ -110,7 +110,7 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
         </Button>
         {preview && (
           <Button type="button" size="sm" onClick={handleUpload} disabled={pendingAction !== null}>
-            {pendingAction === 'upload' && <Loader2 className="animate-spin" />}
+            {pendingAction === 'upload' && <Loader2 className="h-4 w-4 animate-spin" />}
             {pendingAction === 'upload' ? t('uploadingPhoto') : t('uploadPhoto')}
           </Button>
         )}
@@ -122,7 +122,7 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
             onClick={handleRemove}
             disabled={pendingAction !== null}
           >
-            {pendingAction === 'remove' && <Loader2 className="animate-spin" />}
+            {pendingAction === 'remove' && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('removePhoto')}
           </Button>
         )}

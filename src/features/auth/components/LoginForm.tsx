@@ -211,7 +211,7 @@ export function LoginForm() {
           disabled={isSubmitting}
           className="kinetic-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {isSubmitting && <Loader2 className="animate-spin" />}
+          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
           {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
@@ -233,7 +233,11 @@ export function LoginForm() {
               onClick={() => handleOAuthSignIn('google')}
               className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pendingProvider === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon />}
+              {pendingProvider === 'google' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
               {t('continueWithGoogle')}
             </button>
             <button
@@ -243,7 +247,7 @@ export function LoginForm() {
               className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingProvider === 'facebook' ? (
-                <Loader2 className="animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <FacebookIcon />
               )}
@@ -257,7 +261,11 @@ export function LoginForm() {
             onClick={() => handleOAuthSignIn('google')}
             className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pendingProvider === 'google' ? <Loader2 className="animate-spin" /> : <GoogleIcon />}
+            {pendingProvider === 'google' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <GoogleIcon />
+            )}
             {t('continueWithGoogle')}
           </button>
         )}
