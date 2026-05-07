@@ -273,6 +273,8 @@
     },
     "moves": {
       "title": "Moves",
+      "catalog": "Catalog",
+      "movesCount": "moves",
       "search": "Search moves...",
       "noResults": "No moves found",
       "allDifficulties": "All difficulties",

@@ -273,6 +273,8 @@
     },
     "moves": {
       "title": "Ruchy",
+      "catalog": "Katalog",
+      "movesCount": "ruchów",
       "search": "Szukaj ruchów...",
       "noResults": "Nie znaleziono ruchów",
       "allDifficulties": "Wszystkie poziomy",
