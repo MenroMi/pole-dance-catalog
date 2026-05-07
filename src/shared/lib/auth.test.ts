@@ -111,6 +111,36 @@ describe('jwt callback', () => {
     });
     expect(token.name).toBe('Old Name');
   });
+
+  it('updates token.picture when trigger is update and session.picture is provided', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: { picture: 'https://old.jpg' },
+      trigger: 'update',
+      session: { picture: 'https://new.jpg' },
+    });
+    expect(token.picture).toBe('https://new.jpg');
+  });
+
+  it('clears token.picture when trigger is update and session.picture is null', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: { picture: 'https://old.jpg' },
+      trigger: 'update',
+      session: { picture: null },
+    });
+    expect(token.picture).toBeNull();
+  });
+
+  it('leaves token.picture unchanged when trigger is update but session.picture is absent', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: { picture: 'https://old.jpg' },
+      trigger: 'update',
+      session: {},
+    });
+    expect(token.picture).toBe('https://old.jpg');
+  });
 });
 
 describe('jwt callback — OAuth branch', () => {

@@ -22,8 +22,9 @@ export const authBaseConfig = {
         }
       }
       if (trigger === 'update') {
-        const s = session as { name?: string | null } | undefined;
+        const s = session as { name?: string | null; picture?: string | null } | undefined;
         if (s?.name !== undefined) token.name = s.name;
+        if (s?.picture !== undefined) token.picture = s.picture;
       }
       return token;
     },

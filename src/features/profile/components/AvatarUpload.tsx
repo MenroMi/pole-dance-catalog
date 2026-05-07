@@ -1,6 +1,7 @@
 'use client';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -15,6 +16,7 @@ type AvatarUploadProps = {
 
 export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUploadProps) {
   const t = useTranslations('profile');
+  const { update } = useSession();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<'upload' | 'remove' | null>(null);
@@ -46,6 +48,7 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
     setError(null);
     try {
       await removeAvatarAction();
+      await update({ picture: null });
       setPreview(null);
       onUploadSuccess();
     } catch {
@@ -67,6 +70,7 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
       if (!result.success) {
         setError(result.error ?? t('avatarUploadFailed'));
       } else {
+        await update({ picture: result.imageUrl });
         onUploadSuccess();
         setPreview(null);
       }
