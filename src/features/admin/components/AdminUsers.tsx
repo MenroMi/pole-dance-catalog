@@ -1,16 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
-import { Input } from '@/shared/components/ui/input';
 
 import {
   blockUserAction,
@@ -23,42 +14,319 @@ import type { AdminUserRow } from '../types';
 
 import { ConfirmDialog } from './ConfirmDialog';
 
-function UserAvatar({ user }: { user: AdminUserRow }) {
+type RoleFilter = 'ALL' | 'USER' | 'ADMIN';
+
+function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
+  const paths: Record<string, React.ReactNode> = {
+    Search: (
+      <>
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </>
+    ),
+    Shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+    Ban: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+      </>
+    ),
+    RefreshCw: (
+      <>
+        <polyline points="23 4 23 10 17 10" />
+        <polyline points="1 20 1 14 7 14" />
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+      </>
+    ),
+    Trash: (
+      <>
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      </>
+    ),
+  };
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {paths[name]}
+    </svg>
+  );
+}
+
+const GRID = '2.5fr 1fr 80px 80px 1fr 120px';
+
+const ROLE_STYLES: Record<string, { bg: string; fg: string }> = {
+  ADMIN: { bg: 'rgba(220,184,255,0.15)', fg: '#dcb8ff' },
+  USER: { bg: 'rgba(75,68,80,0.25)', fg: '#cdc3d2' },
+};
+
+interface ConfirmState {
+  type: 'role' | 'block' | 'unblock' | 'delete';
+  userId: string;
+  title: string;
+  body: string;
+  label: string;
+  danger: boolean;
+  newRole?: 'USER' | 'ADMIN';
+}
+
+function UserRow({
+  user,
+  isLast,
+  isSelf,
+  onAction,
+}: {
+  user: AdminUserRow;
+  isLast: boolean;
+  isSelf: boolean;
+  onAction: (type: ConfirmState['type'], user: AdminUserRow, newRole?: 'USER' | 'ADMIN') => void;
+}) {
+  const [hov, setHov] = useState(false);
+  const isBlocked = Boolean(user.blockedAt);
   const initials =
     [user.firstName, user.lastName]
       .filter(Boolean)
       .map((n) => n![0].toUpperCase())
       .join('') || user.email[0].toUpperCase();
+  const rs = ROLE_STYLES[user.role] ?? ROLE_STYLES.USER;
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
 
-  if (user.image) {
-    return (
-      <Image
-        src={user.image}
-        alt={initials}
-        width={36}
-        height={36}
-        style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-      />
-    );
-  }
   return (
     <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: '50%',
-        background: 'rgba(220,184,255,0.15)',
-        border: '1px solid rgba(220,184,255,0.2)',
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: GRID,
+        padding: '13px 20px',
         alignItems: 'center',
-        justifyContent: 'center',
-        color: '#dcb8ff',
-        fontSize: 13,
-        fontWeight: 700,
-        flexShrink: 0,
+        borderBottom: isLast ? 'none' : '1px solid rgba(75,68,80,0.12)',
+        background: hov ? 'rgba(220,184,255,0.03)' : 'transparent',
+        transition: 'background 150ms',
+        position: 'relative',
+        opacity: isBlocked ? 0.65 : 1,
       }}
     >
-      {initials}
+      {/* Identity */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+        <div
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: '50%',
+            flexShrink: 0,
+            background: 'linear-gradient(135deg,#52416c,#dcb8ff)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 12,
+            fontWeight: 700,
+            color: '#1b1b1b',
+            opacity: isBlocked ? 0.5 : 1,
+          }}
+        >
+          {initials}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 14,
+              color: isBlocked ? '#4b4450' : '#e2e2e2',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {user.email}
+          </div>
+          {fullName && (
+            <div
+              style={{
+                fontSize: 11,
+                color: '#4b4450',
+                fontFamily: 'var(--font-manrope)',
+                marginTop: 1,
+              }}
+            >
+              {fullName}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Location */}
+      <div
+        style={{
+          fontSize: 12,
+          color: '#978e9b',
+          fontFamily: 'var(--font-manrope)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {user.location || '—'}
+      </div>
+
+      {/* Moves (placeholder) */}
+      <div
+        style={{
+          fontSize: 13,
+          color: '#cdc3d2',
+          fontFamily: 'var(--font-space-grotesk)',
+          fontWeight: 500,
+        }}
+      >
+        —
+      </div>
+
+      {/* Joined */}
+      <div style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+        {new Date(user.createdAt).toLocaleDateString().slice(0, 7)}
+      </div>
+
+      {/* Role & Status chips */}
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding: '3px 9px',
+            borderRadius: 9999,
+            fontFamily: 'var(--font-manrope)',
+            background: rs.bg,
+            color: rs.fg,
+          }}
+        >
+          {user.role}
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding: '3px 9px',
+            borderRadius: 9999,
+            fontFamily: 'var(--font-manrope)',
+            background: isBlocked ? 'rgba(179,38,30,0.15)' : 'rgba(132,209,153,0.15)',
+            color: isBlocked ? '#ef4444' : '#84d099',
+          }}
+        >
+          {isBlocked ? 'blocked' : 'active'}
+        </span>
+      </div>
+
+      {/* Actions (hover-reveal) */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 6,
+          justifyContent: 'flex-end',
+          opacity: hov && !isSelf ? 1 : 0.15,
+          transition: 'opacity 150ms',
+        }}
+      >
+        {/* Role toggle */}
+        <button
+          disabled={isSelf}
+          onClick={() => onAction('role', user, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+          title={user.role === 'ADMIN' ? 'Revoke admin' : 'Make admin'}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(75,68,80,0.4)',
+            borderRadius: 6,
+            padding: 7,
+            color: '#978e9b',
+            cursor: isSelf ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            transition: 'all 150ms',
+          }}
+          onMouseEnter={(e) => {
+            if (!isSelf) {
+              e.currentTarget.style.borderColor = '#dcb8ff';
+              e.currentTarget.style.color = '#dcb8ff';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+            e.currentTarget.style.color = '#978e9b';
+          }}
+        >
+          <NavIcon name="Shield" size={13} />
+        </button>
+
+        {/* Block/Unblock toggle */}
+        <button
+          disabled={isSelf}
+          onClick={() => onAction(isBlocked ? 'unblock' : 'block', user)}
+          title={isBlocked ? 'Unblock' : 'Block'}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(75,68,80,0.4)',
+            borderRadius: 6,
+            padding: 7,
+            color: '#978e9b',
+            cursor: isSelf ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            transition: 'all 150ms',
+          }}
+          onMouseEnter={(e) => {
+            if (!isSelf) {
+              e.currentTarget.style.borderColor = isBlocked ? '#84d099' : '#ef4444';
+              e.currentTarget.style.color = isBlocked ? '#84d099' : '#ef4444';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+            e.currentTarget.style.color = '#978e9b';
+          }}
+        >
+          <NavIcon name={isBlocked ? 'RefreshCw' : 'Ban'} size={13} />
+        </button>
+
+        {/* Delete */}
+        <button
+          disabled={isSelf}
+          onClick={() => onAction('delete', user)}
+          title="Delete user"
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(75,68,80,0.4)',
+            borderRadius: 6,
+            padding: 7,
+            color: '#978e9b',
+            cursor: isSelf ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            transition: 'all 150ms',
+          }}
+          onMouseEnter={(e) => {
+            if (!isSelf) {
+              e.currentTarget.style.borderColor = '#ef4444';
+              e.currentTarget.style.color = '#ef4444';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+            e.currentTarget.style.color = '#978e9b';
+          }}
+        >
+          <NavIcon name="Trash" size={13} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -67,15 +335,11 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const t = useTranslations('admin');
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [changingRole, setChangingRole] = useState<string | null>(null);
-  const [togglingBlock, setTogglingBlock] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [blockTarget, setBlockTarget] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [blocking, setBlocking] = useState(false);
+  const [query, setQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
+  const [confirm, setConfirm] = useState<ConfirmState | null>(null);
+  const [acting, setActing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,102 +356,202 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, []);
 
-  function refresh() {
-    setLoading(true);
-    setError(null);
-    setRefreshKey((k) => k + 1);
-  }
-
-  async function handleRoleChange(userId: string, role: 'USER' | 'ADMIN') {
-    setChangingRole(userId);
-    try {
-      await changeUserRoleAction(userId, role);
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setChangingRole(null);
+  function handleAction(
+    type: ConfirmState['type'],
+    user: AdminUserRow,
+    newRole?: 'USER' | 'ADMIN',
+  ) {
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
+    if (type === 'role') {
+      setConfirm({
+        type,
+        userId: user.id,
+        newRole,
+        title: newRole === 'ADMIN' ? 'grant admin access?' : 'revoke admin access?',
+        body: `${name} will ${newRole === 'ADMIN' ? 'gain full admin access to the panel' : 'lose admin privileges and revert to a regular user'}.`,
+        label: newRole === 'ADMIN' ? 'grant admin' : 'revoke admin',
+        danger: newRole !== 'ADMIN',
+      });
+    } else if (type === 'block') {
+      setConfirm({
+        type,
+        userId: user.id,
+        title: 'block user?',
+        body: `${name} will be prevented from signing in. Their data is preserved.`,
+        label: 'block user',
+        danger: true,
+      });
+    } else if (type === 'unblock') {
+      setConfirm({
+        type,
+        userId: user.id,
+        title: 'unblock user?',
+        body: `${name} will be able to sign in again.`,
+        label: 'unblock user',
+        danger: false,
+      });
+    } else if (type === 'delete') {
+      setConfirm({
+        type,
+        userId: user.id,
+        title: t('users.deleteUser'),
+        body: t('users.confirmDelete'),
+        label: t('users.deleteUser'),
+        danger: true,
+      });
     }
   }
 
-  async function handleToggleBlock(user: AdminUserRow) {
-    if (!user.blockedAt) {
-      setBlockTarget(user.id);
-    } else {
-      setTogglingBlock(user.id);
-      try {
-        await unblockUserAction(user.id);
-        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, blockedAt: null } : u)));
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setTogglingBlock(null);
+  async function applyConfirm() {
+    if (!confirm) return;
+    setActing(true);
+    try {
+      if (confirm.type === 'role' && confirm.newRole) {
+        await changeUserRoleAction(confirm.userId, confirm.newRole);
+        setUsers((prev) =>
+          prev.map((u) => (u.id === confirm.userId ? { ...u, role: confirm.newRole! } : u)),
+        );
+      } else if (confirm.type === 'block') {
+        await blockUserAction(confirm.userId);
+        setUsers((prev) =>
+          prev.map((u) => (u.id === confirm.userId ? { ...u, blockedAt: new Date() } : u)),
+        );
+      } else if (confirm.type === 'unblock') {
+        await unblockUserAction(confirm.userId);
+        setUsers((prev) =>
+          prev.map((u) => (u.id === confirm.userId ? { ...u, blockedAt: null } : u)),
+        );
+      } else if (confirm.type === 'delete') {
+        await deleteUserAction(confirm.userId);
+        setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
       }
-    }
-  }
-
-  async function handleBlockConfirm() {
-    if (!blockTarget) return;
-    setBlocking(true);
-    try {
-      await blockUserAction(blockTarget);
-      setUsers((prev) =>
-        prev.map((u) => (u.id === blockTarget ? { ...u, blockedAt: new Date() } : u)),
-      );
-      setBlockTarget(null);
+      setConfirm(null);
     } catch (e) {
       console.error(e);
     } finally {
-      setBlocking(false);
+      setActing(false);
     }
   }
 
-  async function handleDeleteConfirm() {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    try {
-      await deleteUserAction(deleteTarget);
-      setUsers((prev) => prev.filter((u) => u.id !== deleteTarget));
-      setDeleteTarget(null);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setDeleting(false);
-    }
-  }
+  const filtered = users.filter((u) => {
+    const matchQ =
+      !query ||
+      u.email.toLowerCase().includes(query.toLowerCase()) ||
+      [u.firstName, u.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(query.toLowerCase());
+    const matchR = roleFilter === 'ALL' || u.role === roleFilter;
+    return matchQ && matchR;
+  });
 
-  const filtered = search
-    ? users.filter(
-        (u) =>
-          u.email.toLowerCase().includes(search.toLowerCase()) ||
-          [u.firstName, u.lastName]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            .includes(search.toLowerCase()),
-      )
-    : users;
+  const adminCount = users.filter((u) => u.role === 'ADMIN').length;
+  const blockedCount = users.filter((u) => u.blockedAt).length;
 
   return (
-    <div>
-      {/* Toolbar */}
+    <div style={{ padding: '32px 40px 80px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: '#4b4450',
+            fontFamily: 'var(--font-manrope)',
+            marginBottom: 8,
+          }}
+        >
+          Community · {users.length} members · {adminCount} admins · {blockedCount} blocked
+        </div>
+        <h1
+          style={{
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 36,
+            fontWeight: 600,
+            letterSpacing: '-0.03em',
+            color: '#e2e2e2',
+            margin: 0,
+          }}
+        >
+          {t('users.title').toLowerCase()}
+        </h1>
+      </div>
+
+      {/* Filters */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('users.search')}
+        <div
           style={{
             flex: 1,
-            minWidth: 200,
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#e0e0e0',
+            maxWidth: 360,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            background: '#1b1b1b',
+            border: '1px solid rgba(75,68,80,0.3)',
             borderRadius: 8,
+            padding: '8px 14px',
           }}
-        />
-        <span style={{ color: '#666', fontSize: 13, whiteSpace: 'nowrap' }}>
+        >
+          <span style={{ color: '#978e9b', display: 'flex' }}>
+            <NavIcon name="Search" size={14} />
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('users.search')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#e2e2e2',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              outline: 'none',
+              flex: 1,
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {(['ALL', 'USER', 'ADMIN'] as RoleFilter[]).map((r) => (
+            <button
+              key={r}
+              onClick={() => setRoleFilter(r)}
+              style={{
+                padding: '7px 14px',
+                borderRadius: 6,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-manrope)',
+                border: 'none',
+                transition: 'all 150ms',
+                background:
+                  roleFilter === r
+                    ? r === 'ADMIN'
+                      ? 'rgba(220,184,255,0.15)'
+                      : 'rgba(220,184,255,0.10)'
+                    : 'transparent',
+                color: roleFilter === r ? (r === 'ADMIN' ? '#dcb8ff' : '#cdc3d2') : '#978e9b',
+              }}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+        <span
+          style={{
+            color: '#4b4450',
+            fontSize: 12,
+            fontFamily: 'var(--font-manrope)',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {filtered.length} / {users.length}
         </span>
       </div>
@@ -202,281 +566,86 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             color: '#f87171',
             fontSize: 14,
             marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
           }}
         >
           {error}
-          <button
-            onClick={refresh}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#f87171',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              fontSize: 13,
-              padding: 0,
-            }}
-          >
-            Retry
-          </button>
         </div>
       )}
 
+      {/* Table */}
       <div
         style={{
-          background: '#1a1a1a',
+          background: '#1b1b1b',
           borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid rgba(75,68,80,0.2)',
           overflow: 'hidden',
         }}
       >
-        {/* Header */}
+        {/* Header row */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '2.5fr 1fr 100px 140px 48px',
-            gap: 16,
-            padding: '12px 20px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            color: '#555',
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
+            gridTemplateColumns: GRID,
+            padding: '10px 20px',
+            borderBottom: '1px solid rgba(75,68,80,0.2)',
           }}
         >
-          <span>{t('users.cols.user')}</span>
-          <span>{t('users.cols.location')}</span>
-          <span>{t('users.cols.joined')}</span>
-          <span>{t('users.cols.role')}</span>
-          <span />
+          {['User', 'Location', 'Moves', 'Joined', 'Role & Status', ''].map((h, i) => (
+            <span
+              key={i}
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: '#4b4450',
+                fontFamily: 'var(--font-manrope)',
+              }}
+            >
+              {h}
+            </span>
+          ))}
         </div>
 
-        {loading && (
-          <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>Loading...</div>
-        )}
+        {loading && <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>Loading…</div>}
 
         {!loading && filtered.length === 0 && (
-          <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>
+          <div
+            style={{
+              padding: 60,
+              textAlign: 'center',
+              color: '#4b4450',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 14,
+            }}
+          >
             {t('users.noUsers')}
           </div>
         )}
 
         {!loading &&
-          filtered.map((user, i) => {
-            const isBlocked = Boolean(user.blockedAt);
-            const isSelf = user.id === currentUserId;
-            const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
-
-            return (
-              <div
-                key={user.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2.5fr 1fr 100px 140px 100px',
-                  gap: 16,
-                  padding: '14px 20px',
-                  borderBottom:
-                    i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  alignItems: 'center',
-                  opacity: isBlocked ? 0.6 : 1,
-                  background: isBlocked ? 'rgba(248,113,113,0.03)' : 'transparent',
-                  transition: 'opacity 150ms',
-                }}
-              >
-                {/* User: avatar + email + name + blocked badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-                  <UserAvatar user={user} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span
-                        style={{
-                          color: '#e0e0e0',
-                          fontSize: 13,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {user.email}
-                      </span>
-                      {isBlocked && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            padding: '2px 6px',
-                            borderRadius: 20,
-                            background: 'rgba(248,113,113,0.15)',
-                            color: '#f87171',
-                            fontWeight: 600,
-                            letterSpacing: '0.04em',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {t('users.blocked')}
-                        </span>
-                      )}
-                    </div>
-                    {fullName && (
-                      <div style={{ color: '#555', fontSize: 12, marginTop: 1 }}>{fullName}</div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Location */}
-                <span
-                  style={{
-                    color: '#666',
-                    fontSize: 13,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {user.location || t('users.noLocation')}
-                </span>
-
-                {/* Joined */}
-                <span style={{ color: '#555', fontSize: 12 }}>
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </span>
-
-                {/* Role badge + dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    disabled={changingRole === user.id || isSelf}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      padding: '5px 12px',
-                      borderRadius: 20,
-                      border: `1px solid ${user.role === 'ADMIN' ? 'rgba(220,184,255,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                      background:
-                        user.role === 'ADMIN' ? 'rgba(220,184,255,0.1)' : 'rgba(255,255,255,0.04)',
-                      color: user.role === 'ADMIN' ? '#dcb8ff' : '#888',
-                      cursor: changingRole === user.id || isSelf ? 'default' : 'pointer',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      letterSpacing: '0.03em',
-                      transition: 'all 150ms',
-                      opacity: isSelf ? 0.5 : 1,
-                    }}
-                    asChild={false}
-                  >
-                    {user.role === 'ADMIN' && <span style={{ fontSize: 10 }}>✦</span>}
-                    {changingRole === user.id ? '...' : user.role}
-                    <span style={{ fontSize: 9, opacity: 0.6 }}>▾</span>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    style={{
-                      background: '#222',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 8,
-                    }}
-                  >
-                    {user.role !== 'ADMIN' && (
-                      <DropdownMenuItem
-                        onClick={() => handleRoleChange(user.id, 'ADMIN')}
-                        style={{ color: '#dcb8ff', cursor: 'pointer', fontSize: 13 }}
-                      >
-                        ✦ {t('users.makeAdmin')}
-                      </DropdownMenuItem>
-                    )}
-                    {user.role !== 'USER' && (
-                      <DropdownMenuItem
-                        onClick={() => handleRoleChange(user.id, 'USER')}
-                        style={{ color: '#e0e0e0', cursor: 'pointer', fontSize: 13 }}
-                      >
-                        {t('users.makeUser')}
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Actions dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    disabled={togglingBlock === user.id || isSelf}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 32,
-                      height: 32,
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: 8,
-                      color: '#888',
-                      cursor: togglingBlock === user.id || isSelf ? 'default' : 'pointer',
-                      opacity: isSelf ? 0.3 : 1,
-                      fontSize: 16,
-                      letterSpacing: 1,
-                      transition: 'all 150ms',
-                    }}
-                    asChild={false}
-                  >
-                    ···
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    style={{
-                      background: '#222',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 10,
-                      minWidth: 160,
-                      padding: '4px 0',
-                    }}
-                  >
-                    {isBlocked ? (
-                      <DropdownMenuItem
-                        onClick={() => handleToggleBlock(user)}
-                        style={{ color: '#4ade80', cursor: 'pointer', fontSize: 13, gap: 8 }}
-                      >
-                        <span>◉</span> {t('users.unblock')}
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem
-                        onClick={() => handleToggleBlock(user)}
-                        style={{ color: '#facc15', cursor: 'pointer', fontSize: 13, gap: 8 }}
-                      >
-                        <span>⊘</span> {t('users.block')}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem
-                      onClick={() => setDeleteTarget(user.id)}
-                      style={{ color: '#f87171', cursor: 'pointer', fontSize: 13, gap: 8 }}
-                    >
-                      <span>✕</span> {t('users.deleteUser')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            );
-          })}
+          filtered.map((user, i) => (
+            <UserRow
+              key={user.id}
+              user={user}
+              isLast={i === filtered.length - 1}
+              isSelf={user.id === currentUserId}
+              onAction={handleAction}
+            />
+          ))}
       </div>
 
-      <ConfirmDialog
-        open={blockTarget !== null}
-        title={t('users.block')}
-        description={t('users.confirmBlock')}
-        confirmLabel={t('users.block')}
-        onConfirm={handleBlockConfirm}
-        onCancel={() => setBlockTarget(null)}
-        loading={blocking}
-      />
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title={t('users.deleteUser')}
-        description={t('users.confirmDelete')}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-        loading={deleting}
-      />
+      {confirm && (
+        <ConfirmDialog
+          open={true}
+          title={confirm.title}
+          description={confirm.body}
+          confirmLabel={confirm.label}
+          onConfirm={applyConfirm}
+          onCancel={() => setConfirm(null)}
+          loading={acting}
+        />
+      )}
     </div>
   );
 }
