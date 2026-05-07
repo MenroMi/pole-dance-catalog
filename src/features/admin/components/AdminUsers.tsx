@@ -61,7 +61,7 @@ function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
   );
 }
 
-const GRID = '2.5fr 1fr 80px 80px 1fr 120px';
+const GRID = '2.5fr 1fr 80px 120px 1fr 120px';
 
 const ROLE_STYLES: Record<string, { bg: string; fg: string }> = {
   ADMIN: { bg: 'rgba(220,184,255,0.15)', fg: '#dcb8ff' },
@@ -194,7 +194,11 @@ function UserRow({
 
       {/* Joined */}
       <div style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
-        {new Date(user.createdAt).toLocaleDateString().slice(0, 7)}
+        {new Date(user.createdAt).toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })}
       </div>
 
       {/* Role & Status chips */}
