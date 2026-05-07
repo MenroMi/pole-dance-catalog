@@ -186,7 +186,6 @@ export default function SettingsForm({
       const newName =
         [profileValues.firstName, profileValues.lastName].filter(Boolean).join(' ') || null;
       await update({ name: newName });
-      router.refresh();
       router.push('/profile');
     } catch {
       setProfileError(t('genericError'));

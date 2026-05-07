@@ -274,8 +274,7 @@ describe('removeAvatarAction', () => {
       where: { id: 'user-123' },
       data: { image: null },
     });
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/profile');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/profile/settings');
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
 
