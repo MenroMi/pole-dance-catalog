@@ -337,6 +337,8 @@ function UserRow({
   );
 }
 
+const PAGE_SIZE = 20;
+
 export function AdminUsers({ currentUserId }: { currentUserId: string | null }) {
   const t = useTranslations('admin');
   const [users, setUsers] = useState<AdminUserRow[]>([]);
@@ -346,23 +348,51 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
   const [acting, setActing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalAdmins, setTotalAdmins] = useState(0);
+  const [totalBlocked, setTotalBlocked] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    getUsersForAdminAction()
-      .then((data) => {
-        if (!cancelled) setUsers(data);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : t('users.loadError'));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const timeout = setTimeout(
+      () => {
+        setLoading(true);
+        getUsersForAdminAction({ page, pageSize: PAGE_SIZE, query, roleFilter })
+          .then((data) => {
+            if (!cancelled) {
+              setUsers(data.users);
+              setTotal(data.total);
+              setTotalAdmins(data.totalAdmins);
+              setTotalBlocked(data.totalBlocked);
+              setError(null);
+            }
+          })
+          .catch((e) => {
+            if (!cancelled) setError(e instanceof Error ? e.message : t('users.loadError'));
+          })
+          .finally(() => {
+            if (!cancelled) setLoading(false);
+          });
+      },
+      query ? 300 : 0,
+    );
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
-  }, []);
+  }, [page, query, roleFilter, refreshKey, t]);
+
+  function handleQueryChange(val: string) {
+    setQuery(val);
+    setPage(1);
+  }
+
+  function handleRoleFilterChange(r: RoleFilter) {
+    setRoleFilter(r);
+    setPage(1);
+  }
 
   function handleAction(
     type: ConfirmState['type'],
@@ -416,24 +446,15 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
     try {
       if (confirm.type === 'role' && confirm.newRole) {
         await changeUserRoleAction(confirm.userId, confirm.newRole);
-        setUsers((prev) =>
-          prev.map((u) => (u.id === confirm.userId ? { ...u, role: confirm.newRole! } : u)),
-        );
       } else if (confirm.type === 'block') {
         await blockUserAction(confirm.userId);
-        setUsers((prev) =>
-          prev.map((u) => (u.id === confirm.userId ? { ...u, blockedAt: new Date() } : u)),
-        );
       } else if (confirm.type === 'unblock') {
         await unblockUserAction(confirm.userId);
-        setUsers((prev) =>
-          prev.map((u) => (u.id === confirm.userId ? { ...u, blockedAt: null } : u)),
-        );
       } else if (confirm.type === 'delete') {
         await deleteUserAction(confirm.userId);
-        setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
       }
       setConfirm(null);
+      setRefreshKey((k) => k + 1);
     } catch (e) {
       console.error(e);
     } finally {
@@ -441,23 +462,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
     }
   }
 
-  const filtered = users.filter((u) => {
-    const matchQ =
-      !query ||
-      u.email.toLowerCase().includes(query.toLowerCase()) ||
-      [u.firstName, u.lastName]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-        .includes(query.toLowerCase());
-    const matchR =
-      roleFilter === 'ALL' ||
-      (roleFilter === 'BLOCKED' ? Boolean(u.blockedAt) : u.role === roleFilter);
-    return matchQ && matchR;
-  });
-
-  const adminCount = users.filter((u) => u.role === 'ADMIN').length;
-  const blockedCount = users.filter((u) => u.blockedAt).length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div style={{ padding: '32px 40px 80px' }}>
@@ -474,8 +479,8 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             marginBottom: 8,
           }}
         >
-          {t('users.community')} · {users.length} {t('users.members')} · {adminCount}{' '}
-          {t('users.adminsCount')} · {blockedCount} {t('users.blocked')}
+          {t('users.community')} · {total} {t('users.members')} · {totalAdmins}{' '}
+          {t('users.adminsCount')} · {totalBlocked} {t('users.blocked')}
         </div>
         <h1
           style={{
@@ -511,7 +516,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           </span>
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleQueryChange(e.target.value)}
             placeholder={t('users.search')}
             style={{
               background: 'transparent',
@@ -532,7 +537,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             return (
               <button
                 key={r}
-                onClick={() => setRoleFilter(r)}
+                onClick={() => handleRoleFilterChange(r)}
                 style={{
                   padding: '7px 14px',
                   borderRadius: 6,
@@ -579,7 +584,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             whiteSpace: 'nowrap',
           }}
         >
-          {filtered.length} / {users.length}
+          {total}
         </span>
       </div>
 
@@ -645,7 +650,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
         )}
 
-        {!loading && filtered.length === 0 && (
+        {!loading && users.length === 0 && (
           <div
             style={{
               padding: 60,
@@ -660,16 +665,78 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         )}
 
         {!loading &&
-          filtered.map((user, i) => (
+          users.map((user, i) => (
             <UserRow
               key={user.id}
               user={user}
-              isLast={i === filtered.length - 1}
+              isLast={i === users.length - 1}
               isSelf={user.id === currentUserId}
               onAction={handleAction}
             />
           ))}
       </div>
+
+      {totalPages > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 16,
+            marginTop: 24,
+          }}
+        >
+          <button
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((p) => p - 1)}
+            style={{
+              padding: '7px 18px',
+              borderRadius: 6,
+              fontSize: 13,
+              fontFamily: 'var(--font-manrope)',
+              fontWeight: 600,
+              background: page <= 1 ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
+              color: page <= 1 ? '#4b4450' : '#dcb8ff',
+              border: '1px solid',
+              borderColor: page <= 1 ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
+              cursor: page <= 1 || loading ? 'not-allowed' : 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            ←
+          </button>
+          <span
+            style={{
+              fontSize: 13,
+              color: '#978e9b',
+              fontFamily: 'var(--font-manrope)',
+              minWidth: 80,
+              textAlign: 'center',
+            }}
+          >
+            {page} / {totalPages}
+          </span>
+          <button
+            disabled={page >= totalPages || loading}
+            onClick={() => setPage((p) => p + 1)}
+            style={{
+              padding: '7px 18px',
+              borderRadius: 6,
+              fontSize: 13,
+              fontFamily: 'var(--font-manrope)',
+              fontWeight: 600,
+              background: page >= totalPages ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
+              color: page >= totalPages ? '#4b4450' : '#dcb8ff',
+              border: '1px solid',
+              borderColor: page >= totalPages ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
+              cursor: page >= totalPages || loading ? 'not-allowed' : 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            →
+          </button>
+        </div>
+      )}
 
       {confirm && (
         <ConfirmDialog

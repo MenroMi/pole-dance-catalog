@@ -180,22 +180,72 @@ export async function deleteTagAction(id: string) {
   return prisma.tag.delete({ where: { id } });
 }
 
-export async function getUsersForAdminAction(): Promise<AdminUserRow[]> {
+export async function getUsersForAdminAction(
+  params: {
+    page?: number;
+    pageSize?: number;
+    query?: string;
+    roleFilter?: 'ALL' | 'USER' | 'ADMIN' | 'BLOCKED';
+  } = {},
+): Promise<{
+  users: AdminUserRow[];
+  total: number;
+  totalAdmins: number;
+  totalBlocked: number;
+}> {
   await requireAdmin();
-  return prisma.user.findMany({
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      image: true,
-      location: true,
-      role: true,
-      blockedAt: true,
-      createdAt: true,
-    },
-  });
+  const { page = 1, pageSize = 20, query = '', roleFilter = 'ALL' } = params;
+
+  const searchCondition = query
+    ? {
+        OR: [
+          { email: { contains: query, mode: 'insensitive' as const } },
+          { firstName: { contains: query, mode: 'insensitive' as const } },
+          { lastName: { contains: query, mode: 'insensitive' as const } },
+        ],
+      }
+    : undefined;
+
+  const roleCondition =
+    roleFilter === 'ADMIN'
+      ? { role: 'ADMIN' as const }
+      : roleFilter === 'USER'
+        ? { role: 'USER' as const }
+        : roleFilter === 'BLOCKED'
+          ? { blockedAt: { not: null } }
+          : undefined;
+
+  const conditions = [searchCondition, roleCondition].filter((c): c is NonNullable<typeof c> =>
+    Boolean(c),
+  );
+  const where = conditions.length > 0 ? { AND: conditions } : {};
+
+  const select = {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    image: true,
+    location: true,
+    role: true,
+    blockedAt: true,
+    createdAt: true,
+  };
+
+  const [users, total, totalAdmins, totalBlocked] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      select,
+    }),
+    prisma.user.count({ where }),
+    prisma.user.count({ where: { role: 'ADMIN' } }),
+    prisma.user.count({ where: { blockedAt: { not: null } } }),
+  ]);
+
+  return { users, total, totalAdmins, totalBlocked };
 }
 
 export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN') {
