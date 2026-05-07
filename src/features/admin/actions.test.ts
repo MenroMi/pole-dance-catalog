@@ -73,7 +73,7 @@ const validCreateInput = {
   title_en: 'Test EN',
   difficulty: 'BEGINNER' as const,
   category: 'SPINS' as const,
-  poleTypes: [] as const,
+  poleTypes: [] as import('@prisma/client').PoleType[],
   youtubeUrl: 'https://youtu.be/dQw4w9WgXcQ',
   stepsData_pl: [],
   stepsData_en: [],
