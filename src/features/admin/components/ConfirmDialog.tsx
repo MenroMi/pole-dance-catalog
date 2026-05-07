@@ -20,6 +20,7 @@ interface ConfirmDialogProps {
   onCancel: () => void;
   loading?: boolean;
   error?: string | null;
+  danger?: boolean;
   children?: React.ReactNode;
 }
 
@@ -32,6 +33,7 @@ export function ConfirmDialog({
   onCancel,
   loading,
   error,
+  danger,
   children,
 }: ConfirmDialogProps) {
   return (
@@ -67,7 +69,11 @@ export function ConfirmDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={loading}
-            style={{ background: '#8458b3', color: '#fff', opacity: loading ? 0.6 : 1 }}
+            style={{
+              background: danger ? '#dc2626' : '#8458b3',
+              color: '#fff',
+              opacity: loading ? 0.6 : 1,
+            }}
           >
             {loading ? 'Deleting...' : confirmLabel}
           </AlertDialogAction>

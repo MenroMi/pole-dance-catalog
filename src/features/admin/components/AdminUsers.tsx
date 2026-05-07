@@ -431,7 +431,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         title: t('users.unblockTitle'),
         body: t('users.unblockBody', { name }),
         label: t('users.unblock'),
-        danger: false,
+        danger: true,
         existingReason: user.blockReason,
       });
     } else if (type === 'delete') {
@@ -791,6 +791,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           onConfirm={applyConfirm}
           onCancel={() => setConfirm(null)}
           loading={acting}
+          danger={confirm.danger}
         >
           {confirm.type === 'block' && (
             <textarea
