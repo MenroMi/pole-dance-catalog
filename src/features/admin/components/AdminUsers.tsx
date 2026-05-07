@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -83,11 +84,13 @@ function UserRow({
   user,
   isLast,
   isSelf,
+  isPending,
   onAction,
 }: {
   user: AdminUserRow;
   isLast: boolean;
   isSelf: boolean;
+  isPending: boolean;
   onAction: (type: ConfirmState['type'], user: AdminUserRow, newRole?: 'USER' | 'ADMIN') => void;
 }) {
   const t = useTranslations('admin');
@@ -113,9 +116,10 @@ function UserRow({
         alignItems: 'center',
         borderBottom: isLast ? 'none' : '1px solid rgba(75,68,80,0.12)',
         background: hov ? 'rgba(220,184,255,0.03)' : 'transparent',
-        transition: 'background 150ms',
+        transition: 'background 150ms, opacity 150ms',
         position: 'relative',
-        opacity: isBlocked ? 0.65 : 1,
+        opacity: isPending ? 0.4 : isBlocked ? 0.65 : 1,
+        pointerEvents: isPending ? 'none' : 'auto',
       }}
     >
       {/* Identity */}
@@ -231,96 +235,106 @@ function UserRow({
           display: 'flex',
           gap: 6,
           justifyContent: 'flex-end',
-          opacity: hov && !isSelf ? 1 : 0.15,
+          opacity: isPending ? 1 : hov && !isSelf ? 1 : 0.15,
           transition: 'opacity 150ms',
         }}
       >
-        {/* Role toggle */}
-        <button
-          disabled={isSelf}
-          onClick={() => onAction('role', user, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
-          title={user.role === 'ADMIN' ? t('users.revokeAdmin') : t('users.makeAdmin')}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(75,68,80,0.4)',
-            borderRadius: 6,
-            padding: 7,
-            color: '#978e9b',
-            cursor: isSelf ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            transition: 'all 150ms',
-          }}
-          onMouseEnter={(e) => {
-            if (!isSelf) {
-              e.currentTarget.style.borderColor = '#dcb8ff';
-              e.currentTarget.style.color = '#dcb8ff';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
-            e.currentTarget.style.color = '#978e9b';
-          }}
-        >
-          <NavIcon name="Shield" size={13} />
-        </button>
+        {isPending && (
+          <Loader2
+            size={16}
+            style={{ color: '#dcb8ff', animation: 'spin 1s linear infinite', margin: 'auto 0' }}
+          />
+        )}
+        {!isPending && (
+          <>
+            {/* Role toggle */}
+            <button
+              disabled={isSelf}
+              onClick={() => onAction('role', user, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+              title={user.role === 'ADMIN' ? t('users.revokeAdmin') : t('users.makeAdmin')}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(75,68,80,0.4)',
+                borderRadius: 6,
+                padding: 7,
+                color: '#978e9b',
+                cursor: isSelf ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                transition: 'all 150ms',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelf) {
+                  e.currentTarget.style.borderColor = '#dcb8ff';
+                  e.currentTarget.style.color = '#dcb8ff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+                e.currentTarget.style.color = '#978e9b';
+              }}
+            >
+              <NavIcon name="Shield" size={13} />
+            </button>
 
-        {/* Block/Unblock toggle */}
-        <button
-          disabled={isSelf}
-          onClick={() => onAction(isBlocked ? 'unblock' : 'block', user)}
-          title={isBlocked ? t('users.unblock') : t('users.block')}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(75,68,80,0.4)',
-            borderRadius: 6,
-            padding: 7,
-            color: '#978e9b',
-            cursor: isSelf ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            transition: 'all 150ms',
-          }}
-          onMouseEnter={(e) => {
-            if (!isSelf) {
-              e.currentTarget.style.borderColor = isBlocked ? '#84d099' : '#ef4444';
-              e.currentTarget.style.color = isBlocked ? '#84d099' : '#ef4444';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
-            e.currentTarget.style.color = '#978e9b';
-          }}
-        >
-          <NavIcon name={isBlocked ? 'RefreshCw' : 'Ban'} size={13} />
-        </button>
+            {/* Block/Unblock toggle */}
+            <button
+              disabled={isSelf}
+              onClick={() => onAction(isBlocked ? 'unblock' : 'block', user)}
+              title={isBlocked ? t('users.unblock') : t('users.block')}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(75,68,80,0.4)',
+                borderRadius: 6,
+                padding: 7,
+                color: '#978e9b',
+                cursor: isSelf ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                transition: 'all 150ms',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelf) {
+                  e.currentTarget.style.borderColor = isBlocked ? '#84d099' : '#ef4444';
+                  e.currentTarget.style.color = isBlocked ? '#84d099' : '#ef4444';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+                e.currentTarget.style.color = '#978e9b';
+              }}
+            >
+              <NavIcon name={isBlocked ? 'RefreshCw' : 'Ban'} size={13} />
+            </button>
 
-        {/* Delete */}
-        <button
-          disabled={isSelf}
-          onClick={() => onAction('delete', user)}
-          title={t('users.deleteUser')}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(75,68,80,0.4)',
-            borderRadius: 6,
-            padding: 7,
-            color: '#978e9b',
-            cursor: isSelf ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            transition: 'all 150ms',
-          }}
-          onMouseEnter={(e) => {
-            if (!isSelf) {
-              e.currentTarget.style.borderColor = '#ef4444';
-              e.currentTarget.style.color = '#ef4444';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
-            e.currentTarget.style.color = '#978e9b';
-          }}
-        >
-          <NavIcon name="Trash" size={13} />
-        </button>
+            {/* Delete */}
+            <button
+              disabled={isSelf}
+              onClick={() => onAction('delete', user)}
+              title={t('users.deleteUser')}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(75,68,80,0.4)',
+                borderRadius: 6,
+                padding: 7,
+                color: '#978e9b',
+                cursor: isSelf ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                transition: 'all 150ms',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelf) {
+                  e.currentTarget.style.borderColor = '#ef4444';
+                  e.currentTarget.style.color = '#ef4444';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+                e.currentTarget.style.color = '#978e9b';
+              }}
+            >
+              <NavIcon name="Trash" size={13} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -337,13 +351,13 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
   const [acting, setActing] = useState(false);
+  const [actingUserId, setActingUserId] = useState<string | null>(null);
   const [blockReason, setBlockReason] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalAll, setTotalAll] = useState(0);
   const [totalAdmins, setTotalAdmins] = useState(0);
   const [totalBlocked, setTotalBlocked] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -374,7 +388,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [page, query, roleFilter, refreshKey, t]);
+  }, [page, query, roleFilter, t]);
 
   function handleQueryChange(val: string) {
     setQuery(val);
@@ -437,22 +451,49 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   async function applyConfirm() {
     if (!confirm) return;
     setActing(true);
+    setActingUserId(confirm.userId);
     try {
       if (confirm.type === 'role' && confirm.newRole) {
         await changeUserRoleAction(confirm.userId, confirm.newRole);
+        const newRole = confirm.newRole;
+        setUsers((prev) =>
+          prev.map((u) => (u.id === confirm.userId ? { ...u, role: newRole } : u)),
+        );
+        setTotalAdmins((n) => n + (newRole === 'ADMIN' ? 1 : -1));
       } else if (confirm.type === 'block') {
-        await blockUserAction(confirm.userId, blockReason.trim() || undefined);
+        const reason = blockReason.trim() || undefined;
+        await blockUserAction(confirm.userId, reason);
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === confirm.userId
+              ? { ...u, blockedAt: new Date(), blockReason: reason ?? null }
+              : u,
+          ),
+        );
+        setTotalBlocked((n) => n + 1);
       } else if (confirm.type === 'unblock') {
         await unblockUserAction(confirm.userId);
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === confirm.userId ? { ...u, blockedAt: null, blockReason: null } : u,
+          ),
+        );
+        setTotalBlocked((n) => n - 1);
       } else if (confirm.type === 'delete') {
         await deleteUserAction(confirm.userId);
+        const deleted = users.find((u) => u.id === confirm.userId);
+        setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
+        setTotal((n) => n - 1);
+        setTotalAll((n) => n - 1);
+        if (deleted?.role === 'ADMIN') setTotalAdmins((n) => n - 1);
+        if (deleted?.blockedAt) setTotalBlocked((n) => n - 1);
       }
       setConfirm(null);
-      setRefreshKey((k) => k + 1);
     } catch (e) {
       console.error(e);
     } finally {
       setActing(false);
+      setActingUserId(null);
     }
   }
 
@@ -697,6 +738,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
                   user={user}
                   isLast={i === users.length - 1}
                   isSelf={user.id === currentUserId}
+                  isPending={user.id === actingUserId}
                   onAction={handleAction}
                 />
               ))}
