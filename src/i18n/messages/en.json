@@ -392,6 +392,7 @@
       "roleAdmin": "Admin",
       "roleUser": "User",
       "filterAll": "All",
+      "filterBlocked": "Blocked",
       "cols": {
         "user": "User",
         "location": "Location",

@@ -14,7 +14,7 @@ import type { AdminUserRow } from '../types';
 
 import { ConfirmDialog } from './ConfirmDialog';
 
-type RoleFilter = 'ALL' | 'USER' | 'ADMIN';
+type RoleFilter = 'ALL' | 'USER' | 'ADMIN' | 'BLOCKED';
 
 function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
@@ -445,7 +445,9 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         .join(' ')
         .toLowerCase()
         .includes(query.toLowerCase());
-    const matchR = roleFilter === 'ALL' || u.role === roleFilter;
+    const matchR =
+      roleFilter === 'ALL' ||
+      (roleFilter === 'BLOCKED' ? Boolean(u.blockedAt) : u.role === roleFilter);
     return matchQ && matchR;
   });
 
@@ -518,37 +520,51 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           />
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          {(['ALL', 'USER', 'ADMIN'] as RoleFilter[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRoleFilter(r)}
-              style={{
-                padding: '7px 14px',
-                borderRadius: 6,
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-manrope)',
-                border: 'none',
-                transition: 'all 150ms',
-                background:
-                  roleFilter === r
-                    ? r === 'ADMIN'
-                      ? 'rgba(220,184,255,0.15)'
-                      : 'rgba(220,184,255,0.10)'
+          {(['ALL', 'USER', 'ADMIN', 'BLOCKED'] as RoleFilter[]).map((r) => {
+            const active = roleFilter === r;
+            const isBlocked = r === 'BLOCKED';
+            const isAdmin = r === 'ADMIN';
+            return (
+              <button
+                key={r}
+                onClick={() => setRoleFilter(r)}
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-manrope)',
+                  border: 'none',
+                  transition: 'all 150ms',
+                  background: active
+                    ? isBlocked
+                      ? 'rgba(239,68,68,0.15)'
+                      : isAdmin
+                        ? 'rgba(220,184,255,0.15)'
+                        : 'rgba(220,184,255,0.10)'
                     : 'transparent',
-                color: roleFilter === r ? (r === 'ADMIN' ? '#dcb8ff' : '#cdc3d2') : '#978e9b',
-              }}
-            >
-              {r === 'ALL'
-                ? t('users.filterAll')
-                : r === 'ADMIN'
-                  ? t('users.roleAdmin')
-                  : t('users.roleUser')}
-            </button>
-          ))}
+                  color: active
+                    ? isBlocked
+                      ? '#ef4444'
+                      : isAdmin
+                        ? '#dcb8ff'
+                        : '#cdc3d2'
+                    : '#978e9b',
+                }}
+              >
+                {r === 'ALL'
+                  ? t('users.filterAll')
+                  : r === 'ADMIN'
+                    ? t('users.roleAdmin')
+                    : r === 'BLOCKED'
+                      ? t('users.filterBlocked')
+                      : t('users.roleUser')}
+              </button>
+            );
+          })}
         </div>
         <span
           style={{
