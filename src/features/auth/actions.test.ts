@@ -497,4 +497,9 @@ describe('signInWithOAuthAction', () => {
     await signInWithOAuthAction('google', '//evil.com');
     expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/pl/catalog' });
   });
+
+  it('strips an empty string callbackUrl to locale fallback', async () => {
+    await signInWithOAuthAction('google', '');
+    expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/pl/catalog' });
+  });
 });
