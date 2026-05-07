@@ -465,9 +465,16 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div style={{ padding: '32px 40px 80px' }}>
+    <div
+      style={{
+        height: 'calc(100vh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       {/* Header */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ padding: '32px 40px 0', flexShrink: 0, marginBottom: 28 }}>
         <div
           style={{
             fontSize: 11,
@@ -497,7 +504,16 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          marginBottom: 16,
+          alignItems: 'center',
+          padding: '0 40px',
+          flexShrink: 0,
+        }}
+      >
         <div
           style={{
             flex: 1,
@@ -591,13 +607,14 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       {error && (
         <div
           style={{
+            margin: '0 40px 12px',
             background: 'rgba(248,113,113,0.1)',
             border: '1px solid rgba(248,113,113,0.3)',
             borderRadius: 12,
             padding: '16px 20px',
             color: '#f87171',
             fontSize: 14,
-            marginBottom: 16,
+            flexShrink: 0,
           }}
         >
           {error}
@@ -607,136 +624,157 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       {/* Table */}
       <div
         style={{
-          background: '#1b1b1b',
-          borderRadius: 12,
-          border: '1px solid rgba(75,68,80,0.2)',
-          overflow: 'hidden',
+          flex: 1,
+          minHeight: 0,
+          padding: '0 40px',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Header row */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: GRID,
-            padding: '10px 20px',
-            borderBottom: '1px solid rgba(75,68,80,0.2)',
+            flex: 1,
+            minHeight: 0,
+            background: '#1b1b1b',
+            borderRadius: 12,
+            border: '1px solid rgba(75,68,80,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           }}
         >
-          {[
-            t('users.cols.user'),
-            t('users.cols.location'),
-            t('users.cols.moves'),
-            t('users.cols.joined'),
-            t('users.cols.roleStatus'),
-            '',
-          ].map((h, i) => (
-            <span
-              key={i}
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: '#6b6270',
-                fontFamily: 'var(--font-manrope)',
-              }}
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {loading && (
-          <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
-        )}
-
-        {!loading && users.length === 0 && (
+          {/* Header row */}
           <div
             style={{
-              padding: 60,
-              textAlign: 'center',
-              color: '#6b6270',
-              fontFamily: 'var(--font-manrope)',
-              fontSize: 14,
+              display: 'grid',
+              gridTemplateColumns: GRID,
+              padding: '10px 20px',
+              borderBottom: '1px solid rgba(75,68,80,0.2)',
+              flexShrink: 0,
             }}
           >
-            {t('users.noUsers')}
+            {[
+              t('users.cols.user'),
+              t('users.cols.location'),
+              t('users.cols.moves'),
+              t('users.cols.joined'),
+              t('users.cols.roleStatus'),
+              '',
+            ].map((h, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: '#6b6270',
+                  fontFamily: 'var(--font-manrope)',
+                }}
+              >
+                {h}
+              </span>
+            ))}
           </div>
-        )}
 
-        {!loading &&
-          users.map((user, i) => (
-            <UserRow
-              key={user.id}
-              user={user}
-              isLast={i === users.length - 1}
-              isSelf={user.id === currentUserId}
-              onAction={handleAction}
-            />
-          ))}
+          {/* Scrollable body */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            {loading && (
+              <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
+            )}
+
+            {!loading && users.length === 0 && (
+              <div
+                style={{
+                  padding: 60,
+                  textAlign: 'center',
+                  color: '#6b6270',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 14,
+                }}
+              >
+                {t('users.noUsers')}
+              </div>
+            )}
+
+            {!loading &&
+              users.map((user, i) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  isLast={i === users.length - 1}
+                  isSelf={user.id === currentUserId}
+                  onAction={handleAction}
+                />
+              ))}
+          </div>
+        </div>
       </div>
 
-      {totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 16,
-            marginTop: 24,
-          }}
-        >
-          <button
-            disabled={page <= 1 || loading}
-            onClick={() => setPage((p) => p - 1)}
-            style={{
-              padding: '7px 18px',
-              borderRadius: 6,
-              fontSize: 13,
-              fontFamily: 'var(--font-manrope)',
-              fontWeight: 600,
-              background: page <= 1 ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
-              color: page <= 1 ? '#4b4450' : '#dcb8ff',
-              border: '1px solid',
-              borderColor: page <= 1 ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
-              cursor: page <= 1 || loading ? 'not-allowed' : 'pointer',
-              transition: 'all 150ms',
-            }}
-          >
-            ←
-          </button>
-          <span
-            style={{
-              fontSize: 13,
-              color: '#978e9b',
-              fontFamily: 'var(--font-manrope)',
-              minWidth: 80,
-              textAlign: 'center',
-            }}
-          >
-            {page} / {totalPages}
-          </span>
-          <button
-            disabled={page >= totalPages || loading}
-            onClick={() => setPage((p) => p + 1)}
-            style={{
-              padding: '7px 18px',
-              borderRadius: 6,
-              fontSize: 13,
-              fontFamily: 'var(--font-manrope)',
-              fontWeight: 600,
-              background: page >= totalPages ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
-              color: page >= totalPages ? '#4b4450' : '#dcb8ff',
-              border: '1px solid',
-              borderColor: page >= totalPages ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
-              cursor: page >= totalPages || loading ? 'not-allowed' : 'pointer',
-              transition: 'all 150ms',
-            }}
-          >
-            →
-          </button>
-        </div>
-      )}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          padding: '12px 40px',
+          flexShrink: 0,
+        }}
+      >
+        {totalPages > 1 && (
+          <>
+            <button
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => p - 1)}
+              style={{
+                padding: '7px 18px',
+                borderRadius: 6,
+                fontSize: 13,
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 600,
+                background: page <= 1 ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
+                color: page <= 1 ? '#4b4450' : '#dcb8ff',
+                border: '1px solid',
+                borderColor: page <= 1 ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
+                cursor: page <= 1 || loading ? 'not-allowed' : 'pointer',
+                transition: 'all 150ms',
+              }}
+            >
+              ←
+            </button>
+            <span
+              style={{
+                fontSize: 13,
+                color: '#978e9b',
+                fontFamily: 'var(--font-manrope)',
+                minWidth: 80,
+                textAlign: 'center',
+              }}
+            >
+              {page} / {totalPages}
+            </span>
+            <button
+              disabled={page >= totalPages || loading}
+              onClick={() => setPage((p) => p + 1)}
+              style={{
+                padding: '7px 18px',
+                borderRadius: 6,
+                fontSize: 13,
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 600,
+                background: page >= totalPages ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
+                color: page >= totalPages ? '#4b4450' : '#dcb8ff',
+                border: '1px solid',
+                borderColor: page >= totalPages ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
+                cursor: page >= totalPages || loading ? 'not-allowed' : 'pointer',
+                transition: 'all 150ms',
+              }}
+            >
+              →
+            </button>
+          </>
+        )}
+      </div>
 
       {confirm && (
         <ConfirmDialog
