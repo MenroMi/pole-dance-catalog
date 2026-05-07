@@ -57,7 +57,8 @@
       "firstNamePlaceholder": "twoje imię",
       "lastNamePlaceholder": "twoje nazwisko",
       "continueWithGoogle": "Kontynuuj z Google",
-      "continueWithFacebook": "Kontynuuj z Facebook"
+      "continueWithFacebook": "Kontynuuj z Facebook",
+      "detectingLocation": "wykrywamy twoją lokalizację…"
     },
     "verifyEmail": {
       "sentHeading": "sprawdź swoją skrzynkę.",

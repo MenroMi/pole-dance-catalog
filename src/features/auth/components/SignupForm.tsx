@@ -20,11 +20,15 @@ export function SignupForm() {
   const t = useTranslations('auth.signup');
   const te = useTranslations('auth.errors');
   const [detectedLocation, setDetectedLocation] = useState<string | undefined>(undefined);
+  const [locationLoading, setLocationLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [pendingProvider, setPendingProvider] = useState<'google' | 'facebook' | null>(null);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      const t = setTimeout(() => setLocationLoading(false), 0);
+      return () => clearTimeout(t);
+    }
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
@@ -35,10 +39,12 @@ export function SignupForm() {
           if (data.location) setDetectedLocation(data.location);
         } catch {
           // silent — location is optional
+        } finally {
+          setLocationLoading(false);
         }
       },
       () => {
-        // permission denied or unavailable — silent
+        setLocationLoading(false);
       },
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
     );
@@ -202,6 +208,39 @@ export function SignupForm() {
             )}
           </div>
         </div>
+
+        {/* Location chip */}
+        {locationLoading ? (
+          <div className="flex items-center gap-2 text-xs text-outline-variant">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            {t('detectingLocation')}
+          </div>
+        ) : detectedLocation ? (
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 rounded-full border border-outline-variant/20 bg-surface-container px-3 py-1.5 text-xs text-on-surface-variant">
+              <svg
+                className="h-3 w-3 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              {detectedLocation}
+            </span>
+            <button
+              type="button"
+              onClick={() => setDetectedLocation(undefined)}
+              className="text-xs text-outline-variant transition-colors hover:text-on-surface"
+            >
+              ×
+            </button>
+          </div>
+        ) : null}
 
         {errors.root && (
           <div

@@ -57,7 +57,8 @@
       "firstNamePlaceholder": "your first name",
       "lastNamePlaceholder": "your last name",
       "continueWithGoogle": "Continue with Google",
-      "continueWithFacebook": "Continue with Facebook"
+      "continueWithFacebook": "Continue with Facebook",
+      "detectingLocation": "detecting your location…"
     },
     "verifyEmail": {
       "sentHeading": "check your inbox.",
