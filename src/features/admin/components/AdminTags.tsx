@@ -337,7 +337,7 @@ function TagModal({
               onChange={(e) => set('name_en', e.target.value)}
               onFocus={() => setFocusEn(true)}
               onBlur={() => setFocusEn(false)}
-              placeholder="e.g. aerial"
+              placeholder={t('tags.placeholderEn')}
               style={{
                 background: '#131313',
                 border: focusEn
@@ -373,7 +373,7 @@ function TagModal({
               onChange={(e) => set('name_pl', e.target.value)}
               onFocus={() => setFocusPl(true)}
               onBlur={() => setFocusPl(false)}
-              placeholder="np. powietrzny"
+              placeholder={t('tags.placeholderPl')}
               style={{
                 background: '#131313',
                 border: focusPl
@@ -861,7 +861,7 @@ export function AdminTags() {
               }}
             >
               <strong style={{ color: '#e2e2e2' }}>{deleteTag.name_en}</strong>{' '}
-              {t('tags.confirmDelete')} ({deleteTag._count.moves} moves)
+              {t('tags.confirmDelete')} ({deleteTag._count.moves} {t('tags.movesLabel')})
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
@@ -877,7 +877,7 @@ export function AdminTags() {
                   cursor: 'pointer',
                 }}
               >
-                cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={handleDelete}

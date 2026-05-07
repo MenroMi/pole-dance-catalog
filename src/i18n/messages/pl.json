@@ -356,7 +356,9 @@
       "colorLabel": "Kolor",
       "preview": "podgląd:",
       "movesLabel": "ruchów",
-      "randomColor": "Losowy kolor"
+      "randomColor": "Losowy kolor",
+      "placeholderEn": "np. aerial",
+      "placeholderPl": "np. powietrzny"
     },
     "users": {
       "title": "Użytkownicy",
