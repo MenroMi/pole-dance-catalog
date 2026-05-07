@@ -232,12 +232,15 @@
 
 - `PasswordResetToken` Prisma model, `forgotPasswordAction`, `resetPasswordAction`, `/forgot-password` + `/reset-password` pages — смёржено в pre-launch blockers
 
-**OAuth login buttons (Google / Facebook)** 🚧 In progress — `feat/google-oauth` (2026-05-06)
+~~**OAuth login buttons (Google / Facebook)**~~ ✅ Done — `feat/google-oauth` (2026-05-07)
 
 - Spec: `docs/superpowers/specs/2026-05-06-google-oauth-design.md`
-- Plan: `docs/superpowers/plans/2026-05-06-google-oauth.md` (6 tasks, not started)
+- Plan: `docs/superpowers/plans/2026-05-06-google-oauth.md` (6 tasks completed)
 - Google: fully functional; Facebook: env-guarded (`NEXT_PUBLIC_FACEBOOK_ENABLED=true`), blocked by Meta account restrictions
-- Key: `signInWithOAuthAction`, JWT/session callback fixes (picture), `signIn` callback (firstName+image sync), loading states, error banner, callbackUrl support, i18n
+- `signInWithOAuthAction` с open-redirect защитой; JWT/session callbacks (OAuth/credentials ветки, picture); `signIn` callback (firstName+image sync, new-user guard); custom adapter `createUser` (name→firstName); loading states + spinners; OAuth error banner; i18n
+- `Header.tsx` читает `firstName`/`lastName`/`image` из DB напрямую; `revalidatePath('/', 'layout')` в profile actions — гарантирует актуальность хедера после любых изменений профиля
+- `AvatarUpload`: кнопка «Remove photo» + `removeAvatarAction`; `session.update({ picture })` синхронизирует JWT после смены/удаления аватара
+- 506 тестов passing
 
 **Facebook OAuth — полная реализация** (отложено — нет доступа к Meta Business Portfolio)
 
