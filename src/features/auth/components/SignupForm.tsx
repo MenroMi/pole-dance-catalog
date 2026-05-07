@@ -34,6 +34,7 @@ export function SignupForm() {
         try {
           const { latitude, longitude } = position.coords;
           const res = await fetch(`/api/geocode?lat=${latitude}&lon=${longitude}`);
+
           if (!res.ok) return;
           const data = (await res.json()) as { location?: string | null };
           if (data.location) setDetectedLocation(data.location);
