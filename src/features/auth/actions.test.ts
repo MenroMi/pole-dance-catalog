@@ -91,6 +91,7 @@ import {
   checkEmailVerifiedAction,
   forgotPasswordAction,
   resetPasswordAction,
+  signInWithOAuthAction,
 } from './actions';
 
 const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
@@ -469,5 +470,31 @@ describe('resetPasswordAction', () => {
     });
     expect(mockDeleteResetToken).toHaveBeenCalledWith('valid-token');
     expect(mockRedirect).toHaveBeenCalledWith('/pl/login?reset=true');
+  });
+});
+
+describe('signInWithOAuthAction', () => {
+  beforeEach(() => {
+    mockSignIn.mockResolvedValue(undefined);
+  });
+
+  it('calls signIn with google and locale-prefixed catalog redirectTo', async () => {
+    await signInWithOAuthAction('google');
+    expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/pl/catalog' });
+  });
+
+  it('preserves a safe relative callbackUrl', async () => {
+    await signInWithOAuthAction('google', '/pl/profile');
+    expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/pl/profile' });
+  });
+
+  it('strips an external http callbackUrl to locale fallback', async () => {
+    await signInWithOAuthAction('google', 'https://evil.com/steal');
+    expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/pl/catalog' });
+  });
+
+  it('strips a protocol-relative callbackUrl to locale fallback', async () => {
+    await signInWithOAuthAction('google', '//evil.com');
+    expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/pl/catalog' });
   });
 });

@@ -188,3 +188,13 @@ export async function resetPasswordAction(
 
   redirect(`/${tokenLocale}/login?reset=true`);
 }
+
+export async function signInWithOAuthAction(provider: 'google' | 'facebook', callbackUrl?: string) {
+  const locale = checkedLocale(await getLocale());
+  const safeFallback = `/${locale}/catalog`;
+  const redirectTo =
+    callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//')
+      ? callbackUrl
+      : safeFallback;
+  await signIn(provider, { redirectTo });
+}
