@@ -53,7 +53,11 @@ export function LoginForm() {
   const handleOAuthSignIn = (provider: 'google' | 'facebook') => {
     setPendingProvider(provider);
     startTransition(async () => {
-      await signInWithOAuthAction(provider, callbackUrl);
+      try {
+        await signInWithOAuthAction(provider, callbackUrl);
+      } finally {
+        setPendingProvider(null);
+      }
     });
   };
 

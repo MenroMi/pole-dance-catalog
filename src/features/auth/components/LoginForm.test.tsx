@@ -92,6 +92,18 @@ describe('LoginForm', () => {
 
     expect(await screen.findByText('invalidCredentials')).toBeInTheDocument();
   });
+
+  it('displays pleaseSignInWithOAuth error when OAuth-only account tries credentials login', async () => {
+    mockLoginAction.mockResolvedValue({ error: 'Please sign in with Google or Facebook' });
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.type(screen.getByLabelText(/email/i), 'a@b.com');
+    await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
+    await user.click(screen.getByRole('button', { name: 'submit' }));
+
+    expect(await screen.findByText('pleaseSignInWithOAuth')).toBeInTheDocument();
+  });
 });
 
 describe('OAuth buttons', () => {
