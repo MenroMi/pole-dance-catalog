@@ -7,6 +7,7 @@ import { SignupForm } from './SignupForm';
 
 vi.mock('@/features/auth/actions', () => ({
   signupAction: vi.fn(),
+  signInWithOAuthAction: vi.fn(),
 }));
 vi.mock('@/i18n/navigation', () => ({
   Link: ({
@@ -22,8 +23,9 @@ vi.mock('@/i18n/navigation', () => ({
   redirect: vi.fn(),
 }));
 
-import { signupAction } from '@/features/auth/actions';
+import { signupAction, signInWithOAuthAction } from '@/features/auth/actions';
 const mockSignupAction = signupAction as ReturnType<typeof vi.fn>;
+const mockSignInWithOAuthAction = signInWithOAuthAction as ReturnType<typeof vi.fn>;
 
 const originalGeolocation = global.navigator.geolocation;
 
@@ -147,5 +149,15 @@ describe('SignupForm', () => {
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
     expect(await screen.findByText('emailAlreadyInUse')).toBeInTheDocument();
+  });
+});
+
+describe('OAuth buttons', () => {
+  it('calls signInWithOAuthAction with google when Google button clicked', async () => {
+    mockSignInWithOAuthAction.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<SignupForm />);
+    await user.click(screen.getByRole('button', { name: /continueWithGoogle/i }));
+    expect(mockSignInWithOAuthAction).toHaveBeenCalledWith('google', undefined);
   });
 });

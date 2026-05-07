@@ -1,11 +1,13 @@
 'use client';
+import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 
-import { uploadAvatarAction } from '../actions';
+import { removeAvatarAction, uploadAvatarAction } from '../actions';
 
 type AvatarUploadProps = {
   currentImage: string | null;
@@ -14,9 +16,10 @@ type AvatarUploadProps = {
 
 export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUploadProps) {
   const t = useTranslations('profile');
+  const { update } = useSession();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'upload' | 'remove' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,10 +43,25 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
     setPreview(URL.createObjectURL(file));
   }
 
+  async function handleRemove() {
+    setPendingAction('remove');
+    setError(null);
+    try {
+      await removeAvatarAction();
+      await update({ picture: null });
+      setPreview(null);
+      onUploadSuccess();
+    } catch {
+      setError(t('avatarUploadFailed'));
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
   async function handleUpload() {
     const file = inputRef.current?.files?.[0];
     if (!file) return;
-    setIsPending(true);
+    setPendingAction('upload');
     setError(null);
     try {
       const formData = new FormData();
@@ -52,13 +70,14 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
       if (!result.success) {
         setError(result.error ?? t('avatarUploadFailed'));
       } else {
+        await update({ picture: result.imageUrl });
         onUploadSuccess();
         setPreview(null);
       }
     } catch {
       setError(t('avatarUploadFailed'));
     } finally {
-      setIsPending(false);
+      setPendingAction(null);
     }
   }
 
@@ -84,12 +103,31 @@ export default function AvatarUpload({ currentImage, onUploadSuccess }: AvatarUp
         onChange={handleFileChange}
       />
       <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={pendingAction !== null}
+          onClick={() => inputRef.current?.click()}
+        >
           {t('choosePhoto')}
         </Button>
         {preview && (
-          <Button type="button" size="sm" onClick={handleUpload} disabled={isPending}>
-            {isPending ? t('uploadingPhoto') : t('uploadPhoto')}
+          <Button type="button" size="sm" onClick={handleUpload} disabled={pendingAction !== null}>
+            {pendingAction === 'upload' && <Loader2 className="h-4 w-4 animate-spin" />}
+            {pendingAction === 'upload' ? t('uploadingPhoto') : t('uploadPhoto')}
+          </Button>
+        )}
+        {currentImage && !preview && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleRemove}
+            disabled={pendingAction !== null}
+          >
+            {pendingAction === 'remove' && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t('removePhoto')}
           </Button>
         )}
       </div>

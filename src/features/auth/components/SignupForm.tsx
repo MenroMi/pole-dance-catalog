@@ -1,22 +1,27 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Link } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
-import { signupAction } from '../actions';
+import { signupAction, signInWithOAuthAction } from '../actions';
 import { signupSchema } from '../lib/validation';
 import type { SignupFormData } from '../lib/validation';
 
 import { FacebookIcon, GoogleIcon } from './SocialIcons';
 
+const facebookEnabled = process.env.NEXT_PUBLIC_FACEBOOK_ENABLED === 'true';
+
 export function SignupForm() {
   const t = useTranslations('auth.signup');
   const te = useTranslations('auth.errors');
   const [detectedLocation, setDetectedLocation] = useState<string | undefined>(undefined);
+  const [isPending, startTransition] = useTransition();
+  const [pendingProvider, setPendingProvider] = useState<'google' | 'facebook' | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -54,6 +59,17 @@ export function SignupForm() {
     if (result?.error) {
       setError('root', { message: result.error });
     }
+  };
+
+  const handleOAuthSignIn = (provider: 'google' | 'facebook') => {
+    setPendingProvider(provider);
+    startTransition(async () => {
+      try {
+        await signInWithOAuthAction(provider, undefined);
+      } finally {
+        setPendingProvider(null);
+      }
+    });
   };
 
   return (
@@ -218,8 +234,9 @@ export function SignupForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="kinetic-gradient w-full cursor-pointer rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+          className="kinetic-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-md py-4 text-xs font-bold tracking-widest text-on-primary uppercase shadow-[0_4px_16px_-2px_rgba(132,88,179,0.4)] hover:scale-[1.01] hover:shadow-[0_6px_20px_-2px_rgba(220,184,255,0.5)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
+          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
           {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
@@ -233,22 +250,50 @@ export function SignupForm() {
           <div className="h-px grow bg-outline-variant/20" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        {facebookEnabled ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleOAuthSignIn('google')}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pendingProvider === 'google' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              {t('continueWithGoogle')}
+            </button>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleOAuthSignIn('facebook')}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pendingProvider === 'facebook' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FacebookIcon />
+              )}
+              {t('continueWithFacebook')}
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0"
+            disabled={isPending}
+            onClick={() => handleOAuthSignIn('google')}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <GoogleIcon />
-            google
+            {pendingProvider === 'google' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <GoogleIcon />
+            )}
+            {t('continueWithGoogle')}
           </button>
-          <button
-            type="button"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-outline-variant/15 bg-surface-container px-4 py-3 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-high hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] active:translate-y-0"
-          >
-            <FacebookIcon />
-            facebook
-          </button>
-        </div>
+        )}
       </div>
 
       <p className="text-center text-xs text-on-surface-variant">

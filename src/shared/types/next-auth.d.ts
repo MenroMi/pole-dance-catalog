@@ -9,5 +9,6 @@ declare module 'next-auth' {
 declare module '@auth/core/jwt' {
   interface JWT {
     role?: string;
+    picture?: string | null;
   }
 }

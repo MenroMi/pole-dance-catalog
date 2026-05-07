@@ -77,6 +77,7 @@ export async function updateProfileAction(data: {
   if (parsed.data.location !== undefined) updateData.location = parsed.data.location;
 
   await prisma.user.update({ where: { id: userId }, data: updateData });
+  revalidatePath('/', 'layout');
   return { success: true as const };
 }
 
@@ -103,7 +104,15 @@ export async function uploadAvatarAction(formData: FormData) {
   });
 
   await prisma.user.update({ where: { id: userId }, data: { image: result.secure_url } });
+  revalidatePath('/', 'layout');
   return { success: true as const, imageUrl: result.secure_url };
+}
+
+export async function removeAvatarAction() {
+  const userId = await requireAuth();
+  await prisma.user.update({ where: { id: userId }, data: { image: null } });
+  revalidatePath('/', 'layout');
+  return { success: true as const };
 }
 
 export async function changePasswordAction(data: { currentPassword: string; newPassword: string }) {

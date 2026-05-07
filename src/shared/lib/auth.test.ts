@@ -17,6 +17,7 @@ vi.mock('@/shared/lib/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -32,9 +33,26 @@ import { signinRatelimit } from '@/shared/lib/ratelimit';
 
 import { authConfig } from './auth';
 
+const getJwt = () =>
+  authConfig.callbacks?.jwt as (params: {
+    token: Record<string, unknown>;
+    user?: Record<string, unknown>;
+    account?: Record<string, unknown>;
+    profile?: Record<string, unknown>;
+    trigger?: string;
+    session?: unknown;
+  }) => Record<string, unknown>;
+
+const getSession = () =>
+  authConfig.callbacks?.session as unknown as (params: {
+    session: { user: Record<string, unknown>; expires: string };
+    token: Record<string, unknown>;
+  }) => { user: Record<string, unknown> };
+
 const mockRatelimit = signinRatelimit.limit as ReturnType<typeof vi.fn>;
 
 const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockCompare = bcrypt.compare as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
@@ -56,14 +74,6 @@ describe('authConfig', () => {
 });
 
 describe('jwt callback', () => {
-  const getJwt = () =>
-    authConfig.callbacks?.jwt as (params: {
-      token: Record<string, unknown>;
-      user?: Record<string, unknown>;
-      trigger?: string;
-      session?: unknown;
-    }) => Record<string, unknown>;
-
   it('sets name from firstName and lastName on sign-in', async () => {
     const jwt = getJwt();
     const token = await jwt({
@@ -100,6 +110,286 @@ describe('jwt callback', () => {
       session: {},
     });
     expect(token.name).toBe('Old Name');
+  });
+
+  it('updates token.picture when trigger is update and session.picture is provided', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: { picture: 'https://old.jpg' },
+      trigger: 'update',
+      session: { picture: 'https://new.jpg' },
+    });
+    expect(token.picture).toBe('https://new.jpg');
+  });
+
+  it('clears token.picture when trigger is update and session.picture is null', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: { picture: 'https://old.jpg' },
+      trigger: 'update',
+      session: { picture: null },
+    });
+    expect(token.picture).toBeNull();
+  });
+
+  it('leaves token.picture unchanged when trigger is update but session.picture is absent', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: { picture: 'https://old.jpg' },
+      trigger: 'update',
+      session: {},
+    });
+    expect(token.picture).toBe('https://old.jpg');
+  });
+});
+
+describe('jwt callback — OAuth branch', () => {
+  it('sets name and picture from OAuth profile (type: oauth)', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { role: 'USER' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania Kowalska', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(token.name).toBe('Ania Kowalska');
+    expect(token.picture).toBe('https://example.com/photo.jpg');
+    expect(token.role).toBe('USER');
+  });
+
+  it('sets name and picture from Google profile (type: oidc)', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { role: 'USER' },
+      account: { type: 'oidc' },
+      profile: { name: 'Ania Kowalska', picture: 'https://googleusercontent.com/photo.jpg' },
+    });
+    expect(token.name).toBe('Ania Kowalska');
+    expect(token.picture).toBe('https://googleusercontent.com/photo.jpg');
+  });
+
+  it('sets picture to null when profile has no picture', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { role: 'USER' },
+      account: { type: 'oidc' },
+      profile: { name: 'Ania' },
+    });
+    expect(token.name).toBe('Ania');
+    expect(token.picture).toBeNull();
+  });
+});
+
+describe('jwt callback — credentials branch', () => {
+  it('sets picture from user.image', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: {
+        firstName: 'Anna',
+        lastName: 'Kowalska',
+        role: 'USER',
+        image: 'https://example.com/avatar.jpg',
+      },
+      account: { type: 'credentials' },
+    });
+    expect(token.name).toBe('Anna Kowalska');
+    expect(token.picture).toBe('https://example.com/avatar.jpg');
+  });
+
+  it('sets picture to null when user.image is null', async () => {
+    const jwt = getJwt();
+    const token = await jwt({
+      token: {},
+      user: { firstName: 'Anna', lastName: null, role: 'USER', image: null },
+      account: { type: 'credentials' },
+    });
+    expect(token.name).toBe('Anna');
+    expect(token.picture).toBeNull();
+  });
+});
+
+describe('session callback', () => {
+  it('sets session.user.image from token.picture', () => {
+    const session = getSession();
+    const result = session({
+      session: { user: { name: 'Test', email: 'test@test.com' }, expires: '' },
+      token: { sub: 'user-1', role: 'USER', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(result.user.image).toBe('https://example.com/photo.jpg');
+  });
+
+  it('does not set image when token.picture is absent', () => {
+    const session = getSession();
+    const result = session({
+      session: { user: { name: 'Test', email: 'test@test.com' }, expires: '' },
+      token: { sub: 'user-1', role: 'USER' },
+    });
+    expect(result.user.image).toBeUndefined();
+  });
+});
+
+describe('signIn callback', () => {
+  const getSignInCb = () =>
+    authConfig.callbacks?.signIn as (params: {
+      user: { email?: string | null };
+      account?: { type?: string } | null;
+      profile?: { name?: string; picture?: unknown } | null;
+    }) => Promise<boolean>;
+
+  beforeEach(() => {
+    mockFindUnique.mockResolvedValue({ firstName: null, image: null });
+    mockUpdate.mockResolvedValue({});
+  });
+
+  it('returns true for credentials sign-in without touching DB', async () => {
+    const cb = getSignInCb();
+    const result = await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'credentials' },
+    });
+    expect(result).toBe(true);
+    expect(mockFindUnique).not.toHaveBeenCalled();
+  });
+
+  it('sets firstName from profile.name when user has none', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania Kowalska', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'a@b.com' },
+        data: expect.objectContaining({ firstName: 'Ania Kowalska' }),
+      }),
+    );
+  });
+
+  it('skips firstName update when user already has one but syncs image when null', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: 'Already Set', image: null });
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://example.com/photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalled();
+    expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty('firstName');
+    expect(mockUpdate.mock.calls[0][0].data).toHaveProperty('image');
+  });
+
+  it('syncs image from profile.picture when image is not set', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://new-photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ image: 'https://new-photo.jpg' }),
+      }),
+    );
+  });
+
+  it('skips image sync when user already has a manually set image', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: null, image: 'https://manual.jpg' });
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: 'https://oauth-photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({ image: expect.anything() }),
+      }),
+    );
+  });
+
+  it('extracts picture from Facebook nested object shape', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania', picture: { data: { url: 'https://fb-photo.jpg' } } },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ image: 'https://fb-photo.jpg' }),
+      }),
+    );
+  });
+
+  it('skips DB update when firstName is already set and no picture', async () => {
+    mockFindUnique.mockResolvedValue({ firstName: 'Set', image: null });
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'Ania' },
+    });
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('calls update for firstName only when user has none and picture is absent', async () => {
+    // beforeEach sets firstName: null
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oauth' },
+      profile: { name: 'New Name' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'a@b.com' },
+        data: { firstName: 'New Name' },
+      }),
+    );
+  });
+
+  it('syncs firstName and image for Google (type: oidc)', async () => {
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'a@b.com' },
+      account: { type: 'oidc' },
+      profile: { name: 'Google User', picture: 'https://googleusercontent.com/photo.jpg' },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { email: 'a@b.com' },
+        data: expect.objectContaining({
+          firstName: 'Google User',
+          image: 'https://googleusercontent.com/photo.jpg',
+        }),
+      }),
+    );
+  });
+
+  it('skips update when user does not exist yet (new OAuth user)', async () => {
+    mockFindUnique.mockResolvedValue(null);
+    const cb = getSignInCb();
+    await cb({
+      user: { email: 'new@user.com' },
+      account: { type: 'oidc' },
+      profile: { name: 'New User', picture: 'https://pic.jpg' },
+    });
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('returns true without touching DB when user.email is absent', async () => {
+    const cb = getSignInCb();
+    const result = await cb({
+      user: { email: null },
+      account: { type: 'oidc' },
+      profile: { name: 'Ania', picture: 'https://pic.jpg' },
+    });
+    expect(result).toBe(true);
+    expect(mockFindUnique).not.toHaveBeenCalled();
   });
 });
 
@@ -157,5 +447,13 @@ describe('authorize', () => {
     const authorize = getAuthorize();
     const result = await authorize({ email: 'a@b.com', password: 'correct' });
     expect(result).toEqual(user);
+  });
+
+  it('throws if user has no password (OAuth-only account)', async () => {
+    mockFindUnique.mockResolvedValue({ id: '1', password: null, emailVerified: new Date() });
+    const authorize = getAuthorize();
+    await expect(authorize({ email: 'a@b.com', password: 'pass' })).rejects.toThrow(
+      'Please sign in with Google or Facebook',
+    );
   });
 });

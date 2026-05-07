@@ -1,5 +1,6 @@
 import { Link } from '@/i18n/navigation';
 import { auth } from '@/shared/lib/auth';
+import { prisma } from '@/shared/lib/prisma';
 
 import FavouritesButton from './FavouritesButton';
 import HeaderNav from './HeaderNav';
@@ -8,9 +9,17 @@ import UserMenu from './UserMenu';
 
 export default async function Header() {
   const session = await auth();
-  const user = session?.user
-    ? { name: session.user.name ?? null, image: session.user.image ?? null }
-    : null;
+  let user: { name: string | null; image: string | null } | null = null;
+  if (session?.user?.id) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { firstName: true, lastName: true, image: true },
+    });
+    if (dbUser) {
+      const name = [dbUser.firstName, dbUser.lastName].filter(Boolean).join(' ') || null;
+      user = { name, image: dbUser.image ?? null };
+    }
+  }
 
   return (
     <header

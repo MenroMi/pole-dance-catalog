@@ -7,6 +7,7 @@ import { LoginForm } from './LoginForm';
 
 vi.mock('@/features/auth/actions', () => ({
   loginAction: vi.fn(),
+  signInWithOAuthAction: vi.fn(),
 }));
 vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
@@ -25,9 +26,10 @@ vi.mock('@/i18n/navigation', () => ({
   redirect: vi.fn(),
 }));
 
-import { loginAction } from '@/features/auth/actions';
+import { loginAction, signInWithOAuthAction } from '@/features/auth/actions';
 import { useSearchParams } from 'next/navigation';
 const mockLoginAction = loginAction as ReturnType<typeof vi.fn>;
+const mockSignInWithOAuthAction = signInWithOAuthAction as ReturnType<typeof vi.fn>;
 const mockUseSearchParams = useSearchParams as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
@@ -89,5 +91,59 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
     expect(await screen.findByText('invalidCredentials')).toBeInTheDocument();
+  });
+
+  it('displays pleaseSignInWithOAuth error when OAuth-only account tries credentials login', async () => {
+    mockLoginAction.mockResolvedValue({ error: 'Please sign in with Google or Facebook' });
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.type(screen.getByLabelText(/email/i), 'a@b.com');
+    await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
+    await user.click(screen.getByRole('button', { name: 'submit' }));
+
+    expect(await screen.findByText('pleaseSignInWithOAuth')).toBeInTheDocument();
+  });
+});
+
+describe('OAuth buttons', () => {
+  it('calls signInWithOAuthAction with google when Google button clicked', async () => {
+    mockSignInWithOAuthAction.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<LoginForm />);
+    await user.click(screen.getByRole('button', { name: /continueWithGoogle/i }));
+    expect(mockSignInWithOAuthAction).toHaveBeenCalledWith('google', undefined);
+  });
+
+  it('passes callbackUrl from search params to signInWithOAuthAction', async () => {
+    mockSignInWithOAuthAction.mockResolvedValue(undefined);
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('callbackUrl=/pl/profile'));
+    const user = userEvent.setup();
+    render(<LoginForm />);
+    await user.click(screen.getByRole('button', { name: /continueWithGoogle/i }));
+    expect(mockSignInWithOAuthAction).toHaveBeenCalledWith('google', '/pl/profile');
+  });
+});
+
+describe('OAuth error banner', () => {
+  beforeEach(() => {
+    mockUseSearchParams.mockReturnValue(new URLSearchParams());
+  });
+
+  it('shows account-not-linked message for OAuthAccountNotLinked error', () => {
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('error=OAuthAccountNotLinked'));
+    render(<LoginForm />);
+    expect(screen.getByText('oauthAccountNotLinked')).toBeInTheDocument();
+  });
+
+  it('shows generic message for unknown OAuth error code', () => {
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('error=SomeUnknownError'));
+    render(<LoginForm />);
+    expect(screen.getByText('oauthGeneric')).toBeInTheDocument();
+  });
+
+  it('shows no OAuth error banner when error param is absent', () => {
+    render(<LoginForm />);
+    expect(screen.queryByText('oauthGeneric')).not.toBeInTheDocument();
   });
 });
