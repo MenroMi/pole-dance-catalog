@@ -19,7 +19,13 @@ function getSavedSection(): Section {
   return 'dashboard';
 }
 
-export function AdminApp({ currentUserId }: { currentUserId: string | null }) {
+export function AdminApp({
+  currentUserId,
+  currentUserName,
+}: {
+  currentUserId: string | null;
+  currentUserName?: string | null;
+}) {
   const [section, setSection] = useState<Section>(getSavedSection);
 
   function handleSectionChange(s: Section) {
@@ -28,7 +34,11 @@ export function AdminApp({ currentUserId }: { currentUserId: string | null }) {
   }
 
   return (
-    <AdminShell activeSection={section} onSectionChange={handleSectionChange}>
+    <AdminShell
+      activeSection={section}
+      onSectionChange={handleSectionChange}
+      currentUserName={currentUserName}
+    >
       {section === 'dashboard' && <AdminDashboard />}
       {section === 'moves' && <AdminMoves />}
       {section === 'users' && <AdminUsers currentUserId={currentUserId} />}

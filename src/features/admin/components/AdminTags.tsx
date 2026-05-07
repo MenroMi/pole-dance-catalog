@@ -3,9 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-
 import {
   createTagAction,
   deleteTagAction,
@@ -14,28 +11,97 @@ import {
 } from '../actions';
 import type { AdminTagRow } from '../types';
 
-import { ConfirmDialog } from './ConfirmDialog';
+const PRESET_COLORS = [
+  '#dcb8ff',
+  '#8458b3',
+  '#84d099',
+  '#fbbf24',
+  '#f87171',
+  '#60a5fa',
+  '#a78bfa',
+  '#34d399',
+  '#fb923c',
+  '#e879f9',
+  '#38bdf8',
+  '#4ade80',
+];
 
-function hslToHex(h: number, s: number, l: number): string {
-  const sl = s / 100;
-  const ll = l / 100;
-  const k = (n: number) => (n + h / 30) % 12;
-  const a = sl * Math.min(ll, 1 - ll);
-  const f = (n: number) => ll - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  const hex = (x: number) =>
-    Math.round(x * 255)
-      .toString(16)
-      .padStart(2, '0');
-  return `#${hex(f(0))}${hex(f(8))}${hex(f(4))}`;
+function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
+  const paths: Record<string, React.ReactNode> = {
+    Search: (
+      <>
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </>
+    ),
+    Plus: (
+      <>
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </>
+    ),
+    Tag: (
+      <>
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+        <line x1="7" y1="7" x2="7.01" y2="7" />
+      </>
+    ),
+    Edit: (
+      <>
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </>
+    ),
+    Trash: (
+      <>
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      </>
+    ),
+  };
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {paths[name]}
+    </svg>
+  );
 }
 
-function generateSuggestions(count = 8): string[] {
-  return Array.from({ length: count }, () => {
-    const hue = Math.floor(Math.random() * 110) + 230; // 230–340: blue-purple → pink
-    const sat = Math.floor(Math.random() * 30) + 60; // 60–90%
-    const lit = Math.floor(Math.random() * 20) + 55; // 55–75%
-    return hslToHex(hue, sat, lit);
-  });
+function ColorDot({
+  color,
+  selected,
+  onClick,
+}: {
+  color: string;
+  selected: boolean;
+  onClick: (c: string) => void;
+}) {
+  return (
+    <button
+      onClick={() => onClick(color)}
+      style={{
+        width: 26,
+        height: 26,
+        borderRadius: '50%',
+        background: color,
+        border: selected ? '2px solid #e2e2e2' : '2px solid transparent',
+        cursor: 'pointer',
+        padding: 0,
+        flexShrink: 0,
+        boxShadow: selected ? '0 0 0 2px rgba(220,184,255,0.5)' : 'none',
+        transition: 'box-shadow 150ms, transform 150ms',
+        transform: selected ? 'scale(1.15)' : 'scale(1)',
+      }}
+    />
+  );
 }
 
 interface TagFormState {
@@ -44,21 +110,425 @@ interface TagFormState {
   color: string;
 }
 
-const emptyForm: TagFormState = { name_en: '', name_pl: '', color: '' };
+const emptyForm: TagFormState = { name_en: '', name_pl: '', color: PRESET_COLORS[0] };
+
+function TagCard({
+  tag,
+  onEdit,
+  onDelete,
+}: {
+  tag: AdminTagRow;
+  onEdit: (t: AdminTagRow) => void;
+  onDelete: (t: AdminTagRow) => void;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? '#222' : '#1b1b1b',
+        border: hov ? '1px solid rgba(220,184,255,0.2)' : '1px solid rgba(75,68,80,0.2)',
+        borderRadius: 12,
+        padding: '18px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        transition: 'all 200ms ease',
+        boxShadow: hov ? '0 4px 20px -4px rgba(132,88,179,0.2)' : 'none',
+      }}
+    >
+      {/* Color icon + count */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            background: tag.color ? `${tag.color}28` : 'rgba(75,68,80,0.2)',
+            border: `1px solid ${tag.color || '#4b4450'}40`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ color: tag.color || '#978e9b' }}>
+            <NavIcon name="Tag" size={16} />
+          </span>
+        </div>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            color: '#4b4450',
+            fontFamily: 'var(--font-manrope)',
+            textTransform: 'uppercase',
+          }}
+        >
+          {tag._count.moves} moves
+        </span>
+      </div>
+      {/* Names */}
+      <div>
+        <div
+          style={{
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 16,
+            fontWeight: 600,
+            color: '#e2e2e2',
+            marginBottom: 2,
+          }}
+        >
+          {tag.name_en}
+        </div>
+        <div style={{ fontSize: 12, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+          {tag.name_pl}
+        </div>
+      </div>
+      {/* Color swatch */}
+      {tag.color && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 10px',
+            borderRadius: 9999,
+            background: `${tag.color}18`,
+            alignSelf: 'flex-start',
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: tag.color,
+              display: 'inline-block',
+            }}
+          />
+          <span
+            style={{
+              fontSize: 10,
+              fontFamily: 'var(--font-manrope)',
+              color: tag.color,
+              fontWeight: 600,
+            }}
+          >
+            {tag.color}
+          </span>
+        </div>
+      )}
+      {/* Actions (hover-reveal) */}
+      <div style={{ display: 'flex', gap: 6, opacity: hov ? 1 : 0, transition: 'opacity 150ms' }}>
+        <button
+          onClick={() => onEdit(tag)}
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: '1px solid rgba(75,68,80,0.4)',
+            borderRadius: 6,
+            padding: '7px 0',
+            color: '#978e9b',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-manrope)',
+            fontSize: 12,
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            transition: 'all 150ms',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#dcb8ff';
+            e.currentTarget.style.color = '#dcb8ff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+            e.currentTarget.style.color = '#978e9b';
+          }}
+        >
+          <NavIcon name="Edit" size={12} /> Edit
+        </button>
+        <button
+          onClick={() => onDelete(tag)}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(75,68,80,0.4)',
+            borderRadius: 6,
+            padding: 7,
+            color: '#978e9b',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 150ms',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#ef4444';
+            e.currentTarget.style.color = '#ef4444';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+            e.currentTarget.style.color = '#978e9b';
+          }}
+        >
+          <NavIcon name="Trash" size={13} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TagModal({
+  tag,
+  onSave,
+  onClose,
+  saving,
+}: {
+  tag: AdminTagRow | null;
+  onSave: (form: TagFormState) => Promise<void>;
+  onClose: () => void;
+  saving: boolean;
+}) {
+  const isEdit = !!tag;
+  const [form, setForm] = useState<TagFormState>(
+    tag ? { name_en: tag.name_en, name_pl: tag.name_pl, color: tag.color ?? '' } : { ...emptyForm },
+  );
+  const [focusEn, setFocusEn] = useState(false);
+  const [focusPl, setFocusPl] = useState(false);
+
+  function set(k: keyof TagFormState, v: string) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        background: 'rgba(0,0,0,0.7)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      onClick={onClose}
+    >
+      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`}</style>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#171717',
+          border: '1px solid rgba(75,68,80,0.4)',
+          borderRadius: 16,
+          padding: 32,
+          width: 420,
+          boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
+          animation: 'fadeUp 200ms cubic-bezier(0.16,1,0.3,1) both',
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 24,
+            fontWeight: 600,
+            color: '#e2e2e2',
+            margin: '0 0 24px',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {isEdit ? 'edit tag' : 'create tag'}
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* EN */}
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: focusEn ? '#dcb8ff' : '#978e9b',
+                fontFamily: 'var(--font-manrope)',
+                transition: 'color 180ms',
+              }}
+            >
+              Name (EN)
+            </span>
+            <input
+              value={form.name_en}
+              onChange={(e) => set('name_en', e.target.value)}
+              onFocus={() => setFocusEn(true)}
+              onBlur={() => setFocusEn(false)}
+              placeholder="e.g. aerial"
+              style={{
+                background: '#131313',
+                border: focusEn
+                  ? '1px solid rgba(220,184,255,0.5)'
+                  : '1px solid rgba(75,68,80,0.4)',
+                borderRadius: 8,
+                color: '#e2e2e2',
+                fontFamily: 'var(--font-manrope)',
+                fontSize: 14,
+                padding: '10px 14px',
+                outline: 'none',
+                transition: 'border-color 180ms',
+              }}
+            />
+          </label>
+          {/* PL */}
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: focusPl ? '#dcb8ff' : '#978e9b',
+                fontFamily: 'var(--font-manrope)',
+                transition: 'color 180ms',
+              }}
+            >
+              Name (PL)
+            </span>
+            <input
+              value={form.name_pl}
+              onChange={(e) => set('name_pl', e.target.value)}
+              onFocus={() => setFocusPl(true)}
+              onBlur={() => setFocusPl(false)}
+              placeholder="np. powietrzny"
+              style={{
+                background: '#131313',
+                border: focusPl
+                  ? '1px solid rgba(220,184,255,0.5)'
+                  : '1px solid rgba(75,68,80,0.4)',
+                borderRadius: 8,
+                color: '#e2e2e2',
+                fontFamily: 'var(--font-manrope)',
+                fontSize: 14,
+                padding: '10px 14px',
+                outline: 'none',
+                transition: 'border-color 180ms',
+              }}
+            />
+          </label>
+          {/* Color */}
+          <div>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: '#978e9b',
+                fontFamily: 'var(--font-manrope)',
+                marginBottom: 10,
+              }}
+            >
+              Color
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {PRESET_COLORS.map((c) => (
+                <ColorDot
+                  key={c}
+                  color={c}
+                  selected={form.color === c}
+                  onClick={(v) => set('color', v)}
+                />
+              ))}
+            </div>
+            {form.name_en && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, color: '#4b4450', fontFamily: 'var(--font-manrope)' }}>
+                  preview:
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: '3px 10px',
+                    borderRadius: 9999,
+                    background: form.color ? `${form.color}28` : 'rgba(75,68,80,0.2)',
+                    color: form.color || '#978e9b',
+                    fontFamily: 'var(--font-manrope)',
+                  }}
+                >
+                  {form.name_en}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 28 }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(75,68,80,0.4)',
+              borderRadius: 8,
+              padding: '9px 22px',
+              color: '#cdc3d2',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            cancel
+          </button>
+          <button
+            onClick={() => onSave(form)}
+            disabled={!form.name_en || !form.name_pl || saving}
+            style={{
+              background:
+                form.name_en && form.name_pl
+                  ? 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)'
+                  : '#2a2a2a',
+              backgroundSize: '200% 200%',
+              backgroundPosition: 'left center',
+              border: 'none',
+              borderRadius: 8,
+              padding: '9px 26px',
+              color: '#f8ebff',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: form.name_en && form.name_pl && !saving ? 'pointer' : 'not-allowed',
+              opacity: form.name_en && form.name_pl ? 1 : 0.5,
+              boxShadow:
+                form.name_en && form.name_pl ? '0 4px 16px -2px rgba(132,88,179,0.4)' : 'none',
+              transition: 'background-position 400ms',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundPosition = 'right center';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundPosition = 'left center';
+            }}
+          >
+            {saving ? '…' : isEdit ? 'save changes' : 'create tag'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function AdminTags() {
   const t = useTranslations('admin');
   const [tags, setTags] = useState<AdminTagRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
   const [editTag, setEditTag] = useState<AdminTagRow | null>(null);
-  const [form, setForm] = useState<TagFormState>(emptyForm);
+  const [deleteTag, setDeleteTag] = useState<AdminTagRow | null>(null);
   const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [colorSuggestions, setColorSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,45 +545,23 @@ export function AdminTags() {
     };
   }, [refreshKey]);
 
-  function refresh() {
-    setLoading(true);
-    setRefreshKey((k) => k + 1);
-  }
+  const filtered = tags.filter(
+    (t) =>
+      !query ||
+      t.name_en.toLowerCase().includes(query.toLowerCase()) ||
+      t.name_pl.toLowerCase().includes(query.toLowerCase()),
+  );
 
-  function openCreate() {
-    setEditTag(null);
-    setForm(emptyForm);
-    setColorSuggestions(generateSuggestions());
-    setModalOpen(true);
-  }
-
-  function openEdit(tag: AdminTagRow) {
-    setEditTag(tag);
-    setForm({ name_en: tag.name_en, name_pl: tag.name_pl, color: tag.color ?? '' });
-    setColorSuggestions(generateSuggestions());
-    setModalOpen(true);
-  }
-
-  async function handleSave() {
-    if (!form.name_en.trim() || !form.name_pl.trim()) return;
+  async function handleCreate(form: TagFormState) {
     setSaving(true);
     try {
-      if (editTag) {
-        await updateTagAction({
-          id: editTag.id,
-          name_en: form.name_en,
-          name_pl: form.name_pl,
-          color: form.color || undefined,
-        });
-      } else {
-        await createTagAction({
-          name_en: form.name_en,
-          name_pl: form.name_pl,
-          color: form.color || undefined,
-        });
-      }
-      setModalOpen(false);
-      refresh();
+      await createTagAction({
+        name_en: form.name_en,
+        name_pl: form.name_pl,
+        color: form.color || undefined,
+      });
+      setCreateOpen(false);
+      setRefreshKey((k) => k + 1);
     } catch (e) {
       console.error(e);
     } finally {
@@ -121,295 +569,260 @@ export function AdminTags() {
     }
   }
 
-  async function handleDeleteConfirm() {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    setDeleteError(null);
+  async function handleEdit(form: TagFormState) {
+    if (!editTag) return;
+    setSaving(true);
     try {
-      await deleteTagAction(deleteTarget);
-      setDeleteTarget(null);
-      refresh();
+      await updateTagAction({
+        id: editTag.id,
+        name_en: form.name_en,
+        name_pl: form.name_pl,
+        color: form.color || undefined,
+      });
+      setEditTag(null);
+      setRefreshKey((k) => k + 1);
     } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : 'Delete failed');
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTag) return;
+    setDeleting(true);
+    try {
+      await deleteTagAction(deleteTag.id);
+      setDeleteTag(null);
+      setRefreshKey((k) => k + 1);
+    } catch (e) {
+      console.error(e);
     } finally {
       setDeleting(false);
     }
   }
 
-  const fieldStyle: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    color: '#e0e0e0',
-  };
-
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-        <Button onClick={openCreate} style={{ background: '#8458b3', color: '#fff' }}>
-          + {t('tags.addTag')}
-        </Button>
-      </div>
-
-      {loading && <div style={{ color: '#888', padding: 40, textAlign: 'center' }}>Loading...</div>}
-
+    <div style={{ padding: '32px 40px 80px' }}>
+      {/* Header */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: 16,
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          marginBottom: 28,
         }}
       >
-        {tags.map((tag) => (
+        <div>
           <div
-            key={tag.id}
             style={{
-              background: '#1a1a1a',
-              borderRadius: 12,
-              padding: 20,
-              border: '1px solid rgba(255,255,255,0.06)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: '#4b4450',
+              fontFamily: 'var(--font-manrope)',
+              marginBottom: 8,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: '50%',
-                  background: tag.color ?? '#444',
-                  flexShrink: 0,
-                }}
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    color: '#e0e0e0',
-                    fontWeight: 600,
-                    fontSize: 14,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {tag.name_en}
-                </div>
-                <div style={{ color: '#666', fontSize: 12 }}>{tag.name_pl}</div>
-              </div>
-            </div>
-            <div style={{ color: '#888', fontSize: 12 }}>
-              {t('tags.movesCount', { count: tag._count.moves })}
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-              <button
-                onClick={() => openEdit(tag)}
-                style={{
-                  flex: 1,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: 'none',
-                  borderRadius: 6,
-                  color: '#e0e0e0',
-                  padding: '6px 0',
-                  cursor: 'pointer',
-                  fontSize: 13,
-                }}
-              >
-                {t('edit')}
-              </button>
-              <button
-                onClick={() => setDeleteTarget(tag.id)}
-                style={{
-                  flex: 1,
-                  background: 'rgba(248,113,113,0.1)',
-                  border: 'none',
-                  borderRadius: 6,
-                  color: '#f87171',
-                  padding: '6px 0',
-                  cursor: 'pointer',
-                  fontSize: 13,
-                }}
-              >
-                {t('delete')}
-              </button>
-            </div>
+            Taxonomy · {tags.length} {t('tags.title').toLowerCase()}
           </div>
-        ))}
+          <h1
+            style={{
+              fontFamily: 'var(--font-space-grotesk)',
+              fontSize: 36,
+              fontWeight: 600,
+              letterSpacing: '-0.03em',
+              color: '#e2e2e2',
+              margin: 0,
+            }}
+          >
+            {t('tags.title').toLowerCase()}
+          </h1>
+        </div>
+        <button
+          onClick={() => setCreateOpen(true)}
+          style={{
+            background: 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)',
+            backgroundSize: '200% 200%',
+            backgroundPosition: 'left center',
+            border: 'none',
+            borderRadius: 8,
+            padding: '11px 22px',
+            color: '#f8ebff',
+            fontFamily: 'var(--font-manrope)',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            boxShadow: '0 4px 16px -2px rgba(132,88,179,0.4)',
+            transition: 'background-position 400ms',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundPosition = 'right center';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundPosition = 'left center';
+          }}
+        >
+          <NavIcon name="Plus" size={14} /> {t('tags.addTag').toLowerCase()}
+        </button>
       </div>
 
-      {/* Tag Modal */}
-      {modalOpen && (
+      {/* Search */}
+      <div
+        style={{
+          maxWidth: 360,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          background: '#1b1b1b',
+          border: '1px solid rgba(75,68,80,0.3)',
+          borderRadius: 8,
+          padding: '8px 14px',
+          marginBottom: 24,
+        }}
+      >
+        <span style={{ color: '#978e9b', display: 'flex' }}>
+          <NavIcon name="Search" size={14} />
+        </span>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search tags…"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#e2e2e2',
+            fontFamily: 'var(--font-manrope)',
+            fontSize: 13,
+            outline: 'none',
+            flex: 1,
+          }}
+        />
+      </div>
+
+      {loading && <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>Loading…</div>}
+
+      {/* Grid */}
+      {!loading && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: 14,
+          }}
+        >
+          {filtered.map((t) => (
+            <TagCard key={t.id} tag={t} onEdit={setEditTag} onDelete={setDeleteTag} />
+          ))}
+        </div>
+      )}
+
+      {/* Tag modal (create or edit) */}
+      {(createOpen || editTag !== null) && (
+        <TagModal
+          tag={editTag}
+          onSave={editTag ? handleEdit : handleCreate}
+          onClose={() => {
+            setCreateOpen(false);
+            setEditTag(null);
+          }}
+          saving={saving}
+        />
+      )}
+
+      {/* Delete confirm */}
+      {deleteTag && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 200,
+            zIndex: 100,
             background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 24,
           }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setModalOpen(false);
-          }}
+          onClick={() => setDeleteTag(null)}
         >
+          <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`}</style>
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              background: '#1a1a1a',
+              background: '#1b1b1b',
+              border: '1px solid rgba(75,68,80,0.4)',
               borderRadius: 16,
-              border: '1px solid rgba(255,255,255,0.1)',
-              width: '100%',
-              maxWidth: 420,
-              padding: 28,
+              padding: 36,
+              width: 380,
+              animation: 'fadeUp 200ms cubic-bezier(0.16,1,0.3,1) both',
             }}
           >
-            <h2 style={{ margin: '0 0 20px', color: '#e0e0e0', fontSize: 18, fontWeight: 600 }}>
-              {editTag ? t('tags.editTag') : t('tags.addTag')}
+            <h2
+              style={{
+                fontFamily: 'var(--font-space-grotesk)',
+                fontSize: 22,
+                fontWeight: 600,
+                color: '#e2e2e2',
+                margin: '0 0 12px',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {t('tags.deleteTag').toLowerCase()}?
             </h2>
-
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', color: '#888', fontSize: 12, marginBottom: 4 }}>
-                Name (EN) *
-              </label>
-              <Input
-                value={form.name_en}
-                onChange={(e) => setForm((f) => ({ ...f, name_en: e.target.value }))}
-                style={fieldStyle}
-              />
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', color: '#888', fontSize: 12, marginBottom: 4 }}>
-                Nazwa (PL) *
-              </label>
-              <Input
-                value={form.name_pl}
-                onChange={(e) => setForm((f) => ({ ...f, name_pl: e.target.value }))}
-                style={fieldStyle}
-              />
-            </div>
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', color: '#888', fontSize: 12, marginBottom: 8 }}>
-                Color
-              </label>
-              {/* Color picker row */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 8,
-                      background: form.color || 'rgba(255,255,255,0.08)',
-                      border: '2px solid rgba(255,255,255,0.15)',
-                      cursor: 'pointer',
-                    }}
-                  />
-                  <input
-                    type="color"
-                    value={form.color || '#ffffff'}
-                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      opacity: 0,
-                      cursor: 'pointer',
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    title="Pick a color"
-                  />
-                </div>
-                <span
-                  style={{
-                    color: form.color ? '#e0e0e0' : '#555',
-                    fontSize: 13,
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {form.color || 'no color'}
-                </span>
-                {form.color && (
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, color: '' }))}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#666',
-                      cursor: 'pointer',
-                      fontSize: 18,
-                      lineHeight: 1,
-                      padding: 0,
-                    }}
-                    title="Clear color"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-              {/* Random tint suggestions */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {colorSuggestions.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, color: f.color === c ? '' : c }))}
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: '50%',
-                      background: c,
-                      border: form.color === c ? '3px solid #fff' : '2px solid transparent',
-                      cursor: 'pointer',
-                      padding: 0,
-                      outline: 'none',
-                      flexShrink: 0,
-                    }}
-                    title={c}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <Button
-                variant="outline"
-                onClick={() => setModalOpen(false)}
-                disabled={saving}
+            <p
+              style={{
+                fontFamily: 'var(--font-manrope)',
+                fontSize: 14,
+                color: '#978e9b',
+                margin: '0 0 28px',
+                lineHeight: 1.6,
+              }}
+            >
+              <strong style={{ color: '#e2e2e2' }}>{deleteTag.name_en}</strong>{' '}
+              {t('tags.confirmDelete')} ({deleteTag._count.moves} moves)
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setDeleteTag(null)}
                 style={{
-                  borderColor: 'rgba(255,255,255,0.15)',
-                  color: '#e0e0e0',
                   background: 'transparent',
+                  border: '1px solid rgba(75,68,80,0.4)',
+                  borderRadius: 8,
+                  padding: '9px 20px',
+                  color: '#cdc3d2',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 13,
+                  cursor: 'pointer',
                 }}
               >
-                {t('cancel')}
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={saving || !form.name_en.trim() || !form.name_pl.trim()}
-                style={{ background: '#8458b3', color: '#fff' }}
+                cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{
+                  background: '#b3261e',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '9px 22px',
+                  color: '#fff',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  opacity: deleting ? 0.7 : 1,
+                }}
               >
-                {saving ? 'Saving...' : t('save')}
-              </Button>
+                {deleting ? '…' : t('delete').toLowerCase()}
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title={t('tags.deleteTag')}
-        description={t('tags.confirmDelete')}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => {
-          setDeleteTarget(null);
-          setDeleteError(null);
-        }}
-        loading={deleting}
-        error={deleteError}
-      />
     </div>
   );
 }
