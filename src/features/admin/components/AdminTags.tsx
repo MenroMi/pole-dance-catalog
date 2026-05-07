@@ -453,6 +453,7 @@ function TagModal({
                 placeholder={DEFAULT_COLOR}
                 maxLength={7}
                 style={{
+                  height: 40,
                   background: '#131313',
                   border: focusHex
                     ? '1px solid rgba(220,184,255,0.5)'
@@ -473,7 +474,7 @@ function TagModal({
                 type="button"
                 onClick={() => set('color', randomHex())}
                 style={{
-                  height: 36,
+                  height: 40,
                   borderRadius: 8,
                   background: 'transparent',
                   border: '1px solid rgba(75,68,80,0.4)',
@@ -481,11 +482,11 @@ function TagModal({
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 6,
+                  gap: 8,
                   padding: '0 12px',
                   flexShrink: 0,
                   fontFamily: 'var(--font-manrope)',
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: 500,
                   transition: 'border-color 150ms, color 150ms',
                 }}
@@ -499,8 +500,8 @@ function TagModal({
                 }}
               >
                 <svg
-                  width="15"
-                  height="15"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
