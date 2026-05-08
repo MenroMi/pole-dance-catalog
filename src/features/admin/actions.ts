@@ -264,6 +264,8 @@ export async function getUsersForAdminAction(
 
 export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN') {
   const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
   const parsedRole = z.enum(['USER', 'ADMIN']).safeParse(role);
   if (!parsedRole.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot change your own role');

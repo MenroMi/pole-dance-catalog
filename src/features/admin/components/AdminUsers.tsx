@@ -18,35 +18,36 @@ import { ConfirmDialog } from './ConfirmDialog';
 
 type RoleFilter = 'ALL' | 'USER' | 'ADMIN' | 'BLOCKED';
 
-function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
-  const paths: Record<string, React.ReactNode> = {
-    Search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </>
-    ),
-    Shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
-    Ban: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-      </>
-    ),
-    RefreshCw: (
-      <>
-        <polyline points="23 4 23 10 17 10" />
-        <polyline points="1 20 1 14 7 14" />
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-      </>
-    ),
-    Trash: (
-      <>
-        <polyline points="3 6 5 6 21 6" />
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      </>
-    ),
-  };
+const NAV_ICON_PATHS = {
+  Search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </>
+  ),
+  Shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+  Ban: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+    </>
+  ),
+  RefreshCw: (
+    <>
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </>
+  ),
+  Trash: (
+    <>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </>
+  ),
+} as const;
+
+function NavIcon({ name, size = 16 }: { name: keyof typeof NAV_ICON_PATHS; size?: number }) {
   return (
     <svg
       width={size}
@@ -58,14 +59,14 @@ function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {paths[name]}
+      {NAV_ICON_PATHS[name]}
     </svg>
   );
 }
 
 const GRID = '2.5fr 1fr 120px 1fr 120px';
 
-const ROLE_STYLES: Record<string, { bg: string; fg: string }> = {
+const ROLE_STYLES: Record<'ADMIN' | 'USER', { bg: string; fg: string }> = {
   ADMIN: { bg: 'rgba(220,184,255,0.15)', fg: '#dcb8ff' },
   USER: { bg: 'rgba(75,68,80,0.25)', fg: '#cdc3d2' },
 };
@@ -103,7 +104,7 @@ function UserRow({
       .filter(Boolean)
       .map((n) => n![0].toUpperCase())
       .join('') || user.email[0].toUpperCase();
-  const rs = ROLE_STYLES[user.role] ?? ROLE_STYLES.USER;
+  const rs = ROLE_STYLES[user.role as 'ADMIN' | 'USER'] ?? ROLE_STYLES.USER;
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
 
   return (
@@ -362,6 +363,7 @@ function UserRow({
 const PAGE_SIZE = 20;
 
 // Survives re-mounts (locale changes) within the same session without triggering a full spinner.
+// Keyed by fetch params so stale filter/page data is never pre-filled into fresh state.
 type CachedUsers = {
   users: AdminUserRow[];
   total: number;
@@ -370,6 +372,8 @@ type CachedUsers = {
   totalBlocked: number;
 };
 let _usersCache: CachedUsers | null = null;
+let _usersCacheKey = ''; // '<page>:<query>:<roleFilter>'
+const DEFAULT_CACHE_KEY = '1::ALL';
 
 export function AdminUsers({ currentUserId }: { currentUserId: string | null }) {
   const t = useTranslations('admin');
@@ -377,23 +381,32 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   useEffect(() => {
     tRef.current = t;
   }, [t]);
-  const hasFetchedRef = useRef(_usersCache !== null);
-  const [users, setUsers] = useState<AdminUserRow[]>(_usersCache?.users ?? []);
-  const [loading, setLoading] = useState(_usersCache === null);
+
+  // Only pre-fill from cache when the cached data matches the default view (page 1, no filters).
+  // This prevents stale filter/page data from flashing on locale-change remounts.
+  const cacheHit = _usersCache !== null && _usersCacheKey === DEFAULT_CACHE_KEY;
+  const hasFetchedRef = useRef(cacheHit);
+  const [users, setUsers] = useState<AdminUserRow[]>(cacheHit ? _usersCache!.users : []);
+  const [loading, setLoading] = useState(!cacheHit);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
+  const roleFilterRef = useRef(roleFilter);
+  useEffect(() => {
+    roleFilterRef.current = roleFilter;
+  }, [roleFilter]);
+  const [retryKey, setRetryKey] = useState(0);
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [acting, setActing] = useState(false);
   const [actingUserId, setActingUserId] = useState<string | null>(null);
   const [blockReason, setBlockReason] = useState('');
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(_usersCache?.total ?? 0);
-  const [totalAll, setTotalAll] = useState(_usersCache?.totalAll ?? 0);
-  const [totalAdmins, setTotalAdmins] = useState(_usersCache?.totalAdmins ?? 0);
-  const [totalBlocked, setTotalBlocked] = useState(_usersCache?.totalBlocked ?? 0);
+  const [total, setTotal] = useState(cacheHit ? _usersCache!.total : 0);
+  const [totalAll, setTotalAll] = useState(cacheHit ? _usersCache!.totalAll : 0);
+  const [totalAdmins, setTotalAdmins] = useState(cacheHit ? _usersCache!.totalAdmins : 0);
+  const [totalBlocked, setTotalBlocked] = useState(cacheHit ? _usersCache!.totalBlocked : 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -412,6 +425,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
                 totalAdmins: data.totalAdmins,
                 totalBlocked: data.totalBlocked,
               };
+              _usersCacheKey = `${page}:${query}:${roleFilter}`;
               setUsers(data.users);
               setTotal(data.total);
               setTotalAll(data.totalAll);
@@ -437,7 +451,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [page, query, roleFilter]);
+  }, [page, query, roleFilter, retryKey]);
 
   function handleQueryChange(val: string) {
     setQuery(val);
@@ -508,7 +522,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         await changeUserRoleAction(confirm.userId, confirm.newRole);
         const newRole = confirm.newRole;
         // If ADMIN filter is active and role is being revoked, the row no longer matches
-        if (roleFilter === 'ADMIN' && newRole === 'USER') {
+        if (roleFilterRef.current === 'ADMIN' && newRole === 'USER') {
           setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
           setTotal((n) => n - 1);
         } else {
@@ -520,6 +534,8 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       } else if (confirm.type === 'block') {
         const reason = blockReason.trim() || undefined;
         await blockUserAction(confirm.userId, reason);
+        // Blocked users retain their role, so a USER-filter view still includes them.
+        // The row stays visible with a BLOCKED chip — intentional overlap between USER and BLOCKED filters.
         setUsers((prev) =>
           prev.map((u) =>
             u.id === confirm.userId
@@ -531,7 +547,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       } else if (confirm.type === 'unblock') {
         await unblockUserAction(confirm.userId);
         // If BLOCKED filter is active, the unblocked user no longer matches
-        if (roleFilter === 'BLOCKED') {
+        if (roleFilterRef.current === 'BLOCKED') {
           setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
           setTotal((n) => n - 1);
         } else {
@@ -715,9 +731,30 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             color: '#f87171',
             fontSize: 14,
             flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
           }}
         >
-          {error}
+          <span style={{ flex: 1 }}>{error}</span>
+          <button
+            type="button"
+            onClick={() => setRetryKey((k) => k + 1)}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(248,113,113,0.4)',
+              borderRadius: 6,
+              padding: '5px 12px',
+              color: '#f87171',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {t('retry')}
+          </button>
         </div>
       )}
 
@@ -753,15 +790,17 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               flexShrink: 0,
             }}
           >
-            {[
-              t('users.cols.user'),
-              t('users.cols.location'),
-              t('users.cols.joined'),
-              t('users.cols.roleStatus'),
-              '',
-            ].map((h, i) => (
+            {(
+              [
+                ['user', t('users.cols.user')],
+                ['location', t('users.cols.location')],
+                ['joined', t('users.cols.joined')],
+                ['roleStatus', t('users.cols.roleStatus')],
+                ['actions', ''],
+              ] as [string, string][]
+            ).map(([id, h]) => (
               <span
-                key={i}
+                key={id}
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
@@ -777,6 +816,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           </div>
 
           {/* Scrollable body */}
+
           <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
             {loading && (
               <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
@@ -887,10 +927,12 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           title={confirm.title}
           description={confirm.body}
           confirmLabel={confirm.label}
+          loadingLabel={t('loading')}
           onConfirm={applyConfirm}
           onCancel={() => {
             setConfirm(null);
             setActionError(null);
+            setBlockReason('');
           }}
           loading={acting}
           error={actionError}

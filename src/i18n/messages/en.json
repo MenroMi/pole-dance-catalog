@@ -262,6 +262,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "loading": "Loading…",
+    "retry": "Retry",
     "invalidJson": "Invalid JSON",
     "nav": {
       "dashboard": "Dashboard",

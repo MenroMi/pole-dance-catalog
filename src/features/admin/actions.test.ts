@@ -312,6 +312,7 @@ describe('deleteTagAction', () => {
     mockTagDelete.mockResolvedValue({ id: 'tag-1' });
     await deleteTagAction('tag-1');
     expect(mockTagDelete).toHaveBeenCalledWith({ where: { id: 'tag-1' } });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
 
@@ -334,10 +335,15 @@ describe('getUsersForAdminAction', () => {
       },
     ];
     mockUserFindMany.mockResolvedValue(users);
-    mockUserCount.mockResolvedValue(1);
+    // counts: total(filtered)=1, totalAll=5, totalAdmins=2, totalBlocked=0
+    mockUserCount
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(5)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(0);
     const result = await getUsersForAdminAction();
     expect(result.users).toEqual(users);
-    expect(result).toMatchObject({ total: 1, totalAll: 1, totalAdmins: 1, totalBlocked: 1 });
+    expect(result).toMatchObject({ total: 1, totalAll: 5, totalAdmins: 2, totalBlocked: 0 });
   });
 
   it('passes query as case-insensitive OR across email/firstName/lastName', async () => {
