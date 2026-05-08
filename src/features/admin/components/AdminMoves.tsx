@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   deleteMoveAction,
@@ -407,7 +407,9 @@ function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConf
 export function AdminMoves() {
   const t = useTranslations('admin');
   const [moves, setMoves] = useState<AdminMoveRow[]>([]);
+  const hasFetchedRef = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [search, setSearch] = useState('');
   const [diffFilter, setDiffFilter] = useState<string>('ALL');
@@ -420,13 +422,21 @@ export function AdminMoves() {
 
   useEffect(() => {
     let cancelled = false;
+    if (!hasFetchedRef.current) setLoading(true);
+    else setIsFetching(true);
     getMovesForAdminAction()
       .then((data) => {
-        if (!cancelled) setMoves(data);
+        if (!cancelled) {
+          hasFetchedRef.current = true;
+          setMoves(data);
+        }
       })
       .catch(console.error)
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setIsFetching(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -434,7 +444,6 @@ export function AdminMoves() {
   }, [refreshKey]);
 
   function refresh() {
-    setLoading(true);
     setRefreshKey((k) => k + 1);
   }
 
@@ -688,19 +697,22 @@ export function AdminMoves() {
           </div>
         )}
 
-        {!loading &&
-          filtered.map((move, i) => (
-            <MoveRow
-              key={move.id}
-              move={move}
-              isLast={i === filtered.length - 1}
-              onEdit={() => handleEditMove(move.id)}
-              onDelete={() => {
-                setDeleteTarget(move);
-                setDeleteError(null);
-              }}
-            />
-          ))}
+        {!loading && filtered.length > 0 && (
+          <div style={{ opacity: isFetching ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+            {filtered.map((move, i) => (
+              <MoveRow
+                key={move.id}
+                move={move}
+                isLast={i === filtered.length - 1}
+                onEdit={() => handleEditMove(move.id)}
+                onDelete={() => {
+                  setDeleteTarget(move);
+                  setDeleteError(null);
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Edit/Create modal */}
