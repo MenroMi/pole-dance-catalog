@@ -487,6 +487,12 @@ describe('blockUserAction', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 
+  it('throws Invalid input when reason exceeds 500 characters', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(blockUserAction('u-1', 'x'.repeat(501))).rejects.toThrow('Invalid input');
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
   it('persists blockReason when provided', async () => {
     mockAuth.mockResolvedValue(adminSession);
     mockUserUpdate.mockResolvedValue({ id: 'u-1' });

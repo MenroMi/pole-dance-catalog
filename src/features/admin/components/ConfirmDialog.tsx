@@ -44,7 +44,7 @@ export function ConfirmDialog({
     <AlertDialog
       open={open}
       onOpenChange={(o) => {
-        if (!o) onCancel();
+        if (!o && !loading) onCancel();
       }}
     >
       <AlertDialogContent

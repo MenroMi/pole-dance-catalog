@@ -497,7 +497,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         title: t('users.unblockTitle'),
         body: t('users.unblockBody', { name }),
         label: t('users.unblock'),
-        danger: true,
+        danger: false,
         existingReason: user.blockReason,
       });
     } else if (type === 'delete') {
