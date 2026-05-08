@@ -176,7 +176,7 @@ describe('getMovesForAdminAction', () => {
     await expect(getMovesForAdminAction()).rejects.toThrow('Unauthorized');
   });
 
-  it('returns move rows when ADMIN', async () => {
+  it('returns { moves, total } when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
     const rows = [
       {
@@ -190,11 +190,83 @@ describe('getMovesForAdminAction', () => {
       },
     ];
     mockMoveFindMany.mockResolvedValue(rows);
+    mockMoveCount.mockResolvedValue(1);
     const result = await getMovesForAdminAction();
-    expect(result).toEqual(rows);
+    expect(result).toEqual({ moves: rows, total: 1 });
     expect(mockMoveFindMany).toHaveBeenCalledWith(
       expect.objectContaining({ orderBy: { createdAt: 'desc' } }),
     );
+  });
+
+  it('throws Invalid input when page is less than 1', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(getMovesForAdminAction({ page: 0 })).rejects.toThrow('Invalid input');
+    expect(mockMoveFindMany).not.toHaveBeenCalled();
+  });
+
+  it('throws Invalid input when pageSize exceeds 100', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(getMovesForAdminAction({ pageSize: 101 })).rejects.toThrow('Invalid input');
+    expect(mockMoveFindMany).not.toHaveBeenCalled();
+  });
+
+  it('throws Invalid input when query exceeds 200 characters', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(getMovesForAdminAction({ query: 'a'.repeat(201) })).rejects.toThrow(
+      'Invalid input',
+    );
+    expect(mockMoveFindMany).not.toHaveBeenCalled();
+  });
+
+  it('passes query as case-insensitive OR across title_en/title_pl', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindMany.mockResolvedValue([]);
+    mockMoveCount.mockResolvedValue(0);
+    await getMovesForAdminAction({ query: 'spin' });
+    expect(mockMoveFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          AND: [
+            {
+              OR: [
+                { title_en: { contains: 'spin', mode: 'insensitive' } },
+                { title_pl: { contains: 'spin', mode: 'insensitive' } },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+  });
+
+  it('filters by difficulty when not ALL', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindMany.mockResolvedValue([]);
+    mockMoveCount.mockResolvedValue(0);
+    await getMovesForAdminAction({ difficulty: 'BEGINNER' });
+    expect(mockMoveFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { AND: [{ difficulty: 'BEGINNER' }] },
+      }),
+    );
+  });
+
+  it('applies page and pageSize as take/skip', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindMany.mockResolvedValue([]);
+    mockMoveCount.mockResolvedValue(0);
+    await getMovesForAdminAction({ page: 2, pageSize: 10 });
+    expect(mockMoveFindMany).toHaveBeenCalledWith(expect.objectContaining({ take: 10, skip: 10 }));
+  });
+
+  it('combines query and difficulty with AND', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindMany.mockResolvedValue([]);
+    mockMoveCount.mockResolvedValue(0);
+    await getMovesForAdminAction({ query: 'spin', difficulty: 'ADVANCED' });
+    const call = mockMoveFindMany.mock.calls[0][0];
+    expect(call.where.AND).toHaveLength(2);
+    expect(call.where.AND[1]).toEqual({ difficulty: 'ADVANCED' });
   });
 });
 

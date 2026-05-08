@@ -310,6 +310,7 @@
       "deleteBody": "zostanie trwale usunięty z katalogu. Tej operacji nie można cofnąć.",
       "confirmDelete": "Czy na pewno chcesz usunąć ten ruch? Tej operacji nie można cofnąć.",
       "saving": "Zapisywanie...",
+      "loadError": "Nie udało się załadować ruchów",
       "cols": {
         "title": "Tytuł",
         "difficulty": "Poziom",

@@ -105,20 +105,62 @@ export async function deleteMoveAction(id: string) {
   return result;
 }
 
-export async function getMovesForAdminAction(): Promise<AdminMoveRow[]> {
+const movesQuerySchema = z.object({
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(1).max(100).default(20),
+  query: z.string().max(200).default(''),
+  difficulty: z.enum(['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED']).default('ALL'),
+});
+
+export async function getMovesForAdminAction(
+  params: {
+    page?: number;
+    pageSize?: number;
+    query?: string;
+    difficulty?: 'ALL' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  } = {},
+): Promise<{ moves: AdminMoveRow[]; total: number }> {
   await requireAdmin();
-  return prisma.move.findMany({
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      title_en: true,
-      title_pl: true,
-      difficulty: true,
-      category: true,
-      createdAt: true,
-      tags: { select: { id: true, name_en: true } },
-    },
-  });
+  const parsed = movesQuerySchema.safeParse(params);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { page, pageSize, query, difficulty } = parsed.data;
+
+  const searchCondition = query
+    ? {
+        OR: [
+          { title_en: { contains: query, mode: 'insensitive' as const } },
+          { title_pl: { contains: query, mode: 'insensitive' as const } },
+        ],
+      }
+    : undefined;
+
+  const diffCondition = difficulty !== 'ALL' ? { difficulty: difficulty as Difficulty } : undefined;
+
+  const conditions = [searchCondition, diffCondition].filter((c): c is NonNullable<typeof c> =>
+    Boolean(c),
+  );
+  const where = conditions.length > 0 ? { AND: conditions } : {};
+
+  const [moves, total] = await Promise.all([
+    prisma.move.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      select: {
+        id: true,
+        title_en: true,
+        title_pl: true,
+        difficulty: true,
+        category: true,
+        createdAt: true,
+        tags: { select: { id: true, name_en: true } },
+      },
+    }),
+    prisma.move.count({ where }),
+  ]);
+
+  return { moves, total };
 }
 
 export async function getMoveByIdAction(id: string): Promise<FullAdminMove | null> {

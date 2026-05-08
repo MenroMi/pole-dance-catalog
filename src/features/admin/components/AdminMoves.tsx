@@ -11,50 +11,47 @@ import {
 } from '../actions';
 import type { AdminMoveRow, AdminTagRow, FullAdminMove } from '../types';
 
+import { ConfirmDialog } from './ConfirmDialog';
 import { MoveModal } from './MoveModal';
+
+type DifficultyFilter = 'ALL' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 
 const DIFFICULTIES = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const;
 
-const DIFF_STYLES: Record<string, { bg: string; fg: string }> = {
+const DIFF_STYLES: Record<'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED', { bg: string; fg: string }> = {
   BEGINNER: { bg: 'rgba(132,209,153,0.16)', fg: '#84d099' },
   INTERMEDIATE: { bg: 'rgba(132,88,179,0.20)', fg: '#c5afe2' },
   ADVANCED: { bg: 'rgba(251,191,36,0.14)', fg: '#fbbf24' },
 };
 
-function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
-  const paths: Record<string, React.ReactNode> = {
-    Plus: (
-      <>
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-      </>
-    ),
-    Search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </>
-    ),
-    Edit: (
-      <>
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-      </>
-    ),
-    Trash: (
-      <>
-        <polyline points="3 6 5 6 21 6" />
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      </>
-    ),
-    X: (
-      <>
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </>
-    ),
-    Check: <polyline points="20 6 9 17 4 12" />,
-  };
+const NAV_ICON_PATHS = {
+  Plus: (
+    <>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </>
+  ),
+  Search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </>
+  ),
+  Edit: (
+    <>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </>
+  ),
+  Trash: (
+    <>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </>
+  ),
+} as const;
+
+function NavIcon({ name, size = 16 }: { name: keyof typeof NAV_ICON_PATHS; size?: number }) {
   return (
     <svg
       width={size}
@@ -66,7 +63,7 @@ function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {paths[name]}
+      {NAV_ICON_PATHS[name]}
     </svg>
   );
 }
@@ -108,7 +105,9 @@ function MoveRow({
 }) {
   const t = useTranslations('admin');
   const [hov, setHov] = useState(false);
-  const dc = DIFF_STYLES[move.difficulty] ?? DIFF_STYLES.BEGINNER;
+  const dc =
+    DIFF_STYLES[move.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'] ??
+    DIFF_STYLES.BEGINNER;
 
   return (
     <div
@@ -186,7 +185,7 @@ function MoveRow({
         {move.category}
       </div>
 
-      {/* Tags (kept from existing functionality) */}
+      {/* Tags */}
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {move.tags.slice(0, 3).map((tag) => (
           <Chip key={tag.id} label={tag.name_en} bg="rgba(75,68,80,0.2)" fg="#cdc3d2" />
@@ -209,6 +208,7 @@ function MoveRow({
         }}
       >
         <button
+          type="button"
           onClick={onEdit}
           title={t('edit')}
           style={{
@@ -233,6 +233,7 @@ function MoveRow({
           <NavIcon name="Edit" size={13} />
         </button>
         <button
+          type="button"
           onClick={onDelete}
           title={t('delete')}
           style={{
@@ -261,158 +262,33 @@ function MoveRow({
   );
 }
 
-interface DeleteConfirmProps {
-  move: AdminMoveRow;
-  loading: boolean;
-  error: string | null;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
+const PAGE_SIZE = 20;
 
-function DeleteConfirm({ move, loading, error, onConfirm, onCancel }: DeleteConfirmProps) {
-  const t = useTranslations('admin');
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        background: 'rgba(0,0,0,0.75)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      onClick={onCancel}
-    >
-      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: '#1b1b1b',
-          border: '1px solid rgba(75,68,80,0.4)',
-          borderRadius: 16,
-          padding: 36,
-          width: 420,
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-          animation: 'fadeUp 200ms cubic-bezier(0.16,1,0.3,1) both',
-        }}
-      >
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 12,
-            background: 'rgba(179,38,30,0.15)',
-            border: '1px solid rgba(179,38,30,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ef4444',
-            marginBottom: 20,
-          }}
-        >
-          <NavIcon name="Trash" size={22} />
-        </div>
-        <h2
-          style={{
-            fontFamily: 'var(--font-space-grotesk)',
-            fontSize: 22,
-            fontWeight: 600,
-            color: '#e2e2e2',
-            margin: '0 0 10px',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          {t('moves.deleteTitle')}
-        </h2>
-        <p
-          style={{
-            fontFamily: 'var(--font-manrope)',
-            fontSize: 14,
-            color: '#978e9b',
-            margin: '0 0 28px',
-            lineHeight: 1.6,
-          }}
-        >
-          <strong style={{ color: '#e2e2e2' }}>{move.title_en}</strong> {t('moves.deleteBody')}
-        </p>
-        {error && (
-          <p
-            style={{
-              fontSize: 14,
-              color: '#ef4444',
-              fontFamily: 'var(--font-manrope)',
-              margin: '0 0 16px',
-            }}
-          >
-            {error}
-          </p>
-        )}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button
-            onClick={onCancel}
-            style={{
-              background: 'transparent',
-              border: '1px solid rgba(75,68,80,0.4)',
-              borderRadius: 8,
-              padding: '9px 20px',
-              color: '#cdc3d2',
-              fontFamily: 'var(--font-manrope)',
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'border-color 150ms',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#978e9b';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
-            }}
-          >
-            {t('cancel')}
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            style={{
-              background: '#b3261e',
-              border: 'none',
-              borderRadius: 8,
-              padding: '9px 20px',
-              color: '#fff',
-              fontFamily: 'var(--font-manrope)',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: loading ? 'wait' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              transition: 'background 150ms',
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) e.currentTarget.style.background = '#d32f2f';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#b3261e';
-            }}
-          >
-            {loading ? '…' : t('moves.deleteMove')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Survives re-mounts (locale changes) within the same session without triggering a full spinner.
+type CachedMoves = { moves: AdminMoveRow[]; total: number };
+let _movesCache: CachedMoves | null = null;
+let _movesCacheKey = '';
+const DEFAULT_MOVES_CACHE_KEY = '1::ALL';
 
 export function AdminMoves() {
   const t = useTranslations('admin');
-  const [moves, setMoves] = useState<AdminMoveRow[]>([]);
-  const hasFetchedRef = useRef(false);
-  const [loading, setLoading] = useState(true);
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+
+  const cacheHit = _movesCache !== null && _movesCacheKey === DEFAULT_MOVES_CACHE_KEY;
+  const hasFetchedRef = useRef(cacheHit);
+  const [moves, setMoves] = useState<AdminMoveRow[]>(cacheHit ? _movesCache!.moves : []);
+  const [loading, setLoading] = useState(!cacheHit);
   const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [diffFilter, setDiffFilter] = useState<DifficultyFilter>('ALL');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(cacheHit ? _movesCache!.total : 0);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [search, setSearch] = useState('');
-  const [diffFilter, setDiffFilter] = useState<string>('ALL');
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editMove, setEditMove] = useState<FullAdminMove | null>(null);
   const [availableTags, setAvailableTags] = useState<AdminTagRow[]>([]);
@@ -422,29 +298,48 @@ export function AdminMoves() {
 
   useEffect(() => {
     let cancelled = false;
-    if (!hasFetchedRef.current) setLoading(true);
-    else setIsFetching(true);
-    getMovesForAdminAction()
-      .then((data) => {
-        if (!cancelled) {
-          hasFetchedRef.current = true;
-          setMoves(data);
-        }
-      })
-      .catch(console.error)
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          setIsFetching(false);
-        }
-      });
+    const timeout = setTimeout(
+      () => {
+        if (!hasFetchedRef.current) setLoading(true);
+        else setIsFetching(true);
+        getMovesForAdminAction({ page, pageSize: PAGE_SIZE, query, difficulty: diffFilter })
+          .then((data) => {
+            if (!cancelled) {
+              hasFetchedRef.current = true;
+              _movesCache = { moves: data.moves, total: data.total };
+              _movesCacheKey = `${page}:${query}:${diffFilter}`;
+              setMoves(data.moves);
+              setTotal(data.total);
+              setError(null);
+            }
+          })
+          .catch((e) => {
+            if (!cancelled)
+              setError(e instanceof Error ? e.message : tRef.current('moves.loadError'));
+          })
+          .finally(() => {
+            if (!cancelled) {
+              setLoading(false);
+              setIsFetching(false);
+            }
+          });
+      },
+      query ? 300 : 0,
+    );
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
-  }, [refreshKey]);
+  }, [page, query, diffFilter, refreshKey]);
 
-  function refresh() {
-    setRefreshKey((k) => k + 1);
+  function handleQueryChange(val: string) {
+    setQuery(val);
+    setPage(1);
+  }
+
+  function handleDiffFilterChange(d: DifficultyFilter) {
+    setDiffFilter(d);
+    setPage(1);
   }
 
   async function handleAddMove() {
@@ -471,10 +366,11 @@ export function AdminMoves() {
     setDeleteError(null);
     try {
       await deleteMoveAction(deleteTarget.id);
+      setMoves((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+      setTotal((n) => n - 1);
       setDeleteTarget(null);
-      refresh();
     } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : 'Delete failed');
+      setDeleteError(e instanceof Error ? e.message : tRef.current('moves.loadError'));
     } finally {
       setDeleting(false);
     }
@@ -482,91 +378,102 @@ export function AdminMoves() {
 
   function handleModalSaved() {
     setModalOpen(false);
-    refresh();
+    setRefreshKey((k) => k + 1);
   }
 
-  const filtered = moves.filter((m) => {
-    const matchSearch =
-      !search ||
-      m.title_en.toLowerCase().includes(search.toLowerCase()) ||
-      m.title_pl.toLowerCase().includes(search.toLowerCase());
-    const matchDiff = diffFilter === 'ALL' || m.difficulty === diffFilter;
-    return matchSearch && matchDiff;
-  });
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div style={{ padding: '32px 40px 80px' }}>
+    <div
+      style={{
+        height: 'calc(100vh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       {/* Page header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          marginBottom: 28,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: '#6b6270',
-              fontFamily: 'var(--font-manrope)',
-              marginBottom: 8,
-            }}
-          >
-            {t('moves.catalog')} · {filtered.length} {t('moves.movesCount')}
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-space-grotesk)',
-              fontSize: 36,
-              fontWeight: 600,
-              letterSpacing: '-0.03em',
-              color: '#e2e2e2',
-              margin: 0,
-            }}
-          >
-            {t('moves.title').toLowerCase()}
-          </h1>
-        </div>
-        <button
-          onClick={handleAddMove}
+      <div style={{ padding: '32px 40px 0', flexShrink: 0, marginBottom: 28 }}>
+        <div
           style={{
-            background: 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)',
-            backgroundSize: '200% 200%',
-            backgroundPosition: 'left center',
-            border: 'none',
-            borderRadius: 8,
-            padding: '11px 22px',
-            color: '#f8ebff',
-            fontFamily: 'var(--font-manrope)',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
             display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            boxShadow: '0 4px 16px -2px rgba(132,88,179,0.4)',
-            transition: 'background-position 400ms, box-shadow 300ms',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundPosition = 'right center';
-            e.currentTarget.style.boxShadow = '0 6px 24px -2px rgba(220,184,255,0.45)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundPosition = 'left center';
-            e.currentTarget.style.boxShadow = '0 4px 16px -2px rgba(132,88,179,0.4)';
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
           }}
         >
-          <NavIcon name="Plus" size={14} /> {t('moves.addMove').toLowerCase()}
-        </button>
+          <div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#6b6270',
+                fontFamily: 'var(--font-manrope)',
+                marginBottom: 8,
+              }}
+            >
+              {t('moves.catalog')} · {total} {t('moves.movesCount')}
+            </div>
+            <h1
+              style={{
+                fontFamily: 'var(--font-space-grotesk)',
+                fontSize: 36,
+                fontWeight: 600,
+                letterSpacing: '-0.03em',
+                color: '#e2e2e2',
+                margin: 0,
+              }}
+            >
+              {t('moves.title').toLowerCase()}
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddMove}
+            style={{
+              background: 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)',
+              backgroundSize: '200% 200%',
+              backgroundPosition: 'left center',
+              border: 'none',
+              borderRadius: 8,
+              padding: '11px 22px',
+              color: '#f8ebff',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              boxShadow: '0 4px 16px -2px rgba(132,88,179,0.4)',
+              transition: 'background-position 400ms, box-shadow 300ms',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundPosition = 'right center';
+              e.currentTarget.style.boxShadow = '0 6px 24px -2px rgba(220,184,255,0.45)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundPosition = 'left center';
+              e.currentTarget.style.boxShadow = '0 4px 16px -2px rgba(132,88,179,0.4)';
+            }}
+          >
+            <NavIcon name="Plus" size={14} /> {t('moves.addMove').toLowerCase()}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          marginBottom: 16,
+          alignItems: 'center',
+          padding: '0 40px',
+          flexShrink: 0,
+        }}
+      >
         <div
           style={{
             flex: 1,
@@ -584,8 +491,8 @@ export function AdminMoves() {
             <NavIcon name="Search" size={14} />
           </span>
           <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={query}
+            onChange={(e) => handleQueryChange(e.target.value)}
             placeholder={t('moves.search')}
             style={{
               background: 'transparent',
@@ -599,13 +506,14 @@ export function AdminMoves() {
           />
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          {(['ALL', ...DIFFICULTIES] as const).map((d) => {
+          {(['ALL', ...DIFFICULTIES] as DifficultyFilter[]).map((d) => {
             const active = diffFilter === d;
             const ds = d !== 'ALL' ? DIFF_STYLES[d] : null;
             return (
               <button
                 key={d}
-                onClick={() => setDiffFilter(d)}
+                type="button"
+                onClick={() => handleDiffFilterChange(d)}
                 style={{
                   padding: '7px 14px',
                   borderRadius: 6,
@@ -621,97 +529,233 @@ export function AdminMoves() {
                   color: active ? (ds ? ds.fg : '#dcb8ff') : '#978e9b',
                 }}
               >
-                {d}
+                {d === 'ALL' ? t('moves.allDifficulties') : d}
               </button>
             );
           })}
         </div>
+        <span
+          style={{
+            color: '#6b6270',
+            fontSize: 13,
+            fontFamily: 'var(--font-manrope)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {total}
+        </span>
       </div>
+
+      {error && (
+        <div
+          style={{
+            margin: '0 40px 12px',
+            background: 'rgba(248,113,113,0.1)',
+            border: '1px solid rgba(248,113,113,0.3)',
+            borderRadius: 12,
+            padding: '16px 20px',
+            color: '#f87171',
+            fontSize: 14,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ flex: 1 }}>{error}</span>
+          <button
+            type="button"
+            onClick={() => setRefreshKey((k) => k + 1)}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(248,113,113,0.4)',
+              borderRadius: 6,
+              padding: '5px 12px',
+              color: '#f87171',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {t('retry')}
+          </button>
+        </div>
+      )}
 
       {/* Table */}
       <div
         style={{
-          background: '#1b1b1b',
-          border: '1px solid rgba(75,68,80,0.2)',
-          borderRadius: 12,
-          overflow: 'hidden',
+          flex: 1,
+          minHeight: 0,
+          padding: '0 40px',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Header */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: GRID,
-            padding: '10px 20px',
-            borderBottom: '1px solid rgba(75,68,80,0.2)',
+            flex: 1,
+            minHeight: 0,
+            background: '#1b1b1b',
+            borderRadius: 12,
+            border: '1px solid rgba(75,68,80,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           }}
         >
-          {[
-            t('moves.cols.title'),
-            t('moves.cols.difficulty'),
-            t('moves.cols.category'),
-            t('moves.cols.tags'),
-            '',
-          ].map((h, i) => (
-            <span
-              key={i}
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: '#6b6270',
-                fontFamily: 'var(--font-manrope)',
-              }}
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {loading && (
+          {/* Header row */}
           <div
             style={{
-              padding: '60px 0',
-              textAlign: 'center',
-              color: '#6b6270',
-              fontFamily: 'var(--font-manrope)',
-              fontSize: 14,
+              display: 'grid',
+              gridTemplateColumns: GRID,
+              padding: '10px 20px',
+              borderBottom: '1px solid rgba(75,68,80,0.2)',
+              flexShrink: 0,
             }}
           >
-            {t('loading')}
-          </div>
-        )}
-
-        {!loading && filtered.length === 0 && (
-          <div
-            style={{
-              padding: '60px 0',
-              textAlign: 'center',
-              color: '#6b6270',
-              fontFamily: 'var(--font-manrope)',
-              fontSize: 14,
-            }}
-          >
-            {t('moves.noResults')}
-          </div>
-        )}
-
-        {!loading && filtered.length > 0 && (
-          <div style={{ opacity: isFetching ? 0.5 : 1, transition: 'opacity 0.15s' }}>
-            {filtered.map((move, i) => (
-              <MoveRow
-                key={move.id}
-                move={move}
-                isLast={i === filtered.length - 1}
-                onEdit={() => handleEditMove(move.id)}
-                onDelete={() => {
-                  setDeleteTarget(move);
-                  setDeleteError(null);
+            {(
+              [
+                ['title', t('moves.cols.title')],
+                ['difficulty', t('moves.cols.difficulty')],
+                ['category', t('moves.cols.category')],
+                ['tags', t('moves.cols.tags')],
+                ['actions', ''],
+              ] as [string, string][]
+            ).map(([id, h]) => (
+              <span
+                key={id}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: '#6b6270',
+                  fontFamily: 'var(--font-manrope)',
                 }}
-              />
+              >
+                {h}
+              </span>
             ))}
           </div>
+
+          {/* Scrollable body */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            {loading && (
+              <div
+                style={{
+                  padding: '60px 0',
+                  textAlign: 'center',
+                  color: '#6b6270',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 14,
+                }}
+              >
+                {t('loading')}
+              </div>
+            )}
+
+            {!loading && moves.length === 0 && (
+              <div
+                style={{
+                  padding: '60px 0',
+                  textAlign: 'center',
+                  color: '#6b6270',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 14,
+                }}
+              >
+                {t('moves.noResults')}
+              </div>
+            )}
+
+            {!loading && moves.length > 0 && (
+              <div style={{ opacity: isFetching ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+                {moves.map((move, i) => (
+                  <MoveRow
+                    key={move.id}
+                    move={move}
+                    isLast={i === moves.length - 1}
+                    onEdit={() => handleEditMove(move.id)}
+                    onDelete={() => {
+                      setDeleteTarget(move);
+                      setDeleteError(null);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          padding: '12px 40px',
+          flexShrink: 0,
+        }}
+      >
+        {totalPages > 1 && (
+          <>
+            <button
+              type="button"
+              disabled={page <= 1 || loading || isFetching}
+              onClick={() => setPage((p) => p - 1)}
+              style={{
+                padding: '7px 18px',
+                borderRadius: 6,
+                fontSize: 13,
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 600,
+                background: page <= 1 ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
+                color: page <= 1 ? '#4b4450' : '#dcb8ff',
+                border: '1px solid',
+                borderColor: page <= 1 ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
+                cursor: page <= 1 || loading || isFetching ? 'not-allowed' : 'pointer',
+                transition: 'all 150ms',
+              }}
+            >
+              ←
+            </button>
+            <span
+              style={{
+                fontSize: 13,
+                color: '#978e9b',
+                fontFamily: 'var(--font-manrope)',
+                minWidth: 80,
+                textAlign: 'center',
+              }}
+            >
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={page >= totalPages || loading || isFetching}
+              onClick={() => setPage((p) => p + 1)}
+              style={{
+                padding: '7px 18px',
+                borderRadius: 6,
+                fontSize: 13,
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 600,
+                background: page >= totalPages ? 'rgba(75,68,80,0.1)' : 'rgba(220,184,255,0.10)',
+                color: page >= totalPages ? '#4b4450' : '#dcb8ff',
+                border: '1px solid',
+                borderColor: page >= totalPages ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
+                cursor: page >= totalPages || loading || isFetching ? 'not-allowed' : 'pointer',
+                transition: 'all 150ms',
+              }}
+            >
+              →
+            </button>
+          </>
         )}
       </div>
 
@@ -727,15 +771,20 @@ export function AdminMoves() {
 
       {/* Delete confirm */}
       {deleteTarget && (
-        <DeleteConfirm
-          move={deleteTarget}
-          loading={deleting}
-          error={deleteError}
+        <ConfirmDialog
+          open={true}
+          title={t('moves.deleteTitle')}
+          description={`${deleteTarget.title_en} ${t('moves.deleteBody')}`}
+          confirmLabel={t('moves.deleteMove')}
+          loadingLabel={t('loading')}
           onConfirm={handleDeleteConfirm}
           onCancel={() => {
             setDeleteTarget(null);
             setDeleteError(null);
           }}
+          loading={deleting}
+          error={deleteError}
+          danger={true}
         />
       )}
     </div>
