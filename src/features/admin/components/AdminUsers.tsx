@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -125,12 +126,12 @@ function UserRow({
       {/* Identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt=""
+            width={34}
+            height={34}
             style={{
-              width: 34,
-              height: 34,
               borderRadius: '50%',
               flexShrink: 0,
               objectFit: 'cover',
@@ -519,6 +520,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         if (deleted?.blockedAt) setTotalBlocked((n) => n - 1);
       }
       setConfirm(null);
+      setActionError(null);
     } catch (e) {
       setActionError(e instanceof Error ? e.message : tRef.current('users.loadError'));
     } finally {
