@@ -33,7 +33,10 @@ vi.mock('@/shared/lib/auth', () => ({
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 import { auth } from '@/shared/lib/auth';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/shared/lib/prisma';
+
+const mockRevalidatePath = revalidatePath as ReturnType<typeof vi.fn>;
 
 import {
   blockUserAction,
@@ -417,6 +420,7 @@ describe('changeUserRoleAction', () => {
     mockUserUpdate.mockResolvedValue({ id: 'u-1', role: 'ADMIN' });
     await changeUserRoleAction('u-1', 'ADMIN');
     expect(mockUserUpdate).toHaveBeenCalledWith({ where: { id: 'u-1' }, data: { role: 'ADMIN' } });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
 
@@ -442,6 +446,7 @@ describe('blockUserAction', () => {
         data: expect.objectContaining({ blockedAt: expect.any(Date) }),
       }),
     );
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
 
@@ -465,6 +470,7 @@ describe('unblockUserAction', () => {
       where: { id: 'u-1' },
       data: { blockedAt: null, blockReason: null },
     });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
 
@@ -485,5 +491,6 @@ describe('deleteUserAction', () => {
     mockUserDelete.mockResolvedValue({ id: 'u-1' });
     await deleteUserAction('u-1');
     expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'u-1' } });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
