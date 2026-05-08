@@ -315,7 +315,9 @@
         "title": "Tytuł",
         "difficulty": "Poziom",
         "category": "Kategoria",
-        "tags": "Tagi",
+        "poleType": "Typ słupa",
+        "favourites": "♥",
+        "progress": "Postęp",
         "actions": "Akcje"
       },
       "tabs": {

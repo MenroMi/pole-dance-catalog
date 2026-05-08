@@ -90,7 +90,7 @@ function Chip({ label, bg, fg }: { label: string; bg: string; fg: string }) {
   );
 }
 
-const GRID = '2fr 1fr 1fr 1fr 96px';
+const GRID = '2fr 1fr 1fr 1fr 80px 80px 96px';
 
 function MoveRow({
   move,
@@ -194,16 +194,26 @@ function MoveRow({
         )}
       </div>
 
-      {/* Tags */}
+      {/* Pole Type */}
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        {move.tags.slice(0, 3).map((tag) => (
-          <Chip key={tag.id} label={tag.name_en} bg="rgba(75,68,80,0.2)" fg="#cdc3d2" />
+        {move.poleTypes.map((pt) => (
+          <Chip
+            key={pt}
+            label={tEnums(`poleType.${pt as 'STATIC' | 'SPIN'}`)}
+            bg="rgba(75,68,80,0.2)"
+            fg="#cdc3d2"
+          />
         ))}
-        {move.tags.length > 3 && (
-          <span style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
-            +{move.tags.length - 3}
-          </span>
-        )}
+      </div>
+
+      {/* Favourites */}
+      <div style={{ fontSize: 12, color: '#978e9b', fontFamily: 'var(--font-manrope)' }}>
+        {move._count.favourites || '—'}
+      </div>
+
+      {/* Progress */}
+      <div style={{ fontSize: 12, color: '#978e9b', fontFamily: 'var(--font-manrope)' }}>
+        {move._count.progress || '—'}
       </div>
 
       {/* Actions — hover reveal */}
@@ -633,7 +643,9 @@ export function AdminMoves() {
                 ['title', t('moves.cols.title')],
                 ['difficulty', t('moves.cols.difficulty')],
                 ['category', t('moves.cols.category')],
-                ['tags', t('moves.cols.tags')],
+                ['poleType', t('moves.cols.poleType')],
+                ['favourites', t('moves.cols.favourites')],
+                ['progress', t('moves.cols.progress')],
                 ['actions', ''],
               ] as [string, string][]
             ).map(([id, h]) => (
