@@ -47,21 +47,29 @@ export async function getMoveByIdAction(
 }
 
 export async function getRelatedMovesAction(tagIds: string[], excludeId: string, locale: Locale) {
-  const moves = await prisma.move.findMany({
-    where: {
-      id: { not: excludeId },
-      tags: { some: { id: { in: tagIds } } },
-    },
-    select: {
-      id: true,
-      title_pl: true,
-      title_en: true,
-      difficulty: true,
-      imageUrl: true,
-      youtubeUrl: true,
-    },
-    take: 4,
+  const select = {
+    id: true,
+    title_pl: true,
+    title_en: true,
+    difficulty: true,
+    imageUrl: true,
+    youtubeUrl: true,
+  } as const;
+
+  const explicit = await prisma.move.findUnique({
+    where: { id: excludeId },
+    select: { relatedMoves: { select } },
   });
+
+  const moves =
+    explicit && explicit.relatedMoves.length > 0
+      ? explicit.relatedMoves
+      : await prisma.move.findMany({
+          where: { id: { not: excludeId }, tags: { some: { id: { in: tagIds } } } },
+          select,
+          take: 4,
+        });
+
   const pl = locale === 'pl';
   return moves.map((move) => ({
     id: move.id,

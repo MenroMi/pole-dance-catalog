@@ -18,9 +18,10 @@ export interface CreateMoveInput {
   coachNote_pl?: string;
   coachNote_en?: string;
   coachNoteAuthor?: string;
-  stepsData_pl: { time: number; label: string }[];
-  stepsData_en: { time: number; label: string }[];
+  stepsData_pl: { text: string; timestamp?: number }[];
+  stepsData_en: { text: string; timestamp?: number }[];
   tagIds: string[];
+  relatedMoveIds: string[];
 }
 
 export interface UpdateMoveInput extends CreateMoveInput {
@@ -60,6 +61,7 @@ export interface FullAdminMove {
   coachNote_en: string | null;
   coachNoteAuthor: string | null;
   tags: { id: string; name_en: string; name_pl: string }[];
+  relatedMoves: { id: string; title_en: string; title_pl: string }[];
 }
 
 export interface AdminTagRow {

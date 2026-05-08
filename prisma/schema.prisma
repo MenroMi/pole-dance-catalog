@@ -104,6 +104,8 @@ model Move {
   progress   UserProgress[]
   favourites UserFavourite[]
   tags       Tag[]
+  relatedMoves   Move[] @relation("RelatedMoves")
+  relatedMovesOf Move[] @relation("RelatedMoves")
 }
 
 model UserProgress {

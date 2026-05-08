@@ -86,6 +86,7 @@ const validCreateInput = {
   stepsData_pl: [],
   stepsData_en: [],
   tagIds: [],
+  relatedMoveIds: [],
 };
 
 const validUpdateInput = { ...validCreateInput, id: 'move-1' };
@@ -190,9 +191,9 @@ describe('getMovesForAdminAction', () => {
       },
     ];
     mockMoveFindMany.mockResolvedValue(rows);
-    mockMoveCount.mockResolvedValue(1);
+    mockMoveCount.mockResolvedValueOnce(1).mockResolvedValueOnce(10);
     const result = await getMovesForAdminAction();
-    expect(result).toEqual({ moves: rows, total: 1 });
+    expect(result).toEqual({ moves: rows, total: 1, totalAll: 10 });
     expect(mockMoveFindMany).toHaveBeenCalledWith(
       expect.objectContaining({ orderBy: { createdAt: 'desc' } }),
     );

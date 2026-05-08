@@ -284,7 +284,7 @@ function MoveRow({
 const PAGE_SIZE = 20;
 
 // Survives re-mounts (locale changes) within the same session without triggering a full spinner.
-type CachedMoves = { moves: AdminMoveRow[]; total: number };
+type CachedMoves = { moves: AdminMoveRow[]; total: number; totalAll: number };
 let _movesCache: CachedMoves | null = null;
 let _movesCacheKey = '';
 const DEFAULT_MOVES_CACHE_KEY = '1::ALL';
@@ -307,6 +307,7 @@ export function AdminMoves() {
   const [diffFilter, setDiffFilter] = useState<DifficultyFilter>('ALL');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(cacheHit ? _movesCache!.total : 0);
+  const [totalAll, setTotalAll] = useState(cacheHit ? _movesCache!.totalAll : 0);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -326,10 +327,11 @@ export function AdminMoves() {
           .then((data) => {
             if (!cancelled) {
               hasFetchedRef.current = true;
-              _movesCache = { moves: data.moves, total: data.total };
+              _movesCache = { moves: data.moves, total: data.total, totalAll: data.totalAll };
               _movesCacheKey = `${page}:${query}:${diffFilter}`;
               setMoves(data.moves);
               setTotal(data.total);
+              setTotalAll(data.totalAll);
               setError(null);
             }
           })
@@ -433,7 +435,7 @@ export function AdminMoves() {
                 marginBottom: 8,
               }}
             >
-              {t('moves.catalog')} · {total} {t('moves.movesCount')}
+              {t('moves.catalog')} · {totalAll} {t('moves.movesCount')}
             </div>
             <h1
               style={{
@@ -564,7 +566,7 @@ export function AdminMoves() {
             whiteSpace: 'nowrap',
           }}
         >
-          {total}
+          {query || diffFilter !== 'ALL' ? `${total} / ${totalAll}` : totalAll}
         </span>
       </div>
 

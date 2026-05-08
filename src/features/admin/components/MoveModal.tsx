@@ -1,12 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 
-import { createMoveAction, updateMoveAction, uploadMoveImageAction } from '../actions';
+import {
+  createMoveAction,
+  getMovesListAction,
+  updateMoveAction,
+  uploadMoveImageAction,
+} from '../actions';
 import type { AdminTagRow, CreateMoveInput, FullAdminMove } from '../types';
 
 interface MoveModalProps {
@@ -16,7 +21,7 @@ interface MoveModalProps {
   onSaved: () => void;
 }
 
-type Tab = 'en' | 'pl' | 'meta';
+type Tab = 'en' | 'pl' | 'meta' | 'related';
 
 const DIFFICULTIES = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const;
 const CATEGORIES = ['SPINS', 'CLIMBS', 'HOLDS', 'COMBOS', 'FLOORWORK'] as const;
@@ -31,14 +36,14 @@ function jsonToText(value: unknown): string {
   }
 }
 
-function textToSteps(text: string): { time: number; label: string }[] {
+function textToSteps(text: string): { text: string; timestamp?: number }[] {
   if (!text.trim()) return [];
   try {
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
-      (s): s is { time: number; label: string } =>
-        typeof s === 'object' && typeof s.time === 'number' && typeof s.label === 'string',
+      (s): s is { text: string; timestamp?: number } =>
+        typeof s === 'object' && s !== null && typeof s.text === 'string',
     );
   } catch {
     return [];
@@ -66,6 +71,7 @@ interface FormState {
   duration: string;
   coachNoteAuthor: string;
   tagIds: string[];
+  relatedMoveIds: string[];
 }
 
 function initForm(move: FullAdminMove | null): FormState {
@@ -91,6 +97,7 @@ function initForm(move: FullAdminMove | null): FormState {
       duration: '',
       coachNoteAuthor: '',
       tagIds: [],
+      relatedMoveIds: [],
     };
   }
   return {
@@ -114,6 +121,7 @@ function initForm(move: FullAdminMove | null): FormState {
     duration: move.duration ?? '',
     coachNoteAuthor: move.coachNoteAuthor ?? '',
     tagIds: move.tags.map((t) => t.id),
+    relatedMoveIds: move.relatedMoves.map((m) => m.id),
   };
 }
 
@@ -291,6 +299,16 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [error, setError] = useState<string | null>(null);
   const [stepsEnError, setStepsEnError] = useState(false);
   const [stepsPlError, setStepsPlError] = useState(false);
+  const [allMoves, setAllMoves] = useState<{ id: string; title_en: string; title_pl: string }[]>(
+    [],
+  );
+  const [relatedQuery, setRelatedQuery] = useState('');
+
+  useEffect(() => {
+    getMovesListAction()
+      .then(setAllMoves)
+      .catch(() => {});
+  }, []);
 
   function set(field: keyof FormState, value: string | string[]) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -309,6 +327,15 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
     setForm((prev) => ({
       ...prev,
       tagIds: prev.tagIds.includes(id) ? prev.tagIds.filter((t) => t !== id) : [...prev.tagIds, id],
+    }));
+  }
+
+  function toggleRelatedMoveId(id: string) {
+    setForm((prev) => ({
+      ...prev,
+      relatedMoveIds: prev.relatedMoveIds.includes(id)
+        ? prev.relatedMoveIds.filter((r) => r !== id)
+        : [...prev.relatedMoveIds, id],
     }));
   }
 
@@ -337,6 +364,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         stepsData_en: textToSteps(form.stepsData_en),
         stepsData_pl: textToSteps(form.stepsData_pl),
         tagIds: form.tagIds,
+        relatedMoveIds: form.relatedMoveIds,
       };
       if (move) {
         await updateMoveAction({ ...input, id: move.id });
@@ -356,7 +384,16 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
     { key: 'en', label: t('moves.tabs.en') },
     { key: 'pl', label: t('moves.tabs.pl') },
     { key: 'meta', label: t('moves.tabs.meta') },
+    { key: 'related', label: t('moves.tabs.related') },
   ];
+
+  const filteredMoves = allMoves.filter(
+    (m) =>
+      m.id !== move?.id &&
+      (relatedQuery === '' ||
+        m.title_en.toLowerCase().includes(relatedQuery.toLowerCase()) ||
+        m.title_pl.toLowerCase().includes(relatedQuery.toLowerCase())),
+  );
 
   return (
     <div
@@ -381,7 +418,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           border: '1px solid rgba(255,255,255,0.1)',
           width: '100%',
           maxWidth: 640,
-          maxHeight: '90vh',
+          minHeight: 480,
+          overflowX: 'auto',
+          maxHeight: 'min(870px, 90vh)',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -452,8 +491,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.title_en}
                   onChange={(e) => set('title_en', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
-                  placeholder="e.g. Butterfly"
+                  placeholder={t('moves.fields.titleEnPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -461,6 +501,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <textarea
                   value={form.description_en}
                   onChange={(e) => set('description_en', e.target.value)}
+                  className="admin-field"
                   style={{ ...fieldStyle, minHeight: 72, resize: 'vertical' }}
                   placeholder={t('moves.fields.optionalDescription')}
                 />
@@ -470,7 +511,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.gripType_en}
                   onChange={(e) => set('gripType_en', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
+                  placeholder={t('moves.fields.gripTypeEnPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -478,7 +521,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.entry_en}
                   onChange={(e) => set('entry_en', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
+                  placeholder={t('moves.fields.entryEnPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -486,7 +531,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <textarea
                   value={form.coachNote_en}
                   onChange={(e) => set('coachNote_en', e.target.value)}
+                  className="admin-field"
                   style={{ ...fieldStyle, minHeight: 60, resize: 'vertical' }}
+                  placeholder={t('moves.fields.coachNoteEnPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -508,6 +555,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                       }
                     }
                   }}
+                  className="admin-field"
                   style={{
                     ...fieldStyle,
                     minHeight: 80,
@@ -516,7 +564,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     resize: 'vertical',
                     borderColor: stepsEnError ? '#f87171' : 'rgba(255,255,255,0.1)',
                   }}
-                  placeholder={'[\n  {"time": 0, "label": "Start"}\n]'}
+                  placeholder={'[\n  {"text": "Start", "timestamp": 0}\n]'}
                 />
                 {stepsEnError && (
                   <span style={{ color: '#f87171', fontSize: 13, marginTop: 4, display: 'block' }}>
@@ -534,8 +582,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.title_pl}
                   onChange={(e) => set('title_pl', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
-                  placeholder="np. Motyl"
+                  placeholder={t('moves.fields.titlePlPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -543,7 +592,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <textarea
                   value={form.description_pl}
                   onChange={(e) => set('description_pl', e.target.value)}
+                  className="admin-field"
                   style={{ ...fieldStyle, minHeight: 72, resize: 'vertical' }}
+                  placeholder={t('moves.fields.optionalDescription')}
                 />
               </div>
               <div style={rowStyle}>
@@ -551,7 +602,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.gripType_pl}
                   onChange={(e) => set('gripType_pl', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
+                  placeholder={t('moves.fields.gripTypePlPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -559,7 +612,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.entry_pl}
                   onChange={(e) => set('entry_pl', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
+                  placeholder={t('moves.fields.entryPlPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -567,7 +622,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <textarea
                   value={form.coachNote_pl}
                   onChange={(e) => set('coachNote_pl', e.target.value)}
+                  className="admin-field"
                   style={{ ...fieldStyle, minHeight: 60, resize: 'vertical' }}
+                  placeholder={t('moves.fields.coachNotePlPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -589,6 +646,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                       }
                     }
                   }}
+                  className="admin-field"
                   style={{
                     ...fieldStyle,
                     minHeight: 80,
@@ -597,7 +655,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     resize: 'vertical',
                     borderColor: stepsPlError ? '#f87171' : 'rgba(255,255,255,0.1)',
                   }}
-                  placeholder={'[\n  {"time": 0, "label": "Start"}\n]'}
+                  placeholder={'[\n  {"text": "Start", "timestamp": 0}\n]'}
                 />
                 {stepsPlError && (
                   <span style={{ color: '#f87171', fontSize: 13, marginTop: 4, display: 'block' }}>
@@ -615,8 +673,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.youtubeUrl}
                   onChange={(e) => set('youtubeUrl', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
-                  placeholder="https://youtu.be/..."
+                  placeholder={t('moves.fields.youtubeUrlPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -681,8 +740,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.duration}
                   onChange={(e) => set('duration', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
-                  placeholder="e.g. 30s"
+                  placeholder={t('moves.fields.durationPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -690,7 +750,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 <Input
                   value={form.coachNoteAuthor}
                   onChange={(e) => set('coachNoteAuthor', e.target.value)}
+                  className="admin-field"
                   style={fieldStyle}
+                  placeholder={t('moves.fields.coachNoteAuthorPlaceholder')}
                 />
               </div>
               <div style={rowStyle}>
@@ -718,6 +780,99 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'related' && (
+            <div>
+              <div style={rowStyle}>
+                <Input
+                  className="admin-field"
+                  style={fieldStyle}
+                  value={relatedQuery}
+                  onChange={(e) => setRelatedQuery(e.target.value)}
+                  placeholder={t('moves.fields.relatedSearchPlaceholder')}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                {filteredMoves.length === 0 && (
+                  <span
+                    style={{ color: '#6b6270', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
+                  >
+                    {t('moves.fields.relatedNoResults')}
+                  </span>
+                )}
+                {filteredMoves.map((m) => {
+                  const selected = form.relatedMoveIds.includes(m.id);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => toggleRelatedMoveId(m.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        border: `1px solid ${selected ? 'rgba(220,184,255,0.35)' : 'rgba(75,68,80,0.3)'}`,
+                        background: selected ? 'rgba(220,184,255,0.08)' : 'transparent',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 150ms',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: 4,
+                          border: `1.5px solid ${selected ? '#dcb8ff' : 'rgba(75,68,80,0.5)'}`,
+                          background: selected ? 'rgba(220,184,255,0.25)' : 'transparent',
+                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 150ms',
+                        }}
+                      >
+                        {selected && (
+                          <svg width={10} height={10} viewBox="0 0 10 10" fill="none">
+                            <path
+                              d="M2 5l2.5 2.5L8 3"
+                              stroke="#dcb8ff"
+                              strokeWidth={1.5}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <div
+                          style={{
+                            color: '#e2e2e2',
+                            fontSize: 13,
+                            fontFamily: 'var(--font-manrope)',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {m.title_en}
+                        </div>
+                        <div
+                          style={{
+                            color: '#6b6270',
+                            fontSize: 12,
+                            fontFamily: 'var(--font-manrope)',
+                          }}
+                        >
+                          {m.title_pl}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

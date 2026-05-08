@@ -204,3 +204,8 @@ body {
   color: var(--on-surface);
   font-family: var(--font-manrope), Arial, sans-serif;
 }
+
+.admin-field::placeholder {
+  color: #6b6270 !important;
+  opacity: 1;
+}

@@ -50,9 +50,14 @@ const moveSchema = z.object({
   coachNote_pl: z.string().optional(),
   coachNote_en: z.string().optional(),
   coachNoteAuthor: z.string().optional(),
-  stepsData_pl: z.array(z.object({ time: z.number(), label: z.string() })).default([]),
-  stepsData_en: z.array(z.object({ time: z.number(), label: z.string() })).default([]),
+  stepsData_pl: z
+    .array(z.object({ text: z.string(), timestamp: z.number().optional() }))
+    .default([]),
+  stepsData_en: z
+    .array(z.object({ text: z.string(), timestamp: z.number().optional() }))
+    .default([]),
   tagIds: z.array(z.string()).default([]),
+  relatedMoveIds: z.array(z.string()).default([]),
 });
 
 const tagSchema = z.object({
@@ -65,7 +70,7 @@ export async function createMoveAction(input: CreateMoveInput) {
   await requireAdmin();
   const parsed = moveSchema.safeParse(input);
   if (!parsed.success) throw new Error('Invalid input');
-  const { tagIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+  const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
   const result = await prisma.move.create({
     data: {
       ...data,
@@ -73,6 +78,7 @@ export async function createMoveAction(input: CreateMoveInput) {
       stepsData_pl,
       stepsData_en,
       tags: { connect: tagIds.map((id) => ({ id })) },
+      relatedMoves: { connect: relatedMoveIds.map((id) => ({ id })) },
     },
   });
   revalidatePath('/', 'layout');
@@ -84,7 +90,7 @@ export async function updateMoveAction(input: UpdateMoveInput) {
   const { id, ...rest } = input;
   const parsed = moveSchema.safeParse(rest);
   if (!parsed.success) throw new Error('Invalid input');
-  const { tagIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+  const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
   const result = await prisma.move.update({
     where: { id },
     data: {
@@ -93,6 +99,7 @@ export async function updateMoveAction(input: UpdateMoveInput) {
       stepsData_pl,
       stepsData_en,
       tags: { set: [], connect: tagIds.map((id) => ({ id })) },
+      relatedMoves: { set: [], connect: relatedMoveIds.map((id) => ({ id })) },
     },
   });
   revalidatePath('/', 'layout');
@@ -120,7 +127,7 @@ export async function getMovesForAdminAction(
     query?: string;
     difficulty?: 'ALL' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
   } = {},
-): Promise<{ moves: AdminMoveRow[]; total: number }> {
+): Promise<{ moves: AdminMoveRow[]; total: number; totalAll: number }> {
   await requireAdmin();
   const parsed = movesQuerySchema.safeParse(params);
   if (!parsed.success) throw new Error('Invalid input');
@@ -142,7 +149,7 @@ export async function getMovesForAdminAction(
   );
   const where = conditions.length > 0 ? { AND: conditions } : {};
 
-  const [moves, total] = await Promise.all([
+  const [moves, total, totalAll] = await Promise.all([
     prisma.move.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -160,16 +167,30 @@ export async function getMovesForAdminAction(
       },
     }),
     prisma.move.count({ where }),
+    prisma.move.count(),
   ]);
 
-  return { moves, total };
+  return { moves, total, totalAll };
 }
 
 export async function getMoveByIdAction(id: string): Promise<FullAdminMove | null> {
   await requireAdmin();
   return prisma.move.findUnique({
     where: { id },
-    include: { tags: { select: { id: true, name_en: true, name_pl: true } } },
+    include: {
+      tags: { select: { id: true, name_en: true, name_pl: true } },
+      relatedMoves: { select: { id: true, title_en: true, title_pl: true } },
+    },
+  });
+}
+
+export async function getMovesListAction(): Promise<
+  { id: string; title_en: string; title_pl: string }[]
+> {
+  await requireAdmin();
+  return prisma.move.findMany({
+    orderBy: { title_en: 'asc' },
+    select: { id: true, title_en: true, title_pl: true },
   });
 }
 

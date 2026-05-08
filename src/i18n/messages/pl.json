@@ -323,7 +323,8 @@
       "tabs": {
         "en": "Angielski",
         "pl": "Polski",
-        "meta": "Meta"
+        "meta": "Meta",
+        "related": "Powiązane"
       },
       "fields": {
         "titleEn": "Tytuł (EN)",
@@ -347,6 +348,19 @@
         "coachNoteAuthor": "Autor notatki",
         "tags": "Tagi",
         "optionalDescription": "Opcjonalny opis",
+        "titleEnPlaceholder": "np. Butterfly",
+        "titlePlPlaceholder": "np. Motyl",
+        "youtubeUrlPlaceholder": "https://youtu.be/...",
+        "durationPlaceholder": "np. 30s",
+        "gripTypeEnPlaceholder": "np. Cup grip",
+        "gripTypePlPlaceholder": "np. Uchwyt kubkowy",
+        "entryEnPlaceholder": "np. From standing",
+        "entryPlPlaceholder": "np. Ze stania",
+        "coachNoteEnPlaceholder": "np. Trzymaj napięty core (EN)",
+        "coachNotePlPlaceholder": "np. Trzymaj napięty core",
+        "coachNoteAuthorPlaceholder": "np. Anna K.",
+        "relatedSearchPlaceholder": "Szukaj ruchów…",
+        "relatedNoResults": "Nie znaleziono ruchów",
         "imageDrop": "Przeciągnij zdjęcie lub kliknij, żeby wybrać",
         "imageUploading": "Przesyłanie…",
         "imageChange": "Zmień zdjęcie",
