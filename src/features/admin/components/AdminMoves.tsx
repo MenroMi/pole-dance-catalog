@@ -194,16 +194,16 @@ function MoveRow({
         )}
       </div>
 
-      {/* Pole Type */}
+      {/* Tags */}
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        {move.poleTypes.map((pt) => (
-          <Chip
-            key={pt}
-            label={tEnums(`poleType.${pt as 'STATIC' | 'SPIN'}`)}
-            bg="rgba(75,68,80,0.2)"
-            fg="#cdc3d2"
-          />
+        {move.tags.slice(0, 3).map((tag) => (
+          <Chip key={tag.id} label={tag.name_en} bg="rgba(75,68,80,0.2)" fg="#cdc3d2" />
         ))}
+        {move.tags.length > 3 && (
+          <span style={{ fontSize: 12, color: '#6b6270', fontFamily: 'var(--font-manrope)' }}>
+            +{move.tags.length - 3}
+          </span>
+        )}
       </div>
 
       {/* Favourites */}
@@ -643,7 +643,7 @@ export function AdminMoves() {
                 ['title', t('moves.cols.title')],
                 ['difficulty', t('moves.cols.difficulty')],
                 ['category', t('moves.cols.category')],
-                ['poleType', t('moves.cols.poleType')],
+                ['tags', t('moves.cols.tags')],
                 ['favourites', t('moves.cols.favourites')],
                 ['progress', t('moves.cols.progress')],
                 ['actions', ''],

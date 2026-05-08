@@ -33,7 +33,6 @@ export interface AdminMoveRow {
   title_pl: string;
   difficulty: Move['difficulty'];
   category: Move['category'];
-  poleTypes: PoleType[];
   createdAt: Date;
   tags: { id: string; name_en: string }[];
   _count: { favourites: number; progress: number };

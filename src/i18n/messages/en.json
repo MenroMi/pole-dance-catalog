@@ -315,7 +315,7 @@
         "title": "Title",
         "difficulty": "Difficulty",
         "category": "Category",
-        "poleType": "Pole Type",
+        "tags": "Tags",
         "favourites": "♥",
         "progress": "Progress",
         "actions": "Actions"
