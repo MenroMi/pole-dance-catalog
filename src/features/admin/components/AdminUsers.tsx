@@ -124,25 +124,40 @@ function UserRow({
     >
       {/* Identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: '50%',
-            flexShrink: 0,
-            background: 'linear-gradient(135deg,#52416c,#dcb8ff)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--font-space-grotesk)',
-            fontSize: 13,
-            fontWeight: 700,
-            color: '#1b1b1b',
-            opacity: isBlocked ? 0.5 : 1,
-          }}
-        >
-          {initials}
-        </div>
+        {user.image ? (
+          <img
+            src={user.image}
+            alt=""
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: '50%',
+              flexShrink: 0,
+              objectFit: 'cover',
+              opacity: isBlocked ? 0.5 : 1,
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: 'linear-gradient(135deg,#52416c,#dcb8ff)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--font-space-grotesk)',
+              fontSize: 13,
+              fontWeight: 700,
+              color: '#1b1b1b',
+              opacity: isBlocked ? 0.5 : 1,
+            }}
+          >
+            {initials}
+          </div>
+        )}
         <div style={{ minWidth: 0 }}>
           <div
             style={{
@@ -348,7 +363,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const tRef = useRef(t);
   useEffect(() => {
     tRef.current = t;
-  });
+  }, [t]);
   const hasFetchedRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
@@ -356,6 +371,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [acting, setActing] = useState(false);
   const [actingUserId, setActingUserId] = useState<string | null>(null);
   const [blockReason, setBlockReason] = useState('');
@@ -417,6 +433,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
     user: AdminUserRow,
     newRole?: 'USER' | 'ADMIN',
   ) {
+    setActionError(null);
     const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
     if (type === 'role') {
       setConfirm({
@@ -463,6 +480,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   async function applyConfirm() {
     if (!confirm) return;
     setActing(true);
+    setActionError(null);
     setActingUserId(confirm.userId);
     try {
       if (confirm.type === 'role' && confirm.newRole) {
@@ -502,7 +520,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       }
       setConfirm(null);
     } catch (e) {
-      console.error(e);
+      setActionError(e instanceof Error ? e.message : tRef.current('users.loadError'));
     } finally {
       setActing(false);
       setActingUserId(null);
@@ -833,8 +851,12 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           description={confirm.body}
           confirmLabel={confirm.label}
           onConfirm={applyConfirm}
-          onCancel={() => setConfirm(null)}
+          onCancel={() => {
+            setConfirm(null);
+            setActionError(null);
+          }}
           loading={acting}
+          error={actionError}
           danger={confirm.danger}
         >
           {confirm.type === 'block' && (
