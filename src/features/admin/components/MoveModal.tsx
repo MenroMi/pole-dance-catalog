@@ -483,9 +483,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
           {tab === 'en' && (
-            <div>
+            <div className="p-6">
               <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.titleEn')} *</label>
                 <Input
@@ -576,7 +576,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           )}
 
           {tab === 'pl' && (
-            <div>
+            <div className="p-6">
               <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.titlePl')} *</label>
                 <Input
@@ -667,7 +667,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           )}
 
           {tab === 'meta' && (
-            <div>
+            <div className="p-6">
               <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.youtubeUrl')} *</label>
                 <Input
@@ -785,8 +785,16 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           )}
 
           {tab === 'related' && (
-            <div>
-              <div style={rowStyle}>
+            <>
+              <div
+                style={{
+                  position: 'sticky',
+                  padding: '12px 24px',
+                  top: 0,
+                  zIndex: 1,
+                  background: '#1a1a1a',
+                }}
+              >
                 <Input
                   className="admin-field"
                   style={fieldStyle}
@@ -795,7 +803,15 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                   placeholder={t('moves.fields.relatedSearchPlaceholder')}
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  marginTop: 8,
+                  padding: '0 24px 12px 24px',
+                }}
+              >
                 {filteredMoves.length === 0 && (
                   <span
                     style={{ color: '#6b6270', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
@@ -874,7 +890,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                   );
                 })}
               </div>
-            </div>
+            </>
           )}
         </div>
 
