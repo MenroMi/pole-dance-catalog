@@ -597,7 +597,9 @@ function TagModal({
 export function AdminTags() {
   const t = useTranslations('admin');
   const [tags, setTags] = useState<AdminTagRow[]>([]);
+  const hasFetchedRef = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [query, setQuery] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
@@ -608,13 +610,21 @@ export function AdminTags() {
 
   useEffect(() => {
     let cancelled = false;
+    if (!hasFetchedRef.current) setLoading(true);
+    else setIsFetching(true);
     getTagsForAdminAction()
       .then((data) => {
-        if (!cancelled) setTags(data);
+        if (!cancelled) {
+          hasFetchedRef.current = true;
+          setTags(data);
+        }
       })
       .catch(console.error)
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setIsFetching(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -791,6 +801,8 @@ export function AdminTags() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
             gap: 14,
+            opacity: isFetching ? 0.5 : 1,
+            transition: 'opacity 0.15s',
           }}
         >
           {filtered.map((t) => (
