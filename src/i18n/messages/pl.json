@@ -379,6 +379,7 @@
       "confirmBlock": "Zablokować tego użytkownika? Nie będzie mógł się zalogować do momentu odblokowania.",
       "blocked": "Zablokowany",
       "admin": "Administrator",
+      "userRole": "Użytkownik",
       "active": "Aktywny",
       "community": "Społeczność",
       "members": "członków",

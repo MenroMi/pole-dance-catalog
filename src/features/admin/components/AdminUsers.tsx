@@ -227,7 +227,7 @@ function UserRow({
             color: rs.fg,
           }}
         >
-          {user.role === 'ADMIN' ? t('users.admin') : t('users.cols.user')}
+          {user.role === 'ADMIN' ? t('users.admin') : t('users.userRole')}
         </span>
         <span
           style={{

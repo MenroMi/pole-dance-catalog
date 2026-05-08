@@ -322,6 +322,26 @@ describe('getUsersForAdminAction', () => {
     await expect(getUsersForAdminAction()).rejects.toThrow('Unauthorized');
   });
 
+  it('throws Invalid input when page is less than 1', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(getUsersForAdminAction({ page: 0 })).rejects.toThrow('Invalid input');
+    expect(mockUserFindMany).not.toHaveBeenCalled();
+  });
+
+  it('throws Invalid input when pageSize exceeds 100', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(getUsersForAdminAction({ pageSize: 101 })).rejects.toThrow('Invalid input');
+    expect(mockUserFindMany).not.toHaveBeenCalled();
+  });
+
+  it('throws Invalid input when query exceeds 200 characters', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(getUsersForAdminAction({ query: 'a'.repeat(201) })).rejects.toThrow(
+      'Invalid input',
+    );
+    expect(mockUserFindMany).not.toHaveBeenCalled();
+  });
+
   it('returns { users, total, totalAll, totalAdmins, totalBlocked } when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
     const users = [
@@ -405,6 +425,12 @@ describe('changeUserRoleAction', () => {
     await expect(changeUserRoleAction('u-1', 'ADMIN')).rejects.toThrow('Unauthorized');
   });
 
+  it('throws Invalid input when userId is empty', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(changeUserRoleAction('', 'ADMIN')).rejects.toThrow('Invalid input');
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
   it('throws Invalid input when role is not USER or ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
     await expect(changeUserRoleAction('u-1', 'SUPERADMIN' as 'ADMIN')).rejects.toThrow(
@@ -434,6 +460,12 @@ describe('blockUserAction', () => {
   it('throws Unauthorized when not authenticated', async () => {
     mockAuth.mockResolvedValue(null);
     await expect(blockUserAction('u-1')).rejects.toThrow('Unauthorized');
+  });
+
+  it('throws Invalid input when userId is empty', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(blockUserAction('')).rejects.toThrow('Invalid input');
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it('throws when admin tries to block themselves', async () => {
@@ -473,6 +505,12 @@ describe('unblockUserAction', () => {
     await expect(unblockUserAction('u-1')).rejects.toThrow('Unauthorized');
   });
 
+  it('throws Invalid input when userId is empty', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(unblockUserAction('')).rejects.toThrow('Invalid input');
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
   it('throws when admin tries to unblock themselves', async () => {
     mockAuth.mockResolvedValue(adminSession);
     await expect(unblockUserAction('admin-1')).rejects.toThrow('Cannot unblock yourself');
@@ -495,6 +533,12 @@ describe('deleteUserAction', () => {
   it('throws Unauthorized when not authenticated', async () => {
     mockAuth.mockResolvedValue(null);
     await expect(deleteUserAction('u-1')).rejects.toThrow('Unauthorized');
+  });
+
+  it('throws Invalid input when userId is empty', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(deleteUserAction('')).rejects.toThrow('Invalid input');
+    expect(mockUserDelete).not.toHaveBeenCalled();
   });
 
   it('throws when admin tries to delete themselves', async () => {

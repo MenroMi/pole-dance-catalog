@@ -379,6 +379,7 @@
       "confirmBlock": "Block this user? They will not be able to log in until unblocked.",
       "blocked": "Blocked",
       "admin": "Admin",
+      "userRole": "User",
       "active": "Active",
       "community": "Community",
       "members": "members",

@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -71,17 +70,25 @@ export function ConfirmDialog({
           >
             {t('cancel')}
           </AlertDialogCancel>
-          <AlertDialogAction
+          <button
+            type="button"
             onClick={onConfirm}
             disabled={loading}
             style={{
               background: danger ? '#dc2626' : '#8458b3',
               color: '#fff',
               opacity: loading ? 0.6 : 1,
+              padding: '8px 16px',
+              borderRadius: 6,
+              border: 'none',
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
             }}
           >
             {loading ? loadingLabel : confirmLabel}
-          </AlertDialogAction>
+          </button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
