@@ -2,7 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   blockUserAction,
@@ -345,7 +345,13 @@ const PAGE_SIZE = 20;
 export function AdminUsers({ currentUserId }: { currentUserId: string | null }) {
   const t = useTranslations('admin');
   const [users, setUsers] = useState<AdminUserRow[]>([]);
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  });
+  const hasFetchedRef = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
@@ -363,10 +369,12 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
     let cancelled = false;
     const timeout = setTimeout(
       () => {
-        setLoading(true);
+        if (!hasFetchedRef.current) setLoading(true);
+        else setIsFetching(true);
         getUsersForAdminAction({ page, pageSize: PAGE_SIZE, query, roleFilter })
           .then((data) => {
             if (!cancelled) {
+              hasFetchedRef.current = true;
               setUsers(data.users);
               setTotal(data.total);
               setTotalAll(data.totalAll);
@@ -376,10 +384,14 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             }
           })
           .catch((e) => {
-            if (!cancelled) setError(e instanceof Error ? e.message : t('users.loadError'));
+            if (!cancelled)
+              setError(e instanceof Error ? e.message : tRef.current('users.loadError'));
           })
           .finally(() => {
-            if (!cancelled) setLoading(false);
+            if (!cancelled) {
+              setLoading(false);
+              setIsFetching(false);
+            }
           });
       },
       query ? 300 : 0,
@@ -388,7 +400,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [page, query, roleFilter, t]);
+  }, [page, query, roleFilter]);
 
   function handleQueryChange(val: string) {
     setQuery(val);
@@ -731,17 +743,20 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               </div>
             )}
 
-            {!loading &&
-              users.map((user, i) => (
-                <UserRow
-                  key={user.id}
-                  user={user}
-                  isLast={i === users.length - 1}
-                  isSelf={user.id === currentUserId}
-                  isPending={user.id === actingUserId}
-                  onAction={handleAction}
-                />
-              ))}
+            {!loading && users.length > 0 && (
+              <div style={{ opacity: isFetching ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+                {users.map((user, i) => (
+                  <UserRow
+                    key={user.id}
+                    user={user}
+                    isLast={i === users.length - 1}
+                    isSelf={user.id === currentUserId}
+                    isPending={user.id === actingUserId}
+                    onAction={handleAction}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -759,7 +774,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         {totalPages > 1 && (
           <>
             <button
-              disabled={page <= 1 || loading}
+              disabled={page <= 1 || loading || isFetching}
               onClick={() => setPage((p) => p - 1)}
               style={{
                 padding: '7px 18px',
@@ -771,7 +786,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
                 color: page <= 1 ? '#4b4450' : '#dcb8ff',
                 border: '1px solid',
                 borderColor: page <= 1 ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
-                cursor: page <= 1 || loading ? 'not-allowed' : 'pointer',
+                cursor: page <= 1 || loading || isFetching ? 'not-allowed' : 'pointer',
                 transition: 'all 150ms',
               }}
             >
@@ -789,7 +804,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               {page} / {totalPages}
             </span>
             <button
-              disabled={page >= totalPages || loading}
+              disabled={page >= totalPages || loading || isFetching}
               onClick={() => setPage((p) => p + 1)}
               style={{
                 padding: '7px 18px',
@@ -801,7 +816,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
                 color: page >= totalPages ? '#4b4450' : '#dcb8ff',
                 border: '1px solid',
                 borderColor: page >= totalPages ? 'rgba(75,68,80,0.2)' : 'rgba(220,184,255,0.25)',
-                cursor: page >= totalPages || loading ? 'not-allowed' : 'pointer',
+                cursor: page >= totalPages || loading || isFetching ? 'not-allowed' : 'pointer',
                 transition: 'all 150ms',
               }}
             >
