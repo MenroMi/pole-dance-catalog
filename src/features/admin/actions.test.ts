@@ -318,7 +318,7 @@ describe('getUsersForAdminAction', () => {
     await expect(getUsersForAdminAction()).rejects.toThrow('Unauthorized');
   });
 
-  it('returns users when ADMIN', async () => {
+  it('returns { users, total, totalAll, totalAdmins, totalBlocked } when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
     const users = [
       {
@@ -331,8 +331,62 @@ describe('getUsersForAdminAction', () => {
       },
     ];
     mockUserFindMany.mockResolvedValue(users);
+    mockUserCount.mockResolvedValue(1);
     const result = await getUsersForAdminAction();
-    expect(result).toEqual(users);
+    expect(result.users).toEqual(users);
+    expect(result).toMatchObject({ total: 1, totalAll: 1, totalAdmins: 1, totalBlocked: 1 });
+  });
+
+  it('passes query as case-insensitive OR across email/firstName/lastName', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindMany.mockResolvedValue([]);
+    mockUserCount.mockResolvedValue(0);
+    await getUsersForAdminAction({ query: 'alice' });
+    expect(mockUserFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          AND: [
+            {
+              OR: [
+                { email: { contains: 'alice', mode: 'insensitive' } },
+                { firstName: { contains: 'alice', mode: 'insensitive' } },
+                { lastName: { contains: 'alice', mode: 'insensitive' } },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+  });
+
+  it('filters by BLOCKED roleFilter', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindMany.mockResolvedValue([]);
+    mockUserCount.mockResolvedValue(0);
+    await getUsersForAdminAction({ roleFilter: 'BLOCKED' });
+    expect(mockUserFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { AND: [{ blockedAt: { not: null } }] },
+      }),
+    );
+  });
+
+  it('applies page and pageSize as take/skip', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindMany.mockResolvedValue([]);
+    mockUserCount.mockResolvedValue(0);
+    await getUsersForAdminAction({ page: 3, pageSize: 10 });
+    expect(mockUserFindMany).toHaveBeenCalledWith(expect.objectContaining({ take: 10, skip: 20 }));
+  });
+
+  it('combines query and roleFilter with AND', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindMany.mockResolvedValue([]);
+    mockUserCount.mockResolvedValue(0);
+    await getUsersForAdminAction({ query: 'bob', roleFilter: 'ADMIN' });
+    const call = mockUserFindMany.mock.calls[0][0];
+    expect(call.where.AND).toHaveLength(2);
+    expect(call.where.AND[1]).toEqual({ role: 'ADMIN' });
   });
 });
 
@@ -397,13 +451,19 @@ describe('unblockUserAction', () => {
     await expect(unblockUserAction('u-1')).rejects.toThrow('Unauthorized');
   });
 
-  it('clears blockedAt when ADMIN', async () => {
+  it('throws when admin tries to unblock themselves', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(unblockUserAction('admin-1')).rejects.toThrow('Cannot unblock yourself');
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it('clears blockedAt and blockReason when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
     mockUserUpdate.mockResolvedValue({ id: 'u-1' });
     await unblockUserAction('u-1');
     expect(mockUserUpdate).toHaveBeenCalledWith({
       where: { id: 'u-1' },
-      data: { blockedAt: null },
+      data: { blockedAt: null, blockReason: null },
     });
   });
 });
