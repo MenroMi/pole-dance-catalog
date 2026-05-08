@@ -16,6 +16,7 @@ interface ConfirmDialogProps {
   title: string;
   description: string;
   confirmLabel?: string;
+  loadingLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
@@ -28,7 +29,8 @@ export function ConfirmDialog({
   open,
   title,
   description,
-  confirmLabel = 'Delete',
+  confirmLabel = 'Confirm',
+  loadingLabel = '…',
   onConfirm,
   onCancel,
   loading,
@@ -75,7 +77,7 @@ export function ConfirmDialog({
               opacity: loading ? 0.6 : 1,
             }}
           >
-            {loading ? 'Deleting...' : confirmLabel}
+            {loading ? loadingLabel : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
