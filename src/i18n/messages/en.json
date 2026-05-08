@@ -346,7 +346,12 @@
         "duration": "Duration",
         "coachNoteAuthor": "Coach Note Author",
         "tags": "Tags",
-        "optionalDescription": "Optional description"
+        "optionalDescription": "Optional description",
+        "imageDrop": "Drop image here, or click to browse",
+        "imageUploading": "Uploading…",
+        "imageChange": "Change image",
+        "imageOnlyImages": "Only image files are allowed",
+        "imageMaxSize": "Max 5 MB"
       }
     },
     "tags": {

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { auth } from '@/shared/lib/auth';
+import { cloudinary } from '@/shared/lib/cloudinary';
 import { prisma } from '@/shared/lib/prisma';
 
 import type {
@@ -357,4 +358,22 @@ export async function deleteUserAction(userId: string) {
   const result = await prisma.user.delete({ where: { id: userId } });
   revalidatePath('/', 'layout');
   return result;
+}
+
+export async function uploadMoveImageAction(formData: FormData): Promise<{ imageUrl: string }> {
+  await requireAdmin();
+  const file = formData.get('image') as File | null;
+  if (!file) throw new Error('No file provided');
+  if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed');
+  if (file.size > 5 * 1024 * 1024) throw new Error('File size must be under 5MB');
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream({ folder: 'pole-dance-catalog/moves' }, (error, res) => {
+        if (error || !res) reject(error ?? new Error('Upload failed'));
+        else resolve(res as { secure_url: string });
+      })
+      .end(buffer);
+  });
+  return { imageUrl: result.secure_url };
 }

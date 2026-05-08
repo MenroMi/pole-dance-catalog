@@ -1,12 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 
-import { createMoveAction, updateMoveAction } from '../actions';
+import { createMoveAction, updateMoveAction, uploadMoveImageAction } from '../actions';
 import type { AdminTagRow, CreateMoveInput, FullAdminMove } from '../types';
 
 interface MoveModalProps {
@@ -115,6 +115,151 @@ function initForm(move: FullAdminMove | null): FormState {
     coachNoteAuthor: move.coachNoteAuthor ?? '',
     tagIds: move.tags.map((t) => t.id),
   };
+}
+
+function ImageDropZone({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const t = useTranslations('admin');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      setError(t('moves.fields.imageOnlyImages'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError(t('moves.fields.imageMaxSize'));
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await uploadMoveImageAction(fd);
+      onChange(res.imageUrl);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  if (value) {
+    return (
+      <div
+        style={{
+          position: 'relative',
+          borderRadius: 8,
+          overflow: 'hidden',
+          border: '1px solid rgba(75,68,80,0.3)',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={value}
+          alt=""
+          style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
+        />
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            right: 8,
+            background: 'rgba(0,0,0,0.75)',
+            border: '1px solid rgba(75,68,80,0.5)',
+            borderRadius: 6,
+            padding: '5px 12px',
+            color: '#e2e2e2',
+            fontFamily: 'var(--font-manrope)',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          {t('moves.fields.imageChange')}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          const file = e.dataTransfer.files[0];
+          if (file) handleFile(file);
+        }}
+        onClick={() => !uploading && inputRef.current?.click()}
+        style={{
+          border: `1px dashed ${dragging ? 'rgba(220,184,255,0.6)' : 'rgba(75,68,80,0.4)'}`,
+          borderRadius: 8,
+          padding: '28px 20px',
+          textAlign: 'center',
+          cursor: uploading ? 'default' : 'pointer',
+          background: dragging ? 'rgba(220,184,255,0.04)' : 'rgba(255,255,255,0.02)',
+          transition: 'all 150ms',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleFile(f);
+            e.target.value = '';
+          }}
+        />
+        <svg
+          width={24}
+          height={24}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={dragging ? '#dcb8ff' : '#4b4450'}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ transition: 'stroke 150ms' }}
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <span
+          style={{
+            color: dragging ? '#dcb8ff' : '#6b6270',
+            fontFamily: 'var(--font-manrope)',
+            fontSize: 13,
+            transition: 'color 150ms',
+          }}
+        >
+          {uploading ? t('moves.fields.imageUploading') : t('moves.fields.imageDrop')}
+        </span>
+      </div>
+      {error && (
+        <span style={{ color: '#f87171', fontSize: 12, fontFamily: 'var(--font-manrope)' }}>
+          {error}
+        </span>
+      )}
+    </div>
+  );
 }
 
 const fieldStyle: React.CSSProperties = {
@@ -321,15 +466,6 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 />
               </div>
               <div style={rowStyle}>
-                <label style={labelStyle}>{t('moves.fields.youtubeUrl')} *</label>
-                <Input
-                  value={form.youtubeUrl}
-                  onChange={(e) => set('youtubeUrl', e.target.value)}
-                  style={fieldStyle}
-                  placeholder="https://youtu.be/..."
-                />
-              </div>
-              <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.gripTypeEn')}</label>
                 <Input
                   value={form.gripType_en}
@@ -475,6 +611,15 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           {tab === 'meta' && (
             <div>
               <div style={rowStyle}>
+                <label style={labelStyle}>{t('moves.fields.youtubeUrl')} *</label>
+                <Input
+                  value={form.youtubeUrl}
+                  onChange={(e) => set('youtubeUrl', e.target.value)}
+                  style={fieldStyle}
+                  placeholder="https://youtu.be/..."
+                />
+              </div>
+              <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.difficulty')} *</label>
                 <select
                   value={form.difficulty}
@@ -529,12 +674,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
               </div>
               <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.imageUrl')}</label>
-                <Input
-                  value={form.imageUrl}
-                  onChange={(e) => set('imageUrl', e.target.value)}
-                  style={fieldStyle}
-                  placeholder="https://..."
-                />
+                <ImageDropZone value={form.imageUrl} onChange={(url) => set('imageUrl', url)} />
               </div>
               <div style={rowStyle}>
                 <label style={labelStyle}>{t('moves.fields.duration')}</label>

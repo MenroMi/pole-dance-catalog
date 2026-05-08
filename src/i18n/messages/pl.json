@@ -346,7 +346,12 @@
         "duration": "Czas trwania",
         "coachNoteAuthor": "Autor notatki",
         "tags": "Tagi",
-        "optionalDescription": "Opcjonalny opis"
+        "optionalDescription": "Opcjonalny opis",
+        "imageDrop": "Przeciągnij zdjęcie lub kliknij, żeby wybrać",
+        "imageUploading": "Przesyłanie…",
+        "imageChange": "Zmień zdjęcie",
+        "imageOnlyImages": "Dozwolone są tylko pliki graficzne",
+        "imageMaxSize": "Maks. 5 MB"
       }
     },
     "tags": {
