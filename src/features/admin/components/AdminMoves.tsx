@@ -104,6 +104,7 @@ function MoveRow({
   onDelete: () => void;
 }) {
   const t = useTranslations('admin');
+  const tEnums = useTranslations('enums');
   const [hov, setHov] = useState(false);
   const dc =
     DIFF_STYLES[move.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'] ??
@@ -177,12 +178,20 @@ function MoveRow({
 
       {/* Difficulty */}
       <div>
-        <Chip label={move.difficulty} bg={dc.bg} fg={dc.fg} />
+        <Chip
+          label={tEnums(
+            `difficulty.${move.difficulty as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'}`,
+          )}
+          bg={dc.bg}
+          fg={dc.fg}
+        />
       </div>
 
       {/* Category */}
       <div style={{ fontSize: 13, color: '#978e9b', fontFamily: 'var(--font-manrope)' }}>
-        {move.category}
+        {tEnums(
+          `category.${move.category as 'SPINS' | 'CLIMBS' | 'HOLDS' | 'COMBOS' | 'FLOORWORK'}`,
+        )}
       </div>
 
       {/* Tags */}
@@ -272,6 +281,7 @@ const DEFAULT_MOVES_CACHE_KEY = '1::ALL';
 
 export function AdminMoves() {
   const t = useTranslations('admin');
+  const tEnums = useTranslations('enums');
   const tRef = useRef(t);
   useEffect(() => {
     tRef.current = t;
@@ -529,7 +539,9 @@ export function AdminMoves() {
                   color: active ? (ds ? ds.fg : '#dcb8ff') : '#978e9b',
                 }}
               >
-                {d === 'ALL' ? t('moves.allDifficulties') : d}
+                {d === 'ALL'
+                  ? t('moves.allDifficulties')
+                  : tEnums(`difficulty.${d as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'}`)}
               </button>
             );
           })}
