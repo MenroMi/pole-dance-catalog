@@ -448,6 +448,17 @@ describe('blockUserAction', () => {
     );
     expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
+
+  it('persists blockReason when provided', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserUpdate.mockResolvedValue({ id: 'u-1' });
+    await blockUserAction('u-1', 'spam');
+    expect(mockUserUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ blockReason: 'spam' }),
+      }),
+    );
+  });
 });
 
 describe('unblockUserAction', () => {

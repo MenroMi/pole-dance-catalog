@@ -265,6 +265,7 @@ function UserRow({
           <>
             {/* Role toggle */}
             <button
+              type="button"
               disabled={isSelf}
               onClick={() => onAction('role', user, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
               title={user.role === 'ADMIN' ? t('users.revokeAdmin') : t('users.makeAdmin')}
@@ -294,6 +295,7 @@ function UserRow({
 
             {/* Block/Unblock toggle */}
             <button
+              type="button"
               disabled={isSelf}
               onClick={() => onAction(isBlocked ? 'unblock' : 'block', user)}
               title={isBlocked ? t('users.unblock') : t('users.block')}
@@ -323,6 +325,7 @@ function UserRow({
 
             {/* Delete */}
             <button
+              type="button"
               disabled={isSelf}
               onClick={() => onAction('delete', user)}
               title={t('users.deleteUser')}
@@ -358,15 +361,25 @@ function UserRow({
 
 const PAGE_SIZE = 20;
 
+// Survives re-mounts (locale changes) within the same session without triggering a full spinner.
+type CachedUsers = {
+  users: AdminUserRow[];
+  total: number;
+  totalAll: number;
+  totalAdmins: number;
+  totalBlocked: number;
+};
+let _usersCache: CachedUsers | null = null;
+
 export function AdminUsers({ currentUserId }: { currentUserId: string | null }) {
   const t = useTranslations('admin');
-  const [users, setUsers] = useState<AdminUserRow[]>([]);
   const tRef = useRef(t);
   useEffect(() => {
     tRef.current = t;
   }, [t]);
-  const hasFetchedRef = useRef(false);
-  const [loading, setLoading] = useState(true);
+  const hasFetchedRef = useRef(_usersCache !== null);
+  const [users, setUsers] = useState<AdminUserRow[]>(_usersCache?.users ?? []);
+  const [loading, setLoading] = useState(_usersCache === null);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -377,10 +390,10 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
   const [actingUserId, setActingUserId] = useState<string | null>(null);
   const [blockReason, setBlockReason] = useState('');
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [totalAll, setTotalAll] = useState(0);
-  const [totalAdmins, setTotalAdmins] = useState(0);
-  const [totalBlocked, setTotalBlocked] = useState(0);
+  const [total, setTotal] = useState(_usersCache?.total ?? 0);
+  const [totalAll, setTotalAll] = useState(_usersCache?.totalAll ?? 0);
+  const [totalAdmins, setTotalAdmins] = useState(_usersCache?.totalAdmins ?? 0);
+  const [totalBlocked, setTotalBlocked] = useState(_usersCache?.totalBlocked ?? 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -392,6 +405,13 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           .then((data) => {
             if (!cancelled) {
               hasFetchedRef.current = true;
+              _usersCache = {
+                users: data.users,
+                total: data.total,
+                totalAll: data.totalAll,
+                totalAdmins: data.totalAdmins,
+                totalBlocked: data.totalBlocked,
+              };
               setUsers(data.users);
               setTotal(data.total);
               setTotalAll(data.totalAll);
@@ -487,9 +507,15 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       if (confirm.type === 'role' && confirm.newRole) {
         await changeUserRoleAction(confirm.userId, confirm.newRole);
         const newRole = confirm.newRole;
-        setUsers((prev) =>
-          prev.map((u) => (u.id === confirm.userId ? { ...u, role: newRole } : u)),
-        );
+        // If ADMIN filter is active and role is being revoked, the row no longer matches
+        if (roleFilter === 'ADMIN' && newRole === 'USER') {
+          setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
+          setTotal((n) => n - 1);
+        } else {
+          setUsers((prev) =>
+            prev.map((u) => (u.id === confirm.userId ? { ...u, role: newRole } : u)),
+          );
+        }
         setTotalAdmins((n) => n + (newRole === 'ADMIN' ? 1 : -1));
       } else if (confirm.type === 'block') {
         const reason = blockReason.trim() || undefined;
@@ -504,11 +530,17 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         setTotalBlocked((n) => n + 1);
       } else if (confirm.type === 'unblock') {
         await unblockUserAction(confirm.userId);
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.id === confirm.userId ? { ...u, blockedAt: null, blockReason: null } : u,
-          ),
-        );
+        // If BLOCKED filter is active, the unblocked user no longer matches
+        if (roleFilter === 'BLOCKED') {
+          setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
+          setTotal((n) => n - 1);
+        } else {
+          setUsers((prev) =>
+            prev.map((u) =>
+              u.id === confirm.userId ? { ...u, blockedAt: null, blockReason: null } : u,
+            ),
+          );
+        }
         setTotalBlocked((n) => n - 1);
       } else if (confirm.type === 'delete') {
         await deleteUserAction(confirm.userId);
@@ -620,6 +652,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             return (
               <button
                 key={r}
+                type="button"
                 onClick={() => handleRoleFilterChange(r)}
                 style={{
                   padding: '7px 14px',
@@ -794,6 +827,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         {totalPages > 1 && (
           <>
             <button
+              type="button"
               disabled={page <= 1 || loading || isFetching}
               onClick={() => setPage((p) => p - 1)}
               style={{
@@ -824,6 +858,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               {page} / {totalPages}
             </span>
             <button
+              type="button"
               disabled={page >= totalPages || loading || isFetching}
               onClick={() => setPage((p) => p + 1)}
               style={{
@@ -866,6 +901,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
               value={blockReason}
               onChange={(e) => setBlockReason(e.target.value)}
               placeholder={t('users.blockReasonPlaceholder')}
+              maxLength={500}
               rows={3}
               style={{
                 width: '100%',

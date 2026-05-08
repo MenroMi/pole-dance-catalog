@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +40,7 @@ export function ConfirmDialog({
   danger,
   children,
 }: ConfirmDialogProps) {
+  const t = useTranslations('admin');
   return (
     <AlertDialog
       open={open}
@@ -66,7 +69,7 @@ export function ConfirmDialog({
               color: '#e0e0e0',
             }}
           >
-            Cancel
+            {t('cancel')}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}

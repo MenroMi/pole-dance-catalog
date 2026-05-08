@@ -177,8 +177,17 @@ export async function updateTagAction(input: UpdateTagInput) {
 
 export async function deleteTagAction(id: string) {
   await requireAdmin();
-  return prisma.tag.delete({ where: { id } });
+  const result = await prisma.tag.delete({ where: { id } });
+  revalidatePath('/', 'layout');
+  return result;
 }
+
+const usersQuerySchema = z.object({
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(1).max(100).default(20),
+  query: z.string().max(200).default(''),
+  roleFilter: z.enum(['ALL', 'USER', 'ADMIN', 'BLOCKED']).default('ALL'),
+});
 
 export async function getUsersForAdminAction(
   params: {
@@ -195,7 +204,9 @@ export async function getUsersForAdminAction(
   totalBlocked: number;
 }> {
   await requireAdmin();
-  const { page = 1, pageSize = 20, query = '', roleFilter = 'ALL' } = params;
+  const parsed = usersQuerySchema.safeParse(params);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { page, pageSize, query, roleFilter } = parsed.data;
 
   const searchCondition = query
     ? {
@@ -266,10 +277,14 @@ export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN
 
 export async function blockUserAction(userId: string, reason?: string) {
   const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const parsedReason = z.string().max(500).optional().safeParse(reason);
+  if (!parsedReason.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot block yourself');
   const result = await prisma.user.update({
     where: { id: userId },
-    data: { blockedAt: new Date(), blockReason: reason ?? null },
+    data: { blockedAt: new Date(), blockReason: parsedReason.data ?? null },
   });
   revalidatePath('/', 'layout');
   return result;
@@ -277,6 +292,8 @@ export async function blockUserAction(userId: string, reason?: string) {
 
 export async function unblockUserAction(userId: string) {
   const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot unblock yourself');
   const result = await prisma.user.update({
     where: { id: userId },
@@ -288,6 +305,8 @@ export async function unblockUserAction(userId: string) {
 
 export async function deleteUserAction(userId: string) {
   const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot delete yourself');
   const result = await prisma.user.delete({ where: { id: userId } });
   revalidatePath('/', 'layout');
