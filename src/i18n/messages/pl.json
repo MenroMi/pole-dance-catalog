@@ -377,6 +377,7 @@
       "confirmDelete": "Czy na pewno chcesz usunąć tego użytkownika? Wszystkie jego dane zostaną trwale usunięte.",
       "confirmBlock": "Zablokować tego użytkownika? Nie będzie mógł się zalogować do momentu odblokowania.",
       "blocked": "Zablokowany",
+      "admin": "Administrator",
       "active": "Aktywny",
       "community": "Społeczność",
       "members": "członków",
@@ -393,8 +394,8 @@
       "unblockBody": "{name} będzie mógł ponownie się zalogować.",
       "blockReasonPlaceholder": "Powód blokady (opcjonalnie)…",
       "blockReasonLabel": "Powód blokady",
-      "roleAdmin": "Admin",
-      "roleUser": "Użytkownik",
+      "roleAdmin": "Administratorzy",
+      "roleUser": "Użytkownicy",
       "filterAll": "Wszyscy",
       "filterBlocked": "Zablokowani",
       "cols": {

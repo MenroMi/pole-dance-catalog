@@ -377,6 +377,7 @@
       "confirmDelete": "Are you sure you want to delete this user? All their data will be removed permanently.",
       "confirmBlock": "Block this user? They will not be able to log in until unblocked.",
       "blocked": "Blocked",
+      "admin": "Admin",
       "active": "Active",
       "community": "Community",
       "members": "members",
@@ -393,8 +394,8 @@
       "unblockBody": "{name} will be able to sign in again.",
       "blockReasonPlaceholder": "Reason for blocking (optional)…",
       "blockReasonLabel": "Block reason",
-      "roleAdmin": "Admin",
-      "roleUser": "User",
+      "roleAdmin": "Admins",
+      "roleUser": "Users",
       "filterAll": "All",
       "filterBlocked": "Blocked",
       "cols": {
