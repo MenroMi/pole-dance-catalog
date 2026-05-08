@@ -90,7 +90,7 @@ function Chip({ label, bg, fg }: { label: string; bg: string; fg: string }) {
   );
 }
 
-const GRID = '2fr 1fr 1fr 1fr 80px 80px 96px';
+const GRID = '2fr 1fr 1fr 1fr 110px 100px 96px';
 
 function MoveRow({
   move,
