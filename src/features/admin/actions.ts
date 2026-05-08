@@ -256,25 +256,40 @@ export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN
   const parsedRole = z.enum(['USER', 'ADMIN']).safeParse(role);
   if (!parsedRole.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot change your own role');
-  return prisma.user.update({ where: { id: userId }, data: { role: parsedRole.data } });
+  const result = await prisma.user.update({
+    where: { id: userId },
+    data: { role: parsedRole.data },
+  });
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function blockUserAction(userId: string, reason?: string) {
   const session = await requireAdmin();
   if (session.user?.id === userId) throw new Error('Cannot block yourself');
-  return prisma.user.update({
+  const result = await prisma.user.update({
     where: { id: userId },
     data: { blockedAt: new Date(), blockReason: reason ?? null },
   });
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function unblockUserAction(userId: string) {
-  await requireAdmin();
-  return prisma.user.update({ where: { id: userId }, data: { blockedAt: null } });
+  const session = await requireAdmin();
+  if (session.user?.id === userId) throw new Error('Cannot unblock yourself');
+  const result = await prisma.user.update({
+    where: { id: userId },
+    data: { blockedAt: null, blockReason: null },
+  });
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function deleteUserAction(userId: string) {
   const session = await requireAdmin();
   if (session.user?.id === userId) throw new Error('Cannot delete yourself');
-  return prisma.user.delete({ where: { id: userId } });
+  const result = await prisma.user.delete({ where: { id: userId } });
+  revalidatePath('/', 'layout');
+  return result;
 }
