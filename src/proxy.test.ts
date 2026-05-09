@@ -79,6 +79,18 @@ describe('getProtectedRedirect', () => {
     expect(getProtectedRedirect('/pl/admin', true, 'http://localhost', '', 'ADMIN')).toBeNull();
   });
 
+  it('redirects blocked ADMIN from /pl/admin to catalog', () => {
+    const result = getProtectedRedirect(
+      '/pl/admin',
+      true,
+      'http://localhost',
+      '',
+      'ADMIN',
+      '2026-01-01T00:00:00.000Z',
+    );
+    expect(result?.pathname).toBe('/pl/catalog');
+  });
+
   it('redirects authenticated non-admin from /pl/admin/moves to /pl/catalog', () => {
     const url = getProtectedRedirect('/pl/admin/moves', true, 'http://localhost', '', 'USER');
     expect(url).not.toBeNull();
