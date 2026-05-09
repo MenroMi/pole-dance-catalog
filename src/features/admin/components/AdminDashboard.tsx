@@ -1,7 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
 
 import { getAdminStatsAction } from '../actions';
 import type { AdminStats } from '../types';
@@ -319,16 +319,36 @@ function ActivityChart() {
 
 export function AdminDashboard() {
   const t = useTranslations('admin');
+  const locale = useLocale();
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     getAdminStatsAction()
-      .then(setStats)
-      .catch((e) => setError(e instanceof Error ? e.message : t('dashboard.loadError')))
-      .finally(() => setLoading(false));
-  }, [t]);
+      .then((data) => {
+        if (!cancelled) {
+          setStats(data);
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : tRef.current('dashboard.loadError'));
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [retryKey]);
 
   if (loading) {
     return <div style={{ color: '#978e9b', padding: 40, textAlign: 'center' }}>{t('loading')}</div>;
@@ -344,15 +364,37 @@ export function AdminDashboard() {
           padding: '16px 20px',
           color: '#f87171',
           margin: 32,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
         }}
       >
-        {error ?? t('dashboard.loadError')}
+        <span>{error ?? t('dashboard.loadError')}</span>
+        <button
+          onClick={() => {
+            setLoading(true);
+            setError(null);
+            setRetryKey((k) => k + 1);
+          }}
+          style={{
+            background: 'rgba(248,113,113,0.15)',
+            border: '1px solid rgba(248,113,113,0.4)',
+            borderRadius: 6,
+            color: '#f87171',
+            cursor: 'pointer',
+            fontSize: 13,
+            padding: '4px 12px',
+            fontFamily: 'var(--font-manrope)',
+          }}
+        >
+          {t('retry')}
+        </button>
       </div>
     );
   }
 
   const now = new Date();
-  const monthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthLabel = now.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
   return (
     <div style={{ padding: '32px 40px 80px', maxWidth: 1200 }}>

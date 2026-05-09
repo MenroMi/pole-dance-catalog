@@ -920,7 +920,14 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
             </Button>
             <Button
               onClick={handleSave}
-              disabled={saving || !form.title_en || !form.title_pl || !form.youtubeUrl}
+              disabled={
+                saving ||
+                !form.title_en ||
+                !form.title_pl ||
+                !form.youtubeUrl ||
+                stepsEnError ||
+                stepsPlError
+              }
               style={{ background: '#8458b3', color: '#fff' }}
             >
               {saving ? t('moves.saving') : t('save')}

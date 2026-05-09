@@ -50,8 +50,8 @@ export interface FullAdminMove {
   poleTypes: PoleType[];
   youtubeUrl: string;
   imageUrl: string | null;
-  stepsData_pl: unknown;
-  stepsData_en: unknown;
+  stepsData_pl: { text: string; timestamp?: number }[];
+  stepsData_en: { text: string; timestamp?: number }[];
   gripType_pl: string | null;
   gripType_en: string | null;
   entry_pl: string | null;

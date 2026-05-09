@@ -58,12 +58,21 @@ export async function getRelatedMovesAction(tagIds: string[], excludeId: string,
 
   const explicit = await prisma.move.findUnique({
     where: { id: excludeId },
-    select: { relatedMoves: { select } },
+    select: { relatedMoves: { select }, relatedMovesOf: { select } },
   });
 
+  const seen = new Set<string>();
+  const explicitMoves = explicit
+    ? [...explicit.relatedMoves, ...explicit.relatedMovesOf].filter((m) => {
+        if (seen.has(m.id)) return false;
+        seen.add(m.id);
+        return true;
+      })
+    : [];
+
   const moves =
-    explicit && explicit.relatedMoves.length > 0
-      ? explicit.relatedMoves
+    explicitMoves.length > 0
+      ? explicitMoves
       : await prisma.move.findMany({
           where: { id: { not: excludeId }, tags: { some: { id: { in: tagIds } } } },
           select,

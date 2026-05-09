@@ -255,11 +255,13 @@ function TagModal({
   onSave,
   onClose,
   saving,
+  error,
 }: {
   tag: AdminTagRow | null;
   onSave: (form: TagFormState) => Promise<void>;
   onClose: () => void;
   saving: boolean;
+  error?: string | null;
 }) {
   const t = useTranslations('admin');
   const isEdit = !!tag;
@@ -539,6 +541,22 @@ function TagModal({
             )}
           </div>
         </div>
+        {error && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: '10px 14px',
+              borderRadius: 8,
+              background: 'rgba(248,113,113,0.1)',
+              border: '1px solid rgba(248,113,113,0.3)',
+              color: '#f87171',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+            }}
+          >
+            {error}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 28 }}>
           <button
             onClick={onClose}
@@ -606,7 +624,9 @@ export function AdminTags() {
   const [editTag, setEditTag] = useState<AdminTagRow | null>(null);
   const [deleteTag, setDeleteTag] = useState<AdminTagRow | null>(null);
   const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -640,6 +660,7 @@ export function AdminTags() {
 
   async function handleCreate(form: TagFormState) {
     setSaving(true);
+    setModalError(null);
     try {
       await createTagAction({
         name_en: form.name_en,
@@ -649,7 +670,7 @@ export function AdminTags() {
       setCreateOpen(false);
       setRefreshKey((k) => k + 1);
     } catch (e) {
-      console.error(e);
+      setModalError(e instanceof Error ? e.message : t('error'));
     } finally {
       setSaving(false);
     }
@@ -658,6 +679,7 @@ export function AdminTags() {
   async function handleEdit(form: TagFormState) {
     if (!editTag) return;
     setSaving(true);
+    setModalError(null);
     try {
       await updateTagAction({
         id: editTag.id,
@@ -668,7 +690,7 @@ export function AdminTags() {
       setEditTag(null);
       setRefreshKey((k) => k + 1);
     } catch (e) {
-      console.error(e);
+      setModalError(e instanceof Error ? e.message : t('error'));
     } finally {
       setSaving(false);
     }
@@ -677,12 +699,13 @@ export function AdminTags() {
   async function handleDelete() {
     if (!deleteTag) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await deleteTagAction(deleteTag.id);
       setDeleteTag(null);
       setRefreshKey((k) => k + 1);
     } catch (e) {
-      console.error(e);
+      setDeleteError(e instanceof Error ? e.message : t('error'));
     } finally {
       setDeleting(false);
     }
@@ -727,7 +750,10 @@ export function AdminTags() {
           </h1>
         </div>
         <button
-          onClick={() => setCreateOpen(true)}
+          onClick={() => {
+            setCreateOpen(true);
+            setModalError(null);
+          }}
           style={{
             background: 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)',
             backgroundSize: '200% 200%',
@@ -806,7 +832,15 @@ export function AdminTags() {
           }}
         >
           {filtered.map((t) => (
-            <TagCard key={t.id} tag={t} onEdit={setEditTag} onDelete={setDeleteTag} />
+            <TagCard
+              key={t.id}
+              tag={t}
+              onEdit={(tag) => {
+                setEditTag(tag);
+                setModalError(null);
+              }}
+              onDelete={setDeleteTag}
+            />
           ))}
         </div>
       )}
@@ -819,8 +853,10 @@ export function AdminTags() {
           onClose={() => {
             setCreateOpen(false);
             setEditTag(null);
+            setModalError(null);
           }}
           saving={saving}
+          error={modalError}
         />
       )}
 
@@ -837,7 +873,10 @@ export function AdminTags() {
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          onClick={() => setDeleteTag(null)}
+          onClick={() => {
+            setDeleteTag(null);
+            setDeleteError(null);
+          }}
         >
           <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`}</style>
           <div
@@ -875,9 +914,28 @@ export function AdminTags() {
               <strong style={{ color: '#e2e2e2' }}>{deleteTag.name_en}</strong>{' '}
               {t('tags.confirmDelete')} ({deleteTag._count.moves} {t('tags.movesLabel')})
             </p>
+            {deleteError && (
+              <div
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  background: 'rgba(248,113,113,0.1)',
+                  border: '1px solid rgba(248,113,113,0.3)',
+                  color: '#f87171',
+                  fontFamily: 'var(--font-manrope)',
+                  fontSize: 13,
+                  marginBottom: 16,
+                }}
+              >
+                {deleteError}
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
-                onClick={() => setDeleteTag(null)}
+                onClick={() => {
+                  setDeleteTag(null);
+                  setDeleteError(null);
+                }}
                 style={{
                   background: 'transparent',
                   border: '1px solid rgba(75,68,80,0.4)',

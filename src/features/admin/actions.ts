@@ -35,7 +35,13 @@ const moveSchema = z.object({
   difficulty: z.nativeEnum(Difficulty),
   category: z.nativeEnum(Category),
   poleTypes: z.array(z.nativeEnum(PoleType)).default([]),
-  youtubeUrl: z.string().url(),
+  youtubeUrl: z
+    .string()
+    .url()
+    .refine(
+      (v) => /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(v),
+      'Must be a YouTube URL',
+    ),
   imageUrl: z
     .string()
     .url()
@@ -63,7 +69,10 @@ const moveSchema = z.object({
 const tagSchema = z.object({
   name_en: z.string().min(1),
   name_pl: z.string().min(1),
-  color: z.string().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
 });
 
 export async function createMoveAction(input: CreateMoveInput) {
@@ -108,7 +117,9 @@ export async function updateMoveAction(input: UpdateMoveInput) {
 
 export async function deleteMoveAction(id: string) {
   await requireAdmin();
-  const result = await prisma.move.delete({ where: { id } });
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const result = await prisma.move.delete({ where: { id: parsedId.data } });
   revalidatePath('/', 'layout');
   return result;
 }
@@ -175,13 +186,16 @@ export async function getMovesForAdminAction(
 
 export async function getMoveByIdAction(id: string): Promise<FullAdminMove | null> {
   await requireAdmin();
-  return prisma.move.findUnique({
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const result = await prisma.move.findUnique({
     where: { id },
     include: {
       tags: { select: { id: true, name_en: true, name_pl: true } },
       relatedMoves: { select: { id: true, title_en: true, title_pl: true } },
     },
   });
+  return result as unknown as FullAdminMove | null;
 }
 
 export async function getMovesListAction(): Promise<
@@ -189,6 +203,7 @@ export async function getMovesListAction(): Promise<
 > {
   await requireAdmin();
   return prisma.move.findMany({
+    take: 200,
     orderBy: { title_en: 'asc' },
     select: { id: true, title_en: true, title_pl: true },
   });
@@ -230,7 +245,9 @@ export async function createTagAction(input: CreateTagInput) {
   await requireAdmin();
   const parsed = tagSchema.safeParse(input);
   if (!parsed.success) throw new Error('Invalid input');
-  return prisma.tag.create({ data: parsed.data });
+  const result = await prisma.tag.create({ data: parsed.data });
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function updateTagAction(input: UpdateTagInput) {
@@ -238,7 +255,9 @@ export async function updateTagAction(input: UpdateTagInput) {
   const { id, ...rest } = input;
   const parsed = tagSchema.safeParse(rest);
   if (!parsed.success) throw new Error('Invalid input');
-  return prisma.tag.update({ where: { id }, data: parsed.data });
+  const result = await prisma.tag.update({ where: { id }, data: parsed.data });
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function deleteTagAction(id: string) {
@@ -381,6 +400,25 @@ export async function deleteUserAction(userId: string) {
   return result;
 }
 
+function isImageBuffer(buf: Buffer): boolean {
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return true; // JPEG
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return true; // PNG
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return true; // GIF
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 &&
+    buf[1] === 0x49 &&
+    buf[2] === 0x46 &&
+    buf[3] === 0x46 &&
+    buf[8] === 0x57 &&
+    buf[9] === 0x45 &&
+    buf[10] === 0x42 &&
+    buf[11] === 0x50
+  )
+    return true; // WebP
+  return false;
+}
+
 export async function uploadMoveImageAction(formData: FormData): Promise<{ imageUrl: string }> {
   await requireAdmin();
   const file = formData.get('image') as File | null;
@@ -388,6 +426,7 @@ export async function uploadMoveImageAction(formData: FormData): Promise<{ image
   if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed');
   if (file.size > 5 * 1024 * 1024) throw new Error('File size must be under 5MB');
   const buffer = Buffer.from(await file.arrayBuffer());
+  if (!isImageBuffer(buffer)) throw new Error('Only image files are allowed');
   const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
     cloudinary.uploader
       .upload_stream({ folder: 'pole-dance-catalog/moves' }, (error, res) => {

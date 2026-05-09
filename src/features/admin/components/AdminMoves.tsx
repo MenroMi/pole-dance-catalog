@@ -95,11 +95,13 @@ const GRID = '2fr 1fr 1fr 1fr 110px 100px 96px';
 function MoveRow({
   move,
   isLast,
+  isEditing,
   onEdit,
   onDelete,
 }: {
   move: AdminMoveRow;
   isLast: boolean;
+  isEditing?: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -229,27 +231,37 @@ function MoveRow({
         <button
           type="button"
           onClick={onEdit}
+          disabled={isEditing}
           title={t('edit')}
           style={{
             background: 'transparent',
             border: '1px solid rgba(75,68,80,0.4)',
             borderRadius: 6,
             padding: 7,
-            color: '#978e9b',
-            cursor: 'pointer',
+            color: isEditing ? '#dcb8ff' : '#978e9b',
+            cursor: isEditing ? 'default' : 'pointer',
             display: 'flex',
             transition: 'all 150ms',
+            opacity: isEditing ? 0.7 : 1,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#dcb8ff';
-            e.currentTarget.style.color = '#dcb8ff';
+            if (!isEditing) {
+              e.currentTarget.style.borderColor = '#dcb8ff';
+              e.currentTarget.style.color = '#dcb8ff';
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
-            e.currentTarget.style.color = '#978e9b';
+            if (!isEditing) {
+              e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+              e.currentTarget.style.color = '#978e9b';
+            }
           }}
         >
-          <NavIcon name="Edit" size={13} />
+          {isEditing ? (
+            <span style={{ width: 13, height: 13, display: 'inline-block', opacity: 0.7 }}>…</span>
+          ) : (
+            <NavIcon name="Edit" size={13} />
+          )}
         </button>
         <button
           type="button"
@@ -312,6 +324,7 @@ export function AdminMoves() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editMove, setEditMove] = useState<FullAdminMove | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<AdminTagRow[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<AdminMoveRow | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -372,10 +385,12 @@ export function AdminMoves() {
   }
 
   async function handleEditMove(id: string) {
+    setEditingId(id);
     const [move, tags] = await Promise.all([
       getMoveByIdAction(id).catch(() => null),
       getTagsForAdminAction().catch(() => []),
     ]);
+    setEditingId(null);
     if (!move) return;
     setAvailableTags(tags);
     setEditMove(move);
@@ -388,8 +403,13 @@ export function AdminMoves() {
     setDeleteError(null);
     try {
       await deleteMoveAction(deleteTarget.id);
-      setMoves((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+      setMoves((prev) => {
+        const next = prev.filter((m) => m.id !== deleteTarget.id);
+        if (next.length === 0 && page > 1) setPage(1);
+        return next;
+      });
       setTotal((n) => n - 1);
+      setTotalAll((n) => n - 1);
       setDeleteTarget(null);
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : tRef.current('moves.loadError'));
@@ -704,6 +724,7 @@ export function AdminMoves() {
                     key={move.id}
                     move={move}
                     isLast={i === moves.length - 1}
+                    isEditing={editingId === move.id}
                     onEdit={() => handleEditMove(move.id)}
                     onDelete={() => {
                       setDeleteTarget(move);

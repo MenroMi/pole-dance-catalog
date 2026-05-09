@@ -17,6 +17,7 @@ export function getProtectedRedirect(
   isAuthenticated: boolean,
   requestUrl: string,
   search: string = '',
+  role?: string,
 ): URL | null {
   // pathname includes locale prefix e.g. /pl/profile
   const segments = pathname.split('/').filter(Boolean);
@@ -33,6 +34,10 @@ export function getProtectedRedirect(
     const callbackUrl = encodeURIComponent(pathname + search);
     return new URL(`/${locale}/login?callbackUrl=${callbackUrl}`, requestUrl);
   }
+  const isAdminPath = pathWithoutLocale === '/admin' || pathWithoutLocale.startsWith('/admin/');
+  if (isAdminPath && isAuthenticated && role !== 'ADMIN') {
+    return new URL(`/${locale}/catalog`, requestUrl);
+  }
   return null;
 }
 
@@ -45,6 +50,7 @@ export default auth(async (req) => {
     !!req.auth,
     req.url,
     req.nextUrl.search,
+    req.auth?.user?.role ?? undefined,
   );
   if (redirectUrl) return NextResponse.redirect(redirectUrl);
 
