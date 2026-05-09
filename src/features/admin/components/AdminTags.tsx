@@ -670,7 +670,10 @@ export function AdminTags() {
         }
       })
       .catch((e) => {
-        if (!cancelled) setLoadError(e instanceof Error ? e.message : 'Failed to load tags');
+        if (!cancelled) {
+          hasFetchedRef.current = false;
+          setLoadError(e instanceof Error ? e.message : 'Failed to load tags');
+        }
       })
       .finally(() => {
         if (!cancelled) {

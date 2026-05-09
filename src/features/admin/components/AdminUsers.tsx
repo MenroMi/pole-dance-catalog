@@ -435,8 +435,10 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             }
           })
           .catch((e) => {
-            if (!cancelled)
+            if (!cancelled) {
+              hasFetchedRef.current = false;
               setError(e instanceof Error ? e.message : tRef.current('users.loadError'));
+            }
           })
           .finally(() => {
             if (!cancelled) {

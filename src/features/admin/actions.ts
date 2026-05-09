@@ -46,7 +46,7 @@ const moveSchema = z.object({
     .string()
     .url()
     .refine(
-      (v) => /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(v),
+      (v) => /^https:\/\/(www\.youtube\.com|youtube\.com|youtu\.be)\//.test(v),
       'Must be a YouTube URL',
     ),
   imageUrl: z
@@ -212,7 +212,7 @@ export async function getMovesListAction(): Promise<
 > {
   await requireAdmin();
   return prisma.move.findMany({
-    take: 200,
+    take: 200, // upper bound for related-move picker; increase if catalog outgrows this
     orderBy: { title_en: 'asc' },
     select: { id: true, title_en: true, title_pl: true },
   });

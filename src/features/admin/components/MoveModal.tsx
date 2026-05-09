@@ -305,6 +305,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
     () => _allMovesCache ?? [],
   );
   const [movesLoadError, setMovesLoadError] = useState(false);
+  const [movesRetryKey, setMovesRetryKey] = useState(0);
   const [relatedQuery, setRelatedQuery] = useState('');
 
   useEffect(() => {
@@ -315,7 +316,13 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         setAllMoves(moves);
       })
       .catch(() => setMovesLoadError(true));
-  }, []);
+  }, [movesRetryKey]);
+
+  function retryMovesLoad() {
+    _allMovesCache = null;
+    setMovesLoadError(false);
+    setMovesRetryKey((k) => k + 1);
+  }
 
   function set(field: keyof FormState, value: string | string[]) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -348,8 +355,6 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
 
   function handleTabChange(newTab: Tab) {
     setTab(newTab);
-    setStepsEnError(false);
-    setStepsPlError(false);
   }
 
   async function handleSave() {
@@ -844,11 +849,36 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 }}
               >
                 {movesLoadError && (
-                  <span
-                    style={{ color: '#f87171', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
-                  >
-                    {t('error')}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        color: '#f87171',
+                        fontSize: 13,
+                        fontFamily: 'var(--font-manrope)',
+                        flex: 1,
+                      }}
+                    >
+                      {t('error')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={retryMovesLoad}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid rgba(248,113,113,0.4)',
+                        borderRadius: 6,
+                        padding: '4px 10px',
+                        color: '#f87171',
+                        fontFamily: 'var(--font-manrope)',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {t('retry')}
+                    </button>
+                  </div>
                 )}
                 {!movesLoadError && filteredMoves.length === 0 && (
                   <span

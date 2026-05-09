@@ -349,8 +349,10 @@ export function AdminMoves() {
             }
           })
           .catch((e) => {
-            if (!cancelled)
+            if (!cancelled) {
+              hasFetchedRef.current = false;
               setError(e instanceof Error ? e.message : tRef.current('moves.loadError'));
+            }
           })
           .finally(() => {
             if (!cancelled) {

@@ -33,9 +33,18 @@ vi.mock('@/shared/lib/auth', () => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
+vi.mock('@/shared/lib/cloudinary', () => ({
+  cloudinary: {
+    uploader: {
+      upload_stream: vi.fn(),
+    },
+  },
+}));
+
 import { auth } from '@/shared/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/shared/lib/prisma';
+import { cloudinary } from '@/shared/lib/cloudinary';
 
 const mockRevalidatePath = revalidatePath as ReturnType<typeof vi.fn>;
 
@@ -50,11 +59,13 @@ import {
   getAdminStatsAction,
   getMoveByIdAction,
   getMovesForAdminAction,
+  getMovesListAction,
   getTagsForAdminAction,
   getUsersForAdminAction,
   unblockUserAction,
   updateMoveAction,
   updateTagAction,
+  uploadMoveImageAction,
 } from './actions';
 
 const mockAuth = auth as ReturnType<typeof vi.fn>;
@@ -74,6 +85,7 @@ const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockUserUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockUserDelete = prisma.user.delete as ReturnType<typeof vi.fn>;
 const mockUserCount = prisma.user.count as ReturnType<typeof vi.fn>;
+const mockUploadStream = cloudinary.uploader.upload_stream as ReturnType<typeof vi.fn>;
 
 const adminSession = { user: { id: 'admin-1', role: 'ADMIN' } };
 const userSession = { user: { id: 'user-1', role: 'USER' } };
@@ -646,5 +658,102 @@ describe('deleteUserAction', () => {
     await deleteUserAction('u-1');
     expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: 'u-1' } });
     expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
+  });
+});
+
+describe('getMovesListAction', () => {
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    await expect(getMovesListAction()).rejects.toThrow('Unauthorized');
+    expect(mockMoveFindMany).not.toHaveBeenCalled();
+  });
+
+  it('throws Unauthorized when role is not ADMIN', async () => {
+    mockAuth.mockResolvedValue(userSession);
+    await expect(getMovesListAction()).rejects.toThrow('Unauthorized');
+  });
+
+  it('returns moves list with take:200', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const moves = [
+      { id: 'm-1', title_en: 'A', title_pl: 'A PL' },
+      { id: 'm-2', title_en: 'B', title_pl: 'B PL' },
+    ];
+    mockMoveFindMany.mockResolvedValue(moves);
+    const result = await getMovesListAction();
+    expect(mockMoveFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 200,
+        select: { id: true, title_en: true, title_pl: true },
+      }),
+    );
+    expect(result).toEqual(moves);
+  });
+});
+
+describe('uploadMoveImageAction', () => {
+  function makeFormData(file: File | null): FormData {
+    const fd = new FormData();
+    if (file) fd.append('image', file);
+    return fd;
+  }
+
+  function makeFile(content: number[], name = 'test.jpg', type = 'image/jpeg'): File {
+    return new File([new Uint8Array(content)], name, { type });
+  }
+
+  const jpegMagic = [0xff, 0xd8, 0xff, 0xe0, ...Array(100).fill(0)];
+
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    await expect(uploadMoveImageAction(makeFormData(null))).rejects.toThrow('Unauthorized');
+    expect(mockUploadStream).not.toHaveBeenCalled();
+  });
+
+  it('throws when no file provided', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(uploadMoveImageAction(makeFormData(null))).rejects.toThrow('No file provided');
+  });
+
+  it('throws when MIME type is not image', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const file = makeFile(jpegMagic, 'doc.pdf', 'application/pdf');
+    await expect(uploadMoveImageAction(makeFormData(file))).rejects.toThrow(
+      'Only image files are allowed',
+    );
+  });
+
+  it('throws when file exceeds 5MB', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const bigContent = Array(5 * 1024 * 1024 + 1).fill(0xff);
+    const file = makeFile(bigContent, 'big.jpg', 'image/jpeg');
+    await expect(uploadMoveImageAction(makeFormData(file))).rejects.toThrow(
+      'File size must be under 5MB',
+    );
+  });
+
+  it('throws when magic bytes do not match image format', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const file = makeFile([0x00, 0x01, 0x02, 0x03], 'fake.jpg', 'image/jpeg');
+    await expect(uploadMoveImageAction(makeFormData(file))).rejects.toThrow(
+      'Only image files are allowed',
+    );
+  });
+
+  it('returns imageUrl on successful upload', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const file = makeFile(jpegMagic, 'photo.jpg', 'image/jpeg');
+    mockUploadStream.mockImplementation(
+      (_opts: unknown, cb: (err: null, res: { secure_url: string }) => void) => {
+        cb(null, { secure_url: 'https://res.cloudinary.com/test/photo.jpg' });
+        return { end: vi.fn() };
+      },
+    );
+    const result = await uploadMoveImageAction(makeFormData(file));
+    expect(result).toEqual({ imageUrl: 'https://res.cloudinary.com/test/photo.jpg' });
+    expect(mockUploadStream).toHaveBeenCalledWith(
+      expect.objectContaining({ folder: 'pole-dance-catalog/moves' }),
+      expect.any(Function),
+    );
   });
 });
