@@ -19,6 +19,7 @@ vi.mock('@/shared/lib/prisma', () => ({
     },
     user: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
       count: vi.fn(),
@@ -69,6 +70,7 @@ const mockTagUpdate = prisma.tag.update as ReturnType<typeof vi.fn>;
 const mockTagDelete = prisma.tag.delete as ReturnType<typeof vi.fn>;
 const mockTagCount = prisma.tag.count as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
+const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockUserUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockUserDelete = prisma.user.delete as ReturnType<typeof vi.fn>;
 const mockUserCount = prisma.user.count as ReturnType<typeof vi.fn>;
@@ -91,7 +93,10 @@ const validCreateInput = {
 
 const validUpdateInput = { ...validCreateInput, id: 'move-1' };
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockUserFindUnique.mockResolvedValue({ blockedAt: null });
+});
 
 describe('createMoveAction', () => {
   it('throws Unauthorized when not authenticated', async () => {

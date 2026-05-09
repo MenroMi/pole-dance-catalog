@@ -264,6 +264,7 @@
     "loading": "Loading…",
     "retry": "Retry",
     "invalidJson": "Invalid JSON",
+    "error": "Something went wrong",
     "nav": {
       "dashboard": "Dashboard",
       "moves": "Moves",
@@ -384,7 +385,8 @@
       "movesLabel": "moves",
       "randomColor": "Random color",
       "placeholderEn": "e.g. aerial",
-      "placeholderPl": "e.g. flying"
+      "placeholderPl": "e.g. flying",
+      "loadError": "Failed to load tags"
     },
     "users": {
       "title": "Users",

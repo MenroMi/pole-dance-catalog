@@ -273,6 +273,7 @@ function TagModal({
   const [focusEn, setFocusEn] = useState(false);
   const [focusPl, setFocusPl] = useState(false);
   const [focusHex, setFocusHex] = useState(false);
+  const [hexError, setHexError] = useState('');
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   function set(k: keyof TagFormState, v: string) {
@@ -434,7 +435,10 @@ function TagModal({
                 ref={colorInputRef}
                 type="color"
                 value={form.color || DEFAULT_COLOR}
-                onChange={(e) => set('color', e.target.value)}
+                onChange={(e) => {
+                  set('color', e.target.value);
+                  setHexError('');
+                }}
                 style={{
                   position: 'absolute',
                   opacity: 0,
@@ -451,7 +455,14 @@ function TagModal({
                   set('color', v);
                 }}
                 onFocus={() => setFocusHex(true)}
-                onBlur={() => setFocusHex(false)}
+                onBlur={() => {
+                  setFocusHex(false);
+                  if (form.color && !/^#[0-9a-fA-F]{6}$/.test(form.color)) {
+                    setHexError('Must be a valid hex color (e.g. #dcb8ff)');
+                  } else {
+                    setHexError('');
+                  }
+                }}
                 placeholder={DEFAULT_COLOR}
                 maxLength={7}
                 style={{
@@ -539,6 +550,18 @@ function TagModal({
                 </span>
               </div>
             )}
+            {hexError && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: '#f87171',
+                  fontFamily: 'var(--font-manrope)',
+                  marginTop: 6,
+                }}
+              >
+                {hexError}
+              </div>
+            )}
           </div>
         </div>
         {error && (
@@ -576,10 +599,10 @@ function TagModal({
           </button>
           <button
             onClick={() => onSave(form)}
-            disabled={!form.name_en || !form.name_pl || saving}
+            disabled={!form.name_en || !form.name_pl || saving || !!hexError}
             style={{
               background:
-                form.name_en && form.name_pl
+                form.name_en && form.name_pl && !hexError
                   ? 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)'
                   : '#2a2a2a',
               backgroundSize: '200% 200%',
@@ -591,10 +614,13 @@ function TagModal({
               fontFamily: 'var(--font-manrope)',
               fontSize: 14,
               fontWeight: 600,
-              cursor: form.name_en && form.name_pl && !saving ? 'pointer' : 'not-allowed',
-              opacity: form.name_en && form.name_pl ? 1 : 0.5,
+              cursor:
+                form.name_en && form.name_pl && !saving && !hexError ? 'pointer' : 'not-allowed',
+              opacity: form.name_en && form.name_pl && !hexError ? 1 : 0.5,
               boxShadow:
-                form.name_en && form.name_pl ? '0 4px 16px -2px rgba(132,88,179,0.4)' : 'none',
+                form.name_en && form.name_pl && !hexError
+                  ? '0 4px 16px -2px rgba(132,88,179,0.4)'
+                  : 'none',
               transition: 'background-position 400ms',
             }}
             onMouseEnter={(e) => {
@@ -627,6 +653,7 @@ export function AdminTags() {
   const [modalError, setModalError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -639,7 +666,9 @@ export function AdminTags() {
           setTags(data);
         }
       })
-      .catch(console.error)
+      .catch((e) => {
+        if (!cancelled) setLoadError(e instanceof Error ? e.message : 'Failed to load tags');
+      })
       .finally(() => {
         if (!cancelled) {
           setLoading(false);
@@ -820,8 +849,49 @@ export function AdminTags() {
         <div style={{ padding: 40, textAlign: 'center', color: '#555' }}>{t('loading')}</div>
       )}
 
+      {/* Load error */}
+      {!loading && loadError && (
+        <div
+          style={{
+            margin: '0 0 12px',
+            background: 'rgba(248,113,113,0.1)',
+            border: '1px solid rgba(248,113,113,0.3)',
+            borderRadius: 12,
+            padding: '16px 20px',
+            color: '#f87171',
+            fontSize: 14,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ flex: 1 }}>{loadError}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setLoadError(null);
+              setRefreshKey((k) => k + 1);
+            }}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(248,113,113,0.4)',
+              borderRadius: 6,
+              padding: '5px 12px',
+              color: '#f87171',
+              fontFamily: 'var(--font-manrope)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {t('retry')}
+          </button>
+        </div>
+      )}
+
       {/* Grid */}
-      {!loading && (
+      {!loading && !loadError && (
         <div
           style={{
             display: 'grid',

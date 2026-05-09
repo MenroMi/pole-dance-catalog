@@ -14,6 +14,8 @@ import {
 } from '../actions';
 import type { AdminTagRow, CreateMoveInput, FullAdminMove } from '../types';
 
+let _allMovesCache: { id: string; title_en: string; title_pl: string }[] | null = null;
+
 interface MoveModalProps {
   move: FullAdminMove | null;
   availableTags: AdminTagRow[];
@@ -300,14 +302,18 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [stepsEnError, setStepsEnError] = useState(false);
   const [stepsPlError, setStepsPlError] = useState(false);
   const [allMoves, setAllMoves] = useState<{ id: string; title_en: string; title_pl: string }[]>(
-    [],
+    () => _allMovesCache ?? [],
   );
   const [relatedQuery, setRelatedQuery] = useState('');
 
   useEffect(() => {
+    if (_allMovesCache) return;
     getMovesListAction()
-      .then(setAllMoves)
-      .catch(() => {});
+      .then((moves) => {
+        _allMovesCache = moves;
+        setAllMoves(moves);
+      })
+      .catch(console.error);
   }, []);
 
   function set(field: keyof FormState, value: string | string[]) {
@@ -337,6 +343,12 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         ? prev.relatedMoveIds.filter((r) => r !== id)
         : [...prev.relatedMoveIds, id],
     }));
+  }
+
+  function handleTabChange(newTab: Tab) {
+    setTab(newTab);
+    setStepsEnError(false);
+    setStepsPlError(false);
   }
 
   async function handleSave() {
@@ -374,7 +386,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
-      setTab('en');
+      handleTabChange('en');
     } finally {
       setSaving(false);
     }
@@ -464,7 +476,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           {tabs.map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setTab(key)}
+              onClick={() => handleTabChange(key)}
               style={{
                 padding: '8px 20px',
                 background: 'none',

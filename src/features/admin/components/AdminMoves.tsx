@@ -412,7 +412,7 @@ export function AdminMoves() {
       setTotalAll((n) => n - 1);
       setDeleteTarget(null);
     } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : tRef.current('moves.loadError'));
+      setDeleteError(e instanceof Error ? e.message : tRef.current('error'));
     } finally {
       setDeleting(false);
     }

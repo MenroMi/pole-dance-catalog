@@ -264,6 +264,7 @@
     "loading": "Ładowanie…",
     "retry": "Ponów",
     "invalidJson": "Nieprawidłowy JSON",
+    "error": "Coś poszło nie tak",
     "nav": {
       "dashboard": "Dashboard",
       "moves": "Ruchy",
@@ -384,7 +385,8 @@
       "movesLabel": "ruchów",
       "randomColor": "Losowy kolor",
       "placeholderEn": "np. aerial",
-      "placeholderPl": "np. powietrzny"
+      "placeholderPl": "np. powietrzny",
+      "loadError": "Nie udało się załadować tagów"
     },
     "users": {
       "title": "Użytkownicy",
