@@ -24,6 +24,13 @@ async function requireAdmin() {
   if (!session || session.user?.role !== 'ADMIN') {
     throw new Error('Unauthorized');
   }
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id! },
+    select: { blockedAt: true },
+  });
+  if (!dbUser || dbUser.blockedAt) {
+    throw new Error('Unauthorized');
+  }
   return session;
 }
 
@@ -97,11 +104,13 @@ export async function createMoveAction(input: CreateMoveInput) {
 export async function updateMoveAction(input: UpdateMoveInput) {
   await requireAdmin();
   const { id, ...rest } = input;
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
   const parsed = moveSchema.safeParse(rest);
   if (!parsed.success) throw new Error('Invalid input');
   const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
   const result = await prisma.move.update({
-    where: { id },
+    where: { id: parsedId.data },
     data: {
       ...data,
       poleTypes,
@@ -253,16 +262,20 @@ export async function createTagAction(input: CreateTagInput) {
 export async function updateTagAction(input: UpdateTagInput) {
   await requireAdmin();
   const { id, ...rest } = input;
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
   const parsed = tagSchema.safeParse(rest);
   if (!parsed.success) throw new Error('Invalid input');
-  const result = await prisma.tag.update({ where: { id }, data: parsed.data });
+  const result = await prisma.tag.update({ where: { id: parsedId.data }, data: parsed.data });
   revalidatePath('/', 'layout');
   return result;
 }
 
 export async function deleteTagAction(id: string) {
   await requireAdmin();
-  const result = await prisma.tag.delete({ where: { id } });
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const result = await prisma.tag.delete({ where: { id: parsedId.data } });
   revalidatePath('/', 'layout');
   return result;
 }
