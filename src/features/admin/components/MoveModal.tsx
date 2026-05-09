@@ -304,6 +304,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [allMoves, setAllMoves] = useState<{ id: string; title_en: string; title_pl: string }[]>(
     () => _allMovesCache ?? [],
   );
+  const [movesLoadError, setMovesLoadError] = useState(false);
   const [relatedQuery, setRelatedQuery] = useState('');
 
   useEffect(() => {
@@ -313,7 +314,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         _allMovesCache = moves;
         setAllMoves(moves);
       })
-      .catch(console.error);
+      .catch(() => setMovesLoadError(true));
   }, []);
 
   function set(field: keyof FormState, value: string | string[]) {
@@ -357,7 +358,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         JSON.parse(form.stepsData_en);
       } catch {
         setStepsEnError(true);
-        handleTabChange('en');
+        setTab('en');
         return;
       }
     }
@@ -366,7 +367,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         JSON.parse(form.stepsData_pl);
       } catch {
         setStepsPlError(true);
-        handleTabChange('pl');
+        setTab('pl');
         return;
       }
     }
@@ -842,7 +843,14 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                   padding: '0 24px 12px 24px',
                 }}
               >
-                {filteredMoves.length === 0 && (
+                {movesLoadError && (
+                  <span
+                    style={{ color: '#f87171', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
+                  >
+                    {t('error')}
+                  </span>
+                )}
+                {!movesLoadError && filteredMoves.length === 0 && (
                   <span
                     style={{ color: '#6b6270', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
                   >

@@ -368,7 +368,7 @@ export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN
   if (!parsedRole.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot change your own role');
   const result = await prisma.user.update({
-    where: { id: userId },
+    where: { id: parsedId.data },
     data: { role: parsedRole.data },
   });
   revalidatePath('/', 'layout');
@@ -383,7 +383,7 @@ export async function blockUserAction(userId: string, reason?: string) {
   if (!parsedReason.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot block yourself');
   const result = await prisma.user.update({
-    where: { id: userId },
+    where: { id: parsedId.data },
     data: { blockedAt: new Date(), blockReason: parsedReason.data ?? null },
   });
   revalidatePath('/', 'layout');
@@ -396,7 +396,7 @@ export async function unblockUserAction(userId: string) {
   if (!parsedId.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot unblock yourself');
   const result = await prisma.user.update({
-    where: { id: userId },
+    where: { id: parsedId.data },
     data: { blockedAt: null, blockReason: null },
   });
   revalidatePath('/', 'layout');
@@ -408,7 +408,7 @@ export async function deleteUserAction(userId: string) {
   const parsedId = z.string().min(1).safeParse(userId);
   if (!parsedId.success) throw new Error('Invalid input');
   if (session.user?.id === userId) throw new Error('Cannot delete yourself');
-  const result = await prisma.user.delete({ where: { id: userId } });
+  const result = await prisma.user.delete({ where: { id: parsedId.data } });
   revalidatePath('/', 'layout');
   return result;
 }

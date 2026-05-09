@@ -98,6 +98,15 @@ beforeEach(() => {
   mockUserFindUnique.mockResolvedValue({ blockedAt: null });
 });
 
+describe('requireAdmin blockedAt check', () => {
+  it('throws Unauthorized when admin is blocked', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindUnique.mockResolvedValue({ blockedAt: new Date() });
+    await expect(createMoveAction(validCreateInput)).rejects.toThrow('Unauthorized');
+    expect(mockMoveCreate).not.toHaveBeenCalled();
+  });
+});
+
 describe('createMoveAction', () => {
   it('throws Unauthorized when not authenticated', async () => {
     mockAuth.mockResolvedValue(null);

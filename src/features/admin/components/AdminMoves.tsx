@@ -403,6 +403,7 @@ export function AdminMoves() {
     setDeleteError(null);
     try {
       await deleteMoveAction(deleteTarget.id);
+      _movesCache = null;
       setMoves((prev) => {
         const next = prev.filter((m) => m.id !== deleteTarget.id);
         if (next.length === 0 && page > 1) setPage(1);
