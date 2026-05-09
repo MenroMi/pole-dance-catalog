@@ -352,6 +352,24 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   }
 
   async function handleSave() {
+    if (form.stepsData_en.trim()) {
+      try {
+        JSON.parse(form.stepsData_en);
+      } catch {
+        setStepsEnError(true);
+        handleTabChange('en');
+        return;
+      }
+    }
+    if (form.stepsData_pl.trim()) {
+      try {
+        JSON.parse(form.stepsData_pl);
+      } catch {
+        setStepsPlError(true);
+        handleTabChange('pl');
+        return;
+      }
+    }
     setSaving(true);
     setError(null);
     try {
@@ -383,10 +401,10 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
       } else {
         await createMoveAction(input);
       }
+      _allMovesCache = null;
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
-      handleTabChange('en');
     } finally {
       setSaving(false);
     }

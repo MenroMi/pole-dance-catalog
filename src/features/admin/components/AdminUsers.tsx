@@ -559,8 +559,8 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         }
         setTotalBlocked((n) => n - 1);
       } else if (confirm.type === 'delete') {
-        await deleteUserAction(confirm.userId);
         const deleted = users.find((u) => u.id === confirm.userId);
+        await deleteUserAction(confirm.userId);
         setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
         setTotal((n) => n - 1);
         setTotalAll((n) => n - 1);
@@ -570,7 +570,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       setConfirm(null);
       setActionError(null);
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : tRef.current('users.loadError'));
+      setActionError(e instanceof Error ? e.message : tRef.current('error'));
     } finally {
       setActing(false);
       setActingUserId(null);

@@ -485,7 +485,10 @@ function TagModal({
               {/* Randomize button */}
               <button
                 type="button"
-                onClick={() => set('color', randomHex())}
+                onClick={() => {
+                  set('color', randomHex());
+                  setHexError('');
+                }}
                 style={{
                   height: 40,
                   borderRadius: 8,

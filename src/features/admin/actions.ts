@@ -198,7 +198,7 @@ export async function getMoveByIdAction(id: string): Promise<FullAdminMove | nul
   const parsedId = z.string().min(1).safeParse(id);
   if (!parsedId.success) throw new Error('Invalid input');
   const result = await prisma.move.findUnique({
-    where: { id },
+    where: { id: parsedId.data },
     include: {
       tags: { select: { id: true, name_en: true, name_pl: true } },
       relatedMoves: { select: { id: true, title_en: true, title_pl: true } },
