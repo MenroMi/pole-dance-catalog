@@ -37,6 +37,7 @@ vi.mock('@/shared/lib/cloudinary', () => ({
   cloudinary: {
     uploader: {
       upload_stream: vi.fn(),
+      destroy: vi.fn(),
     },
   },
 }));
@@ -86,6 +87,7 @@ const mockUserUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockUserDelete = prisma.user.delete as ReturnType<typeof vi.fn>;
 const mockUserCount = prisma.user.count as ReturnType<typeof vi.fn>;
 const mockUploadStream = cloudinary.uploader.upload_stream as ReturnType<typeof vi.fn>;
+const mockDestroy = cloudinary.uploader.destroy as ReturnType<typeof vi.fn>;
 
 const adminSession = { user: { id: 'admin-1', role: 'ADMIN' } };
 const userSession = { user: { id: 'user-1', role: 'USER' } };
@@ -168,6 +170,7 @@ describe('updateMoveAction', () => {
 
   it('updates move with tag ids when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindUnique.mockResolvedValue({ imageUrl: null });
     mockMoveUpdate.mockResolvedValue({ id: 'move-1' });
     const result = await updateMoveAction({ ...validUpdateInput, tagIds: ['tag-1'] });
     expect(mockMoveUpdate).toHaveBeenCalledWith(
@@ -181,6 +184,40 @@ describe('updateMoveAction', () => {
     );
     expect(result).toEqual({ id: 'move-1' });
   });
+
+  it('destroys old Cloudinary image when imageUrl is cleared', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const oldUrl =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/old.jpg';
+    mockMoveFindUnique.mockResolvedValue({ imageUrl: oldUrl });
+    mockMoveUpdate.mockResolvedValue({ id: 'move-1' });
+    mockDestroy.mockResolvedValue({ result: 'ok' });
+    await updateMoveAction({ ...validUpdateInput, imageUrl: '' });
+    expect(mockDestroy).toHaveBeenCalledWith('pole-dance-catalog/moves/old');
+  });
+
+  it('destroys old Cloudinary image when imageUrl is replaced', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const oldUrl =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/old.jpg';
+    const newUrl =
+      'https://res.cloudinary.com/test/image/upload/v5678/pole-dance-catalog/moves/new.jpg';
+    mockMoveFindUnique.mockResolvedValue({ imageUrl: oldUrl });
+    mockMoveUpdate.mockResolvedValue({ id: 'move-1' });
+    mockDestroy.mockResolvedValue({ result: 'ok' });
+    await updateMoveAction({ ...validUpdateInput, imageUrl: newUrl });
+    expect(mockDestroy).toHaveBeenCalledWith('pole-dance-catalog/moves/old');
+  });
+
+  it('does not call destroy when imageUrl is unchanged', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/same.jpg';
+    mockMoveFindUnique.mockResolvedValue({ imageUrl: url });
+    mockMoveUpdate.mockResolvedValue({ id: 'move-1' });
+    await updateMoveAction({ ...validUpdateInput, imageUrl: url });
+    expect(mockDestroy).not.toHaveBeenCalled();
+  });
 });
 
 describe('deleteMoveAction', () => {
@@ -191,9 +228,23 @@ describe('deleteMoveAction', () => {
 
   it('deletes move when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindUnique.mockResolvedValue({ imageUrl: null });
     mockMoveDelete.mockResolvedValue({ id: 'move-1' });
     await deleteMoveAction('move-1');
     expect(mockMoveDelete).toHaveBeenCalledWith({ where: { id: 'move-1' } });
+    expect(mockDestroy).not.toHaveBeenCalled();
+  });
+
+  it('destroys Cloudinary image when move has imageUrl', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/photo.jpg';
+    mockMoveFindUnique.mockResolvedValue({ imageUrl: url });
+    mockMoveDelete.mockResolvedValue({ id: 'move-1' });
+    mockDestroy.mockResolvedValue({ result: 'ok' });
+    await deleteMoveAction('move-1');
+    expect(mockMoveDelete).toHaveBeenCalledWith({ where: { id: 'move-1' } });
+    expect(mockDestroy).toHaveBeenCalledWith('pole-dance-catalog/moves/photo');
   });
 });
 

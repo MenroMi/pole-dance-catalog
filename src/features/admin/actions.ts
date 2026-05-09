@@ -109,6 +109,12 @@ export async function updateMoveAction(input: UpdateMoveInput) {
   const parsed = moveSchema.safeParse(rest);
   if (!parsed.success) throw new Error('Invalid input');
   const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+
+  const current = await prisma.move.findUnique({
+    where: { id: parsedId.data },
+    select: { imageUrl: true },
+  });
+
   const result = await prisma.move.update({
     where: { id: parsedId.data },
     data: {
@@ -120,6 +126,11 @@ export async function updateMoveAction(input: UpdateMoveInput) {
       relatedMoves: { set: [], connect: relatedMoveIds.map((id) => ({ id })) },
     },
   });
+
+  if (current?.imageUrl && current.imageUrl !== data.imageUrl) {
+    await destroyCloudinaryImage(current.imageUrl);
+  }
+
   revalidatePath('/', 'layout');
   return result;
 }
@@ -128,7 +139,18 @@ export async function deleteMoveAction(id: string) {
   await requireAdmin();
   const parsedId = z.string().min(1).safeParse(id);
   if (!parsedId.success) throw new Error('Invalid input');
+
+  const current = await prisma.move.findUnique({
+    where: { id: parsedId.data },
+    select: { imageUrl: true },
+  });
+
   const result = await prisma.move.delete({ where: { id: parsedId.data } });
+
+  if (current?.imageUrl) {
+    await destroyCloudinaryImage(current.imageUrl);
+  }
+
   revalidatePath('/', 'layout');
   return result;
 }
@@ -411,6 +433,18 @@ export async function deleteUserAction(userId: string) {
   const result = await prisma.user.delete({ where: { id: parsedId.data } });
   revalidatePath('/', 'layout');
   return result;
+}
+
+function extractCloudinaryPublicId(url: string): string | null {
+  // Parses /upload/[v<version>/]<public_id>.<ext> — no transformation segments expected
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+  return match?.[1] ?? null;
+}
+
+async function destroyCloudinaryImage(url: string): Promise<void> {
+  const publicId = extractCloudinaryPublicId(url);
+  if (!publicId) return;
+  await cloudinary.uploader.destroy(publicId).catch(() => {});
 }
 
 function isImageBuffer(buf: Buffer): boolean {
