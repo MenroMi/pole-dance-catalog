@@ -240,7 +240,16 @@ export async function getMoveByIdAction(id: string): Promise<FullAdminMove | nul
     where: { id: parsedId.data },
     include: {
       tags: { select: { id: true, name_en: true, name_pl: true } },
-      relatedMoves: { select: { id: true, title_en: true, title_pl: true } },
+      relatedMoves: {
+        select: {
+          id: true,
+          title_en: true,
+          title_pl: true,
+          difficulty: true,
+          category: true,
+          _count: { select: { favourites: true } },
+        },
+      },
     },
   });
   if (!result) return null;
@@ -250,20 +259,37 @@ export async function getMoveByIdAction(id: string): Promise<FullAdminMove | nul
     ...result,
     stepsData_en: (result.stepsData_en ?? []) as StepData[],
     stepsData_pl: (result.stepsData_pl ?? []) as StepData[],
-  } as FullAdminMove;
+    relatedMoves: (result.relatedMoves ?? []).map((m) => ({
+      id: m.id,
+      title_en: m.title_en,
+      title_pl: m.title_pl,
+      difficulty: m.difficulty,
+      category: m.category,
+      favourites: m._count.favourites,
+    })),
+  } satisfies FullAdminMove;
 }
 
 export async function searchRelatedMovesAction(params: {
   query: string;
   excludeId?: string;
-}): Promise<{ id: string; title_en: string; title_pl: string }[]> {
+}): Promise<
+  {
+    id: string;
+    title_en: string;
+    title_pl: string;
+    difficulty: string;
+    category: string;
+    favourites: number;
+  }[]
+> {
   await requireAdmin();
   const parsed = z
     .object({ query: z.string().min(1).max(200), excludeId: z.string().optional() })
     .safeParse(params);
   if (!parsed.success) throw new Error('Invalid input');
   const { query, excludeId } = parsed.data;
-  return prisma.move.findMany({
+  const moves = await prisma.move.findMany({
     where: {
       AND: [
         ...(excludeId ? [{ id: { not: excludeId } }] : []),
@@ -277,8 +303,23 @@ export async function searchRelatedMovesAction(params: {
     },
     orderBy: { title_en: 'asc' },
     take: 20,
-    select: { id: true, title_en: true, title_pl: true },
+    select: {
+      id: true,
+      title_en: true,
+      title_pl: true,
+      difficulty: true,
+      category: true,
+      _count: { select: { favourites: true } },
+    },
   });
+  return moves.map((m) => ({
+    id: m.id,
+    title_en: m.title_en,
+    title_pl: m.title_pl,
+    difficulty: m.difficulty,
+    category: m.category,
+    favourites: m._count.favourites,
+  }));
 }
 
 export async function getAdminStatsAction(): Promise<AdminStats> {

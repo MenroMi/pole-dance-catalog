@@ -331,45 +331,95 @@ const labelStyle: React.CSSProperties = {
 
 const rowStyle: React.CSSProperties = { marginBottom: 14 };
 
+type RelatedMoveInfo = {
+  id: string;
+  title_en: string;
+  title_pl: string;
+  difficulty: string;
+  category: string;
+  favourites: number;
+};
+
+const DIFF_STYLES: Record<string, { bg: string; fg: string }> = {
+  BEGINNER: { bg: 'rgba(132,209,153,0.15)', fg: '#84d099' },
+  INTERMEDIATE: { bg: 'rgba(132,88,179,0.20)', fg: '#c5afe2' },
+  ADVANCED: { bg: 'rgba(251,191,36,0.14)', fg: '#fbbf24' },
+};
+
+const CAT_GLYPHS: Record<string, string> = {
+  SPINS: '⌇',
+  HOLDS: '◉',
+  CLIMBS: '⌥',
+  COMBOS: '✦',
+  FLOORWORK: '⟡',
+};
+
 function RelatedMoveRow({
   move: m,
   selected,
   onToggle,
+  isNew = false,
+  animationDelay = 0,
 }: {
-  move: { id: string; title_en: string; title_pl: string };
+  move: RelatedMoveInfo;
   selected: boolean;
   onToggle: () => void;
+  isNew?: boolean;
+  animationDelay?: number;
 }) {
+  const [hov, setHov] = useState(false);
+  const dc = DIFF_STYLES[m.difficulty] ?? DIFF_STYLES.BEGINNER;
+  const glyph = CAT_GLYPHS[m.category] ?? '◇';
+
   return (
-    <button
-      type="button"
+    <div
+      role="checkbox"
+      aria-checked={selected}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       onClick={onToggle}
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
-        padding: '8px 12px',
-        borderRadius: 8,
-        border: `1px solid ${selected ? 'rgba(220,184,255,0.35)' : 'rgba(75,68,80,0.3)'}`,
-        background: selected ? 'rgba(220,184,255,0.08)' : 'transparent',
+        gap: 12,
+        padding: '10px 14px',
+        borderRadius: 10,
         cursor: 'pointer',
-        textAlign: 'left',
-        width: '100%',
-        transition: 'all 150ms',
+        border: selected
+          ? '1px solid rgba(220,184,255,0.3)'
+          : hov
+            ? '1px solid rgba(75,68,80,0.4)'
+            : '1px solid transparent',
+        background: selected
+          ? 'rgba(220,184,255,0.06)'
+          : hov
+            ? 'rgba(255,255,255,0.025)'
+            : 'transparent',
+        transition: 'all 160ms ease',
+        animation: isNew ? 'slide-down 200ms ease both' : 'none',
+        animationDelay: isNew ? `${animationDelay}ms` : '0ms',
       }}
     >
+      {/* Checkbox */}
       <div
         style={{
-          width: 16,
-          height: 16,
-          borderRadius: 4,
-          border: `1.5px solid ${selected ? '#dcb8ff' : 'rgba(75,68,80,0.5)'}`,
-          background: selected ? 'rgba(220,184,255,0.25)' : 'transparent',
+          width: 18,
+          height: 18,
+          borderRadius: 5,
           flexShrink: 0,
+          border: selected ? '1.5px solid #dcb8ff' : '1.5px solid rgba(75,68,80,0.6)',
+          background: selected ? 'rgba(220,184,255,0.2)' : 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          transition: 'all 150ms',
+          transition: 'all 180ms ease',
         }}
       >
         {selected && (
@@ -377,29 +427,225 @@ function RelatedMoveRow({
             <path
               d="M2 5l2.5 2.5L8 3"
               stroke="#dcb8ff"
-              strokeWidth={1.5}
+              strokeWidth={1.8}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
         )}
       </div>
-      <div>
+
+      {/* Glyph tile */}
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 8,
+          flexShrink: 0,
+          background: selected
+            ? 'linear-gradient(135deg,rgba(220,184,255,0.15),rgba(132,88,179,0.1))'
+            : 'linear-gradient(135deg,#0e0e0e,#1f1f1f)',
+          border: selected ? '1px solid rgba(220,184,255,0.2)' : '1px solid rgba(75,68,80,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 180ms',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 16,
+            color: selected ? 'rgba(220,184,255,0.7)' : 'rgba(220,184,255,0.3)',
+            transition: 'color 180ms',
+          }}
+        >
+          {glyph}
+        </span>
+      </div>
+
+      {/* Titles */}
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            color: '#e2e2e2',
-            fontSize: 13,
-            fontFamily: 'var(--font-manrope)',
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 14,
             fontWeight: 500,
+            color: selected ? '#dcb8ff' : '#e2e2e2',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            transition: 'color 160ms',
           }}
         >
           {m.title_en}
         </div>
-        <div style={{ color: '#6b6270', fontSize: 12, fontFamily: 'var(--font-manrope)' }}>
+        <div
+          style={{
+            fontSize: 11,
+            color: '#4b4450',
+            fontFamily: 'var(--font-manrope)',
+            marginTop: 2,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {m.title_pl}
         </div>
       </div>
-    </button>
+
+      {/* Difficulty + category */}
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            padding: '3px 8px',
+            borderRadius: 9999,
+            fontFamily: 'var(--font-manrope)',
+            background: dc.bg,
+            color: dc.fg,
+            opacity: selected ? 1 : 0.7,
+            transition: 'opacity 160ms',
+          }}
+        >
+          {m.difficulty.slice(0, 3)}
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            color: '#4b4450',
+            fontFamily: 'var(--font-manrope)',
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {m.category}
+        </span>
+      </div>
+
+      {/* Favourites */}
+      <div
+        style={{
+          fontSize: 11,
+          color: selected ? 'rgba(220,184,255,0.5)' : '#4b4450',
+          fontFamily: 'var(--font-manrope)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 3,
+          flexShrink: 0,
+          minWidth: 36,
+          justifyContent: 'flex-end',
+          transition: 'color 160ms',
+        }}
+      >
+        <svg
+          width={10}
+          height={10}
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          stroke="none"
+          aria-hidden="true"
+        >
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+        {m.favourites}
+      </div>
+    </div>
+  );
+}
+
+function SelectedPill({ move: m, onRemove }: { move: RelatedMoveInfo; onRemove: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '4px 10px 4px 8px',
+        borderRadius: 9999,
+        background: hov ? 'rgba(220,184,255,0.18)' : 'rgba(220,184,255,0.1)',
+        border: '1px solid rgba(220,184,255,0.3)',
+        animation: 'pop-in 220ms cubic-bezier(0.16,1,0.3,1) both',
+        transition: 'background 150ms',
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'var(--font-space-grotesk)',
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#dcb8ff',
+          whiteSpace: 'nowrap',
+          maxWidth: 120,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {m.title_en}
+      </span>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: hov ? '#dcb8ff' : 'rgba(220,184,255,0.5)',
+          display: 'flex',
+          padding: 0,
+          transition: 'color 150ms',
+        }}
+      >
+        <svg
+          width={12}
+          height={12}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function SkeletonRow({ i }: { i: number }) {
+  const shimmer: React.CSSProperties = {
+    background:
+      'linear-gradient(90deg, rgba(75,68,80,0.1) 25%, rgba(75,68,80,0.25) 50%, rgba(75,68,80,0.1) 75%)',
+    backgroundSize: '600px 100%',
+    animation: `shimmer 1.4s ease-in-out infinite`,
+    animationDelay: `${i * 80}ms`,
+    borderRadius: 4,
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}>
+      <div style={{ width: 18, height: 18, borderRadius: 5, ...shimmer, flexShrink: 0 }} />
+      <div style={{ width: 36, height: 36, borderRadius: 8, ...shimmer, flexShrink: 0 }} />
+      <div style={{ flex: 1 }}>
+        <div
+          style={{ height: 13, width: `${55 + ((i * 17) % 30)}%`, ...shimmer, marginBottom: 6 }}
+        />
+        <div style={{ height: 11, width: `${30 + ((i * 13) % 20)}%`, ...shimmer }} />
+      </div>
+      <div style={{ height: 20, width: 70, ...shimmer, borderRadius: 9999 }} />
+    </div>
   );
 }
 
@@ -410,15 +656,22 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<
-    { id: string; title_en: string; title_pl: string }[]
-  >([]);
+  const [searchResults, setSearchResults] = useState<RelatedMoveInfo[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(false);
-  // Seeded once per mount from relatedMoves; extended by each search result so pinned entries always have titles.
-  const knownMovesRef = useRef<Map<string, { title_en: string; title_pl: string }>>(
+  // Seeded once per mount from relatedMoves; extended by each search result so pinned entries always have full info.
+  const knownMovesRef = useRef<Map<string, Omit<RelatedMoveInfo, 'id'>>>(
     new Map(
-      move?.relatedMoves.map((m) => [m.id, { title_en: m.title_en, title_pl: m.title_pl }]) ?? [],
+      move?.relatedMoves.map((m) => [
+        m.id,
+        {
+          title_en: m.title_en,
+          title_pl: m.title_pl,
+          difficulty: m.difficulty,
+          category: m.category,
+          favourites: m.favourites,
+        },
+      ]) ?? [],
     ),
   );
   const [relatedQuery, setRelatedQuery] = useState('');
@@ -454,7 +707,13 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
         .then((results) => {
           if (cancelled) return;
           results.forEach((m) =>
-            knownMovesRef.current.set(m.id, { title_en: m.title_en, title_pl: m.title_pl }),
+            knownMovesRef.current.set(m.id, {
+              title_en: m.title_en,
+              title_pl: m.title_pl,
+              difficulty: m.difficulty,
+              category: m.category,
+              favourites: m.favourites,
+            }),
           );
           setSearchResults(results);
         })
@@ -635,15 +894,41 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
               if (!saving) onClose();
             }}
             style={{
-              background: 'none',
-              border: 'none',
-              color: saving ? '#4b4450' : '#888',
+              background: 'rgba(75,68,80,0.15)',
+              border: '1px solid rgba(75,68,80,0.35)',
+              borderRadius: 8,
+              width: 34,
+              height: 34,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: saving ? '#4b4450' : '#978e9b',
               cursor: saving ? 'default' : 'pointer',
-              fontSize: 22,
-              lineHeight: 1,
+              transition: 'all 150ms',
+            }}
+            onMouseEnter={(e) => {
+              if (!saving) {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(75,68,80,0.25)';
+                (e.currentTarget as HTMLButtonElement).style.color = '#e2e2e2';
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(75,68,80,0.15)';
+              (e.currentTarget as HTMLButtonElement).style.color = saving ? '#4b4450' : '#978e9b';
             }}
           >
-            ×
+            <svg
+              width={15}
+              height={15}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
@@ -653,43 +938,66 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
             display: 'flex',
             gap: 0,
             padding: '16px 24px 0',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid rgba(75,68,80,0.22)',
           }}
         >
-          {tabs.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              style={{
-                padding: '8px 20px',
-                background: 'none',
-                border: 'none',
-                borderBottom: `2px solid ${tab === key ? '#dcb8ff' : 'transparent'}`,
-                color: tab === key ? '#dcb8ff' : '#888',
-                cursor: 'pointer',
-                fontSize: 14,
-                fontWeight: tab === key ? 600 : 400,
-                marginBottom: -1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-              }}
-            >
-              {label}
-              {tabHasError(key) && (
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: '#f87171',
-                    flexShrink: 0,
-                  }}
-                />
-              )}
-            </button>
-          ))}
+          {tabs.map(({ key, label }) => {
+            const active = tab === key;
+            const isRelated = key === 'related';
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTab(key)}
+                style={{
+                  padding: '10px 20px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: `2px solid ${active ? '#dcb8ff' : 'transparent'}`,
+                  color: active ? '#dcb8ff' : '#978e9b',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 400,
+                  fontFamily: 'var(--font-manrope)',
+                  letterSpacing: '0.01em',
+                  marginBottom: -1,
+                  transition: 'all 150ms',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 7,
+                }}
+              >
+                {label}
+                {tabHasError(key) && (
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: '#f87171',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                {isRelated && watchedRelatedMoveIds.length > 0 && (
+                  <span
+                    style={{
+                      background: active ? 'rgba(220,184,255,0.25)' : 'rgba(75,68,80,0.3)',
+                      color: active ? '#dcb8ff' : '#978e9b',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: '1px 7px',
+                      borderRadius: 9999,
+                      fontFamily: 'var(--font-manrope)',
+                      transition: 'all 150ms',
+                    }}
+                  >
+                    {watchedRelatedMoveIds.length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Body */}
@@ -995,48 +1303,182 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           )}
 
           {tab === 'related' && (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {/* Sticky search header */}
               <div
                 style={{
                   position: 'sticky',
-                  padding: '12px 24px 8px',
                   top: 0,
-                  zIndex: 1,
+                  zIndex: 10,
                   background: '#1a1a1a',
+                  padding: '14px 24px 10px',
+                  borderBottom:
+                    pinnedSelected.length > 0 || relatedQuery
+                      ? '1px solid rgba(75,68,80,0.15)'
+                      : 'none',
                 }}
               >
-                <Input
-                  className="admin-field"
-                  style={fieldStyle}
-                  value={relatedQuery}
-                  onChange={(e) => setRelatedQuery(e.target.value)}
-                  placeholder={t('moves.fields.relatedSearchPlaceholder')}
-                />
-                {watchedRelatedMoveIds.length > 0 && (
-                  <span
+                {/* Search input */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    background: '#131313',
+                    border: `1px solid ${relatedQuery ? 'rgba(220,184,255,0.35)' : 'rgba(75,68,80,0.4)'}`,
+                    borderRadius: 10,
+                    padding: '9px 14px',
+                    transition: 'border-color 180ms',
+                  }}
+                >
+                  <svg
+                    width={15}
+                    height={15}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={relatedQuery ? '#dcb8ff' : '#4b4450'}
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0, transition: 'stroke 180ms' }}
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    value={relatedQuery}
+                    onChange={(e) => setRelatedQuery(e.target.value)}
+                    placeholder={t('moves.fields.relatedSearchPlaceholder')}
                     style={{
-                      display: 'block',
-                      marginTop: 6,
-                      color: '#6b6270',
-                      fontSize: 12,
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      flex: 1,
+                      color: '#e2e2e2',
                       fontFamily: 'var(--font-manrope)',
+                      fontSize: 14,
+                    }}
+                  />
+                  {searchLoading && (
+                    <div
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        border: '2px solid rgba(220,184,255,0.15)',
+                        borderTopColor: '#dcb8ff',
+                        animation: 'spin 600ms linear infinite',
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                  {relatedQuery && !searchLoading && (
+                    <button
+                      type="button"
+                      onClick={() => setRelatedQuery('')}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#4b4450',
+                        display: 'flex',
+                        flexShrink: 0,
+                        transition: 'color 150ms',
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#978e9b';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#4b4450';
+                      }}
+                    >
+                      <svg
+                        width={14}
+                        height={14}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Selected pills */}
+                {pinnedSelected.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      flexWrap: 'wrap',
                     }}
                   >
-                    {t('moves.fields.relatedSelectedCount', {
-                      count: watchedRelatedMoveIds.length,
-                    })}
-                  </span>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: '#4b4450',
+                        fontFamily: 'var(--font-manrope)',
+                        flexShrink: 0,
+                        marginRight: 2,
+                      }}
+                    >
+                      {t('moves.fields.relatedSelected')}
+                    </span>
+                    {pinnedSelected.map((m) => (
+                      <SelectedPill
+                        key={m.id}
+                        move={m}
+                        onRemove={() =>
+                          setValue(
+                            'relatedMoveIds',
+                            watchedRelatedMoveIds.filter((id) => id !== m.id),
+                          )
+                        }
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setValue('relatedMoveIds', [])}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        color: '#4b4450',
+                        fontFamily: 'var(--font-manrope)',
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        padding: '3px 6px',
+                        borderRadius: 4,
+                        transition: 'color 150ms',
+                        flexShrink: 0,
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#4b4450';
+                      }}
+                    >
+                      {t('moves.fields.relatedClearAll')}
+                    </button>
+                  </div>
                 )}
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 4,
-                  padding: '0 24px 12px 24px',
-                }}
-              >
-                {/* All selected moves are always pinned here — no flicker */}
+
+              {/* Scrollable results */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px 16px' }}>
+                {/* Pinned selected rows */}
                 {pinnedSelected.map((m) => (
                   <RelatedMoveRow
                     key={m.id}
@@ -1051,32 +1493,54 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                   />
                 ))}
 
-                {/* Empty state */}
-                {!relatedQuery.trim() && pinnedSelected.length === 0 && (
-                  <span
-                    style={{
-                      color: '#6b6270',
-                      fontSize: 13,
-                      fontFamily: 'var(--font-manrope)',
-                      padding: '24px 0',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {t('moves.fields.relatedStartTyping')}
-                  </span>
-                )}
+                {/* Divider between selected and search results */}
+                {pinnedSelected.length > 0 &&
+                  (searchLoading || visibleSearchResults.length > 0) && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        margin: '6px 0 10px',
+                      }}
+                    >
+                      <div style={{ flex: 1, height: 1, background: 'rgba(75,68,80,0.2)' }} />
+                      {relatedQuery &&
+                        !searchLoading &&
+                        !searchError &&
+                        visibleSearchResults.length > 0 && (
+                          <span
+                            style={{
+                              fontSize: 10,
+                              color: '#4b4450',
+                              fontFamily: 'var(--font-manrope)',
+                              fontWeight: 600,
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            {t('moves.fields.relatedResultCount', {
+                              count: visibleSearchResults.length,
+                            })}
+                          </span>
+                        )}
+                      <div style={{ flex: 1, height: 1, background: 'rgba(75,68,80,0.2)' }} />
+                    </div>
+                  )}
 
-                {/* Loading */}
-                {searchLoading && (
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-                    <Loader2 size={20} className="animate-spin" style={{ color: '#dcb8ff' }} />
-                  </div>
-                )}
+                {/* Skeleton loading */}
+                {searchLoading && [0, 1, 2, 3].map((i) => <SkeletonRow key={i} i={i} />)}
 
                 {/* Search error */}
                 {!searchLoading && searchError && (
                   <span
-                    style={{ color: '#f87171', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
+                    style={{
+                      color: '#f87171',
+                      fontSize: 13,
+                      fontFamily: 'var(--font-manrope)',
+                      padding: '8px 14px',
+                      display: 'block',
+                    }}
                   >
                     {t('moves.fields.relatedSearchError')}
                   </span>
@@ -1087,61 +1551,225 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                   !searchError &&
                   relatedQuery.trim() &&
                   searchResults.length === 0 && (
-                    <span
-                      style={{ color: '#6b6270', fontSize: 13, fontFamily: 'var(--font-manrope)' }}
+                    <div
+                      style={{
+                        padding: '40px 0',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 10,
+                      }}
                     >
-                      {t('moves.fields.relatedNoResults')}
-                    </span>
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 12,
+                          background: 'rgba(75,68,80,0.15)',
+                          border: '1px solid rgba(75,68,80,0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#4b4450',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <svg
+                          width={20}
+                          height={20}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="11" cy="11" r="8" />
+                          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-space-grotesk)',
+                          fontSize: 15,
+                          fontWeight: 500,
+                          color: '#978e9b',
+                        }}
+                      >
+                        {t('moves.fields.relatedNoResults')}{' '}
+                        <em style={{ color: '#dcb8ff', fontStyle: 'italic' }}>{relatedQuery}</em>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: '#4b4450',
+                          fontFamily: 'var(--font-manrope)',
+                        }}
+                      >
+                        {t('moves.fields.relatedNoResultsHint')}
+                      </div>
+                    </div>
                   )}
 
-                {/* Search results (selected ones shown in pinned section above) */}
-                {visibleSearchResults.map((m) => (
-                  <RelatedMoveRow
-                    key={m.id}
-                    move={m}
-                    selected={false}
-                    onToggle={() => setValue('relatedMoveIds', [...watchedRelatedMoveIds, m.id])}
-                  />
-                ))}
+                {/* Empty state — no query, nothing selected */}
+                {!relatedQuery.trim() && pinnedSelected.length === 0 && (
+                  <div
+                    style={{
+                      padding: '44px 0',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 14,
+                        background:
+                          'linear-gradient(135deg,rgba(220,184,255,0.08),rgba(132,88,179,0.06))',
+                        border: '1px solid rgba(220,184,255,0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <svg
+                        width={26}
+                        height={26}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="rgba(220,184,255,0.5)"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </svg>
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-space-grotesk)',
+                        fontSize: 17,
+                        fontWeight: 500,
+                        color: '#978e9b',
+                        letterSpacing: '-0.01em',
+                      }}
+                    >
+                      {t('moves.fields.relatedEmptyTitle')}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: '#4b4450',
+                        fontFamily: 'var(--font-manrope)',
+                        lineHeight: 1.6,
+                        maxWidth: 280,
+                      }}
+                    >
+                      {t('moves.fields.relatedEmptyDesc')}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        fontSize: 11,
+                        color: '#4b4450',
+                        fontFamily: 'var(--font-manrope)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <kbd
+                        style={{
+                          background: '#1b1b1b',
+                          border: '1px solid rgba(75,68,80,0.4)',
+                          borderRadius: 4,
+                          padding: '2px 7px',
+                          fontSize: 10,
+                          color: '#4b4450',
+                          fontFamily: 'var(--font-manrope)',
+                        }}
+                      >
+                        Type
+                      </kbd>
+                      {t('moves.fields.relatedEmptyHint')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search results */}
+                {!searchLoading &&
+                  !searchError &&
+                  visibleSearchResults.map((m, i) => (
+                    <RelatedMoveRow
+                      key={m.id}
+                      move={m}
+                      selected={false}
+                      isNew
+                      animationDelay={i * 30}
+                      onToggle={() => setValue('relatedMoveIds', [...watchedRelatedMoveIds, m.id])}
+                    />
+                  ))}
               </div>
-            </>
+            </div>
           )}
         </div>
 
         {/* Footer */}
         <div
           style={{
-            padding: '16px 24px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            padding: '14px 24px',
+            borderTop: '1px solid rgba(75,68,80,0.2)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            background: '#1a1a1a',
           }}
         >
-          {error && (
-            <span
-              style={{
-                color: '#f87171',
-                fontSize: 14,
-                flex: 1,
-                minWidth: 0,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {error}
-            </span>
-          )}
-          <div style={{ marginLeft: 'auto', flexShrink: 0, display: 'flex', gap: 12 }}>
+          <div
+            style={{
+              fontSize: 12,
+              color: '#4b4450',
+              fontFamily: 'var(--font-manrope)',
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {error ? (
+              <span
+                style={{
+                  color: '#f87171',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  display: 'block',
+                }}
+              >
+                {error}
+              </span>
+            ) : watchedRelatedMoveIds.length > 0 ? (
+              t('moves.fields.relatedLinked', { count: watchedRelatedMoveIds.length })
+            ) : (
+              t('moves.fields.relatedNoneLinked')
+            )}
+          </div>
+          <div style={{ flexShrink: 0, display: 'flex', gap: 10 }}>
             <Button
               variant="outline"
               onClick={onClose}
               disabled={saving}
               style={{
-                borderColor: 'rgba(255,255,255,0.15)',
-                color: '#e0e0e0',
+                borderColor: 'rgba(75,68,80,0.4)',
+                color: '#978e9b',
                 background: 'transparent',
+                fontSize: 13,
+                fontWeight: 500,
               }}
             >
               {t('cancel')}
@@ -1151,11 +1779,16 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
               onClick={handleSubmit(onValidSubmit, onInvalidSubmit)}
               disabled={saving}
               style={{
-                background: '#8458b3',
-                color: '#fff',
+                background: 'linear-gradient(135deg,#dcb8ff,#8458b3,#dcb8ff)',
+                backgroundSize: '200% 200%',
+                backgroundPosition: 'left center',
+                color: '#f8ebff',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                boxShadow: '0 4px 16px -2px rgba(132,88,179,0.4)',
               }}
             >
               {saving && <Loader2 size={14} className="animate-spin" style={{ flexShrink: 0 }} />}

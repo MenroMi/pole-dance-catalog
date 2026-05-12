@@ -370,10 +370,34 @@ describe('getMoveByIdAction', () => {
       stepsData_en: null,
       stepsData_pl: null,
       tags: [{ id: 'tag-1', name_en: 'Spin', name_pl: 'Spin' }],
+      relatedMoves: [
+        {
+          id: 'r-1',
+          title_en: 'Spin',
+          title_pl: 'Spin PL',
+          difficulty: 'BEGINNER',
+          category: 'SPINS',
+          _count: { favourites: 5 },
+        },
+      ],
     };
     mockMoveFindUnique.mockResolvedValue(move);
     const result = await getMoveByIdAction('move-1');
-    expect(result).toEqual({ ...move, stepsData_en: [], stepsData_pl: [] });
+    expect(result).toEqual({
+      ...move,
+      stepsData_en: [],
+      stepsData_pl: [],
+      relatedMoves: [
+        {
+          id: 'r-1',
+          title_en: 'Spin',
+          title_pl: 'Spin PL',
+          difficulty: 'BEGINNER',
+          category: 'SPINS',
+          favourites: 5,
+        },
+      ],
+    });
     expect(mockMoveFindUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'move-1' } }),
     );
@@ -773,18 +797,42 @@ describe('searchRelatedMovesAction', () => {
     await expect(searchRelatedMovesAction({ query: '' })).rejects.toThrow('Invalid input');
   });
 
-  it('returns up to 20 results matching query', async () => {
+  it('returns up to 20 results matching query with difficulty/category/favourites', async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const moves = [{ id: 'm-1', title_en: 'Spin', title_pl: 'Spin PL' }];
-    mockMoveFindMany.mockResolvedValue(moves);
+    const rawMoves = [
+      {
+        id: 'm-1',
+        title_en: 'Spin',
+        title_pl: 'Spin PL',
+        difficulty: 'BEGINNER',
+        category: 'SPINS',
+        _count: { favourites: 3 },
+      },
+    ];
+    mockMoveFindMany.mockResolvedValue(rawMoves);
     const result = await searchRelatedMovesAction({ query: 'spin' });
     expect(mockMoveFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         take: 20,
-        select: { id: true, title_en: true, title_pl: true },
+        select: expect.objectContaining({
+          id: true,
+          title_en: true,
+          title_pl: true,
+          difficulty: true,
+          category: true,
+        }),
       }),
     );
-    expect(result).toEqual(moves);
+    expect(result).toEqual([
+      {
+        id: 'm-1',
+        title_en: 'Spin',
+        title_pl: 'Spin PL',
+        difficulty: 'BEGINNER',
+        category: 'SPINS',
+        favourites: 3,
+      },
+    ]);
   });
 
   it('excludes the given move id when excludeId is provided', async () => {

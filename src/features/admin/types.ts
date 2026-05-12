@@ -61,7 +61,14 @@ export interface FullAdminMove {
   coachNote_en: string | null;
   coachNoteAuthor: string | null;
   tags: { id: string; name_en: string; name_pl: string }[];
-  relatedMoves: { id: string; title_en: string; title_pl: string }[];
+  relatedMoves: {
+    id: string;
+    title_en: string;
+    title_pl: string;
+    difficulty: Move['difficulty'];
+    category: Move['category'];
+    favourites: number;
+  }[];
 }
 
 export interface AdminTagRow {
