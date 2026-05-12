@@ -376,7 +376,7 @@ function RelatedMoveRow({
     <button
       type="button"
       aria-pressed={selected}
-      aria-label={m.title_en}
+      aria-label={`${m.title_en} / ${m.title_pl}`}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       onClick={onToggle}
@@ -591,6 +591,7 @@ function SelectedPill({ move: m, onRemove }: { move: RelatedMoveInfo; onRemove: 
       </span>
       <button
         type="button"
+        aria-label={`Remove ${m.title_en}`}
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
@@ -646,6 +647,111 @@ function SkeletonRow({ i }: { i: number }) {
   );
 }
 
+function CloseBtn({ saving, onClose }: { saving: boolean; onClose: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (!saving) onClose();
+      }}
+      onMouseEnter={() => {
+        if (!saving) setHov(true);
+      }}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? 'rgba(75,68,80,0.25)' : 'rgba(75,68,80,0.15)',
+        border: '1px solid rgba(75,68,80,0.35)',
+        borderRadius: 8,
+        width: 34,
+        height: 34,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: saving ? '#4b4450' : hov ? '#e2e2e2' : '#978e9b',
+        cursor: saving ? 'default' : 'pointer',
+        transition: 'all 150ms',
+      }}
+    >
+      <svg
+        width={15}
+        height={15}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  );
+}
+
+function ClearSearchBtn({ onClear }: { onClear: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        color: hov ? '#978e9b' : '#4b4450',
+        display: 'flex',
+        flexShrink: 0,
+        transition: 'color 150ms',
+      }}
+    >
+      <svg
+        width={14}
+        height={14}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  );
+}
+
+function ClearAllBtn({ label, onClear }: { label: string; onClear: () => void }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: 11,
+        color: hov ? '#ef4444' : '#4b4450',
+        fontFamily: 'var(--font-manrope)',
+        fontWeight: 600,
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        padding: '3px 6px',
+        borderRadius: 4,
+        transition: 'color 150ms',
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalProps) {
   const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>('en');
@@ -653,9 +759,6 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [closeHov, setCloseHov] = useState(false);
-  const [clearSearchHov, setClearSearchHov] = useState(false);
-  const [clearAllHov, setClearAllHov] = useState(false);
   const [searchResults, setSearchResults] = useState<RelatedMoveInfo[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(false);
@@ -695,7 +798,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
 
   useEffect(() => {
     if (tab !== 'related') setRelatedQuery('');
-  }, [tab]);
+  }, [tab, setRelatedQuery]);
 
   useEffect(() => {
     if (!relatedQuery.trim()) {
@@ -893,42 +996,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
           <h2 style={{ margin: 0, color: '#e0e0e0', fontSize: 18, fontWeight: 600 }}>
             {move ? t('moves.editMove') : t('moves.addMove')}
           </h2>
-          <button
-            type="button"
-            onClick={() => {
-              if (!saving) onClose();
-            }}
-            onMouseEnter={() => {
-              if (!saving) setCloseHov(true);
-            }}
-            onMouseLeave={() => setCloseHov(false)}
-            style={{
-              background: closeHov ? 'rgba(75,68,80,0.25)' : 'rgba(75,68,80,0.15)',
-              border: '1px solid rgba(75,68,80,0.35)',
-              borderRadius: 8,
-              width: 34,
-              height: 34,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: saving ? '#4b4450' : closeHov ? '#e2e2e2' : '#978e9b',
-              cursor: saving ? 'default' : 'pointer',
-              transition: 'all 150ms',
-            }}
-          >
-            <svg
-              width={15}
-              height={15}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <CloseBtn saving={saving} onClose={onClose} />
         </div>
 
         {/* Tabs */}
@@ -1372,34 +1440,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     />
                   )}
                   {relatedQuery && !searchLoading && (
-                    <button
-                      type="button"
-                      onClick={() => setRelatedQuery('')}
-                      onMouseEnter={() => setClearSearchHov(true)}
-                      onMouseLeave={() => setClearSearchHov(false)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: clearSearchHov ? '#978e9b' : '#4b4450',
-                        display: 'flex',
-                        flexShrink: 0,
-                        transition: 'color 150ms',
-                      }}
-                    >
-                      <svg
-                        width={14}
-                        height={14}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </button>
+                    <ClearSearchBtn onClear={() => setRelatedQuery('')} />
                   )}
                 </div>
 
@@ -1440,29 +1481,10 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                         }
                       />
                     ))}
-                    <button
-                      type="button"
-                      onClick={() => setValue('relatedMoveIds', [])}
-                      onMouseEnter={() => setClearAllHov(true)}
-                      onMouseLeave={() => setClearAllHov(false)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: 11,
-                        color: clearAllHov ? '#ef4444' : '#4b4450',
-                        fontFamily: 'var(--font-manrope)',
-                        fontWeight: 600,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        padding: '3px 6px',
-                        borderRadius: 4,
-                        transition: 'color 150ms',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {t('moves.fields.relatedClearAll')}
-                    </button>
+                    <ClearAllBtn
+                      label={t('moves.fields.relatedClearAll')}
+                      onClear={() => setValue('relatedMoveIds', [])}
+                    />
                   </div>
                 )}
               </div>
