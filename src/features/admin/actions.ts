@@ -278,8 +278,8 @@ export async function searchRelatedMovesAction(params: {
     id: string;
     title_en: string;
     title_pl: string;
-    difficulty: string;
-    category: string;
+    difficulty: Difficulty;
+    category: Category;
     favourites: number;
   }[]
 > {

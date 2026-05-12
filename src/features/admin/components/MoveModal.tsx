@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Category, Difficulty } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
@@ -335,8 +336,8 @@ type RelatedMoveInfo = {
   id: string;
   title_en: string;
   title_pl: string;
-  difficulty: string;
-  category: string;
+  difficulty: Difficulty;
+  category: Category;
   favourites: number;
 };
 
@@ -372,16 +373,10 @@ function RelatedMoveRow({
   const glyph = CAT_GLYPHS[m.category] ?? '◇';
 
   return (
-    <div
-      role="checkbox"
-      aria-checked={selected}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-label={m.title_en}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       onClick={onToggle}
@@ -392,6 +387,8 @@ function RelatedMoveRow({
         padding: '10px 14px',
         borderRadius: 10,
         cursor: 'pointer',
+        width: '100%',
+        textAlign: 'left',
         border: selected
           ? '1px solid rgba(220,184,255,0.3)'
           : hov
@@ -555,7 +552,7 @@ function RelatedMoveRow({
         </svg>
         {m.favourites}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -629,7 +626,7 @@ function SkeletonRow({ i }: { i: number }) {
   const shimmer: React.CSSProperties = {
     background:
       'linear-gradient(90deg, rgba(75,68,80,0.1) 25%, rgba(75,68,80,0.25) 50%, rgba(75,68,80,0.1) 75%)',
-    backgroundSize: '600px 100%',
+    backgroundSize: '200% 100%',
     animation: `shimmer 1.4s ease-in-out infinite`,
     animationDelay: `${i * 80}ms`,
     borderRadius: 4,
@@ -656,6 +653,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [closeHov, setCloseHov] = useState(false);
+  const [clearSearchHov, setClearSearchHov] = useState(false);
+  const [clearAllHov, setClearAllHov] = useState(false);
   const [searchResults, setSearchResults] = useState<RelatedMoveInfo[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(false);
@@ -697,6 +697,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
     if (!relatedQuery.trim()) {
       setSearchResults([]);
       setSearchError(false);
+      setSearchLoading(false);
       return;
     }
     let cancelled = false;
@@ -893,8 +894,12 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
             onClick={() => {
               if (!saving) onClose();
             }}
+            onMouseEnter={() => {
+              if (!saving) setCloseHov(true);
+            }}
+            onMouseLeave={() => setCloseHov(false)}
             style={{
-              background: 'rgba(75,68,80,0.15)',
+              background: closeHov ? 'rgba(75,68,80,0.25)' : 'rgba(75,68,80,0.15)',
               border: '1px solid rgba(75,68,80,0.35)',
               borderRadius: 8,
               width: 34,
@@ -902,19 +907,9 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: saving ? '#4b4450' : '#978e9b',
+              color: saving ? '#4b4450' : closeHov ? '#e2e2e2' : '#978e9b',
               cursor: saving ? 'default' : 'pointer',
               transition: 'all 150ms',
-            }}
-            onMouseEnter={(e) => {
-              if (!saving) {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(75,68,80,0.25)';
-                (e.currentTarget as HTMLButtonElement).style.color = '#e2e2e2';
-              }
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(75,68,80,0.15)';
-              (e.currentTarget as HTMLButtonElement).style.color = saving ? '#4b4450' : '#978e9b';
             }}
           >
             <svg
@@ -1361,13 +1356,13 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                   />
                   {searchLoading && (
                     <div
+                      className="animate-spin"
                       style={{
                         width: 14,
                         height: 14,
                         borderRadius: '50%',
                         border: '2px solid rgba(220,184,255,0.15)',
                         borderTopColor: '#dcb8ff',
-                        animation: 'spin 600ms linear infinite',
                         flexShrink: 0,
                       }}
                     />
@@ -1376,20 +1371,16 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     <button
                       type="button"
                       onClick={() => setRelatedQuery('')}
+                      onMouseEnter={() => setClearSearchHov(true)}
+                      onMouseLeave={() => setClearSearchHov(false)}
                       style={{
                         background: 'transparent',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#4b4450',
+                        color: clearSearchHov ? '#978e9b' : '#4b4450',
                         display: 'flex',
                         flexShrink: 0,
                         transition: 'color 150ms',
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = '#978e9b';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = '#4b4450';
                       }}
                     >
                       <svg
@@ -1448,12 +1439,14 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                     <button
                       type="button"
                       onClick={() => setValue('relatedMoveIds', [])}
+                      onMouseEnter={() => setClearAllHov(true)}
+                      onMouseLeave={() => setClearAllHov(false)}
                       style={{
                         background: 'transparent',
                         border: 'none',
                         cursor: 'pointer',
                         fontSize: 11,
-                        color: '#4b4450',
+                        color: clearAllHov ? '#ef4444' : '#4b4450',
                         fontFamily: 'var(--font-manrope)',
                         fontWeight: 600,
                         letterSpacing: '0.06em',
@@ -1462,12 +1455,6 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                         borderRadius: 4,
                         transition: 'color 150ms',
                         flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = '#4b4450';
                       }}
                     >
                       {t('moves.fields.relatedClearAll')}
@@ -1550,7 +1537,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                 {!searchLoading &&
                   !searchError &&
                   relatedQuery.trim() &&
-                  searchResults.length === 0 && (
+                  visibleSearchResults.length === 0 && (
                     <div
                       style={{
                         padding: '40px 0',
@@ -1598,7 +1585,11 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                         }}
                       >
                         {t('moves.fields.relatedNoResults')}{' '}
-                        <em style={{ color: '#dcb8ff', fontStyle: 'italic' }}>{relatedQuery}</em>
+                        <em style={{ color: '#dcb8ff', fontStyle: 'italic' }}>
+                          {relatedQuery.length > 40
+                            ? `${relatedQuery.slice(0, 40)}…`
+                            : relatedQuery}
+                        </em>
                       </div>
                       <div
                         style={{
