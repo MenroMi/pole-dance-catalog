@@ -1470,19 +1470,21 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
               {/* Scrollable results */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px 16px' }}>
                 {/* Pinned selected rows */}
-                {pinnedSelected.map((m) => (
-                  <RelatedMoveRow
-                    key={m.id}
-                    move={m}
-                    selected
-                    onToggle={() =>
-                      setValue(
-                        'relatedMoveIds',
-                        watchedRelatedMoveIds.filter((id) => id !== m.id),
-                      )
-                    }
-                  />
-                ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {pinnedSelected.map((m) => (
+                    <RelatedMoveRow
+                      key={m.id}
+                      move={m}
+                      selected
+                      onToggle={() =>
+                        setValue(
+                          'relatedMoveIds',
+                          watchedRelatedMoveIds.filter((id) => id !== m.id),
+                        )
+                      }
+                    />
+                  ))}
+                </div>
 
                 {/* Divider between selected and search results */}
                 {pinnedSelected.length > 0 &&
