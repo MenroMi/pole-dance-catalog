@@ -324,7 +324,9 @@ export async function searchRelatedMovesAction(params: {
 
 export async function getAdminStatsAction(): Promise<AdminStats> {
   await requireAdmin();
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
+  const sevenDaysAgo = new Date(todayUTC.getTime() - 6 * 24 * 60 * 60 * 1000);
 
   const [
     totalMoves,
@@ -351,7 +353,7 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
     prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
     prisma.user.count({ where: { blockedAt: { not: null } } }),
     prisma.move.count({ where: { imageUrl: null } }),
-    prisma.move.count({ where: { description_en: null } }),
+    prisma.move.count({ where: { OR: [{ description_en: null }, { description_pl: null }] } }),
     prisma.move.count({ where: { tags: { none: {} } } }),
     prisma.move.findMany({
       take: 5,
@@ -391,12 +393,18 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
         select: { id: true, title_en: true, title_pl: true },
       })
     : [];
-  const topFavouritedMoves = topFavRaw.map((r) => ({
-    id: r.moveId,
-    title_en: topMoveDetails.find((m) => m.id === r.moveId)?.title_en ?? '',
-    title_pl: topMoveDetails.find((m) => m.id === r.moveId)?.title_pl ?? '',
-    count: r._count.moveId,
-  }));
+  const detailMap = new Map(topMoveDetails.map((m) => [m.id, m]));
+  const topFavouritedMoves = topFavRaw
+    .map((r) => {
+      const detail = detailMap.get(r.moveId);
+      return {
+        id: r.moveId,
+        title_en: detail?.title_en ?? '',
+        title_pl: detail?.title_pl ?? '',
+        count: r._count.moveId,
+      };
+    })
+    .filter((m) => m.title_en);
 
   const difficultyDistribution = {
     BEGINNER: diffGroups.find((g) => g.difficulty === 'BEGINNER')?._count._all ?? 0,
@@ -404,16 +412,12 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
     ADVANCED: diffGroups.find((g) => g.difficulty === 'ADVANCED')?._count._all ?? 0,
   };
 
-  const days: { key: string; label: string }[] = [];
+  const days: string[] = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-    days.push({
-      key: d.toISOString().slice(0, 10),
-      label: d.toLocaleDateString('en', { weekday: 'short' }),
-    });
+    days.push(new Date(todayUTC.getTime() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
   }
-  const activityData = days.map(({ key, label }) => ({
-    day: label,
+  const activityData = days.map((key) => ({
+    day: key,
     registrations: recentUserDates.filter((u) => u.createdAt.toISOString().slice(0, 10) === key)
       .length,
     favourites: recentFavDates.filter((f) => f.createdAt.toISOString().slice(0, 10) === key).length,

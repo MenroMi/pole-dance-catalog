@@ -9,6 +9,7 @@ vi.mock('@/shared/lib/prisma', () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
       count: vi.fn(),
+      groupBy: vi.fn(),
     },
     tag: {
       findMany: vi.fn(),
@@ -22,6 +23,14 @@ vi.mock('@/shared/lib/prisma', () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
+    },
+    userFavourite: {
+      count: vi.fn(),
+      groupBy: vi.fn(),
+      findMany: vi.fn(),
+    },
+    userProgress: {
       count: vi.fn(),
     },
   },
@@ -87,6 +96,11 @@ const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockUserUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockUserDelete = prisma.user.delete as ReturnType<typeof vi.fn>;
 const mockUserCount = prisma.user.count as ReturnType<typeof vi.fn>;
+const mockMoveGroupBy = prisma.move.groupBy as ReturnType<typeof vi.fn>;
+const mockUserFavouriteCount = prisma.userFavourite.count as ReturnType<typeof vi.fn>;
+const mockUserFavouriteGroupBy = prisma.userFavourite.groupBy as ReturnType<typeof vi.fn>;
+const mockUserFavouriteFindMany = prisma.userFavourite.findMany as ReturnType<typeof vi.fn>;
+const mockUserProgressCount = prisma.userProgress.count as ReturnType<typeof vi.fn>;
 const mockUploadStream = cloudinary.uploader.upload_stream as ReturnType<typeof vi.fn>;
 const mockDestroy = cloudinary.uploader.destroy as ReturnType<typeof vi.fn>;
 
@@ -446,19 +460,133 @@ describe('deleteUploadedImageAction', () => {
 });
 
 describe('getAdminStatsAction', () => {
+  function setupStatsMocks({
+    totalMoves = 10,
+    totalUsers = 5,
+    newUsersThisWeek = 2,
+    blockedUsers = 0,
+    movesWithoutImage = 0,
+    movesWithoutDescription = 0,
+    movesWithoutTags = 0,
+    totalTags = 3,
+    totalFavourites = 20,
+    totalProgress = 15,
+    recentMoves = [] as unknown[],
+    diffGroups = [] as { difficulty: string; _count: { _all: number } }[],
+    topFavRaw = [] as { moveId: string; _count: { moveId: number } }[],
+    recentUserDates = [] as { createdAt: Date }[],
+    recentFavDates = [] as { createdAt: Date }[],
+    topMoveDetails = [] as { id: string; title_en: string; title_pl: string }[],
+  } = {}) {
+    // Promise.all order: move.count×4, user.count×3, tag.count, userFavourite.count,
+    // userProgress.count, move.findMany, move.groupBy, userFavourite.groupBy,
+    // user.findMany, userFavourite.findMany
+    mockMoveCount
+      .mockResolvedValueOnce(totalMoves)
+      .mockResolvedValueOnce(movesWithoutImage)
+      .mockResolvedValueOnce(movesWithoutDescription)
+      .mockResolvedValueOnce(movesWithoutTags);
+    mockUserCount
+      .mockResolvedValueOnce(totalUsers)
+      .mockResolvedValueOnce(newUsersThisWeek)
+      .mockResolvedValueOnce(blockedUsers);
+    mockTagCount.mockResolvedValue(totalTags);
+    mockUserFavouriteCount.mockResolvedValue(totalFavourites);
+    mockUserProgressCount.mockResolvedValue(totalProgress);
+    mockMoveFindMany.mockResolvedValueOnce(recentMoves);
+    if (topFavRaw.length > 0) {
+      mockMoveFindMany.mockResolvedValueOnce(topMoveDetails);
+    }
+    mockMoveGroupBy.mockResolvedValue(diffGroups);
+    mockUserFavouriteGroupBy.mockResolvedValue(topFavRaw);
+    mockUserFindMany.mockResolvedValue(recentUserDates);
+    mockUserFavouriteFindMany.mockResolvedValue(recentFavDates);
+  }
+
   it('throws Unauthorized when not authenticated', async () => {
     mockAuth.mockResolvedValue(null);
     await expect(getAdminStatsAction()).rejects.toThrow('Unauthorized');
   });
 
-  it('returns stats when ADMIN', async () => {
+  it('returns all 14 fields when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockMoveCount.mockResolvedValue(10);
-    mockUserCount.mockResolvedValue(5);
-    mockTagCount.mockResolvedValue(3);
-    mockMoveFindMany.mockResolvedValue([]);
+    setupStatsMocks({ totalMoves: 10, totalUsers: 5, totalTags: 3 });
     const result = await getAdminStatsAction();
-    expect(result).toEqual({ totalMoves: 10, totalUsers: 5, totalTags: 3, recentMoves: [] });
+    expect(result.totalMoves).toBe(10);
+    expect(result.totalUsers).toBe(5);
+    expect(result.totalTags).toBe(3);
+    expect(result.totalFavourites).toBe(20);
+    expect(result.totalProgress).toBe(15);
+    expect(result.newUsersThisWeek).toBe(2);
+    expect(result.blockedUsers).toBe(0);
+    expect(result.activityData).toHaveLength(7);
+    expect(result.recentMoves).toEqual([]);
+    expect(result.topFavouritedMoves).toEqual([]);
+  });
+
+  it('maps difficultyDistribution correctly and defaults missing difficulty to 0', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    setupStatsMocks({
+      diffGroups: [
+        { difficulty: 'BEGINNER', _count: { _all: 4 } },
+        { difficulty: 'ADVANCED', _count: { _all: 6 } },
+        // INTERMEDIATE intentionally missing
+      ],
+    });
+    const result = await getAdminStatsAction();
+    expect(result.difficultyDistribution).toEqual({ BEGINNER: 4, INTERMEDIATE: 0, ADVANCED: 6 });
+  });
+
+  it('activityData has 7 entries each with an ISO date key', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    setupStatsMocks();
+    const result = await getAdminStatsAction();
+    expect(result.activityData).toHaveLength(7);
+    result.activityData.forEach((entry) => {
+      expect(entry.day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(entry.registrations).toBeGreaterThanOrEqual(0);
+      expect(entry.favourites).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  it('buckets registrations into the correct day', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const today = new Date();
+    today.setUTCHours(12, 0, 0, 0);
+    const todayKey = today.toISOString().slice(0, 10);
+    setupStatsMocks({ recentUserDates: [{ createdAt: today }] });
+    const result = await getAdminStatsAction();
+    const todayEntry = result.activityData.find((e) => e.day === todayKey);
+    expect(todayEntry?.registrations).toBe(1);
+  });
+
+  it('filters out topFavouritedMoves where move was deleted (race condition)', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    setupStatsMocks({
+      topFavRaw: [{ moveId: 'deleted-move', _count: { moveId: 5 } }],
+      topMoveDetails: [], // move not found — deleted between two queries
+    });
+    const result = await getAdminStatsAction();
+    expect(result.topFavouritedMoves).toEqual([]);
+  });
+
+  it('returns topFavouritedMoves sorted by count descending', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    setupStatsMocks({
+      topFavRaw: [
+        { moveId: 'm-1', _count: { moveId: 10 } },
+        { moveId: 'm-2', _count: { moveId: 3 } },
+      ],
+      topMoveDetails: [
+        { id: 'm-1', title_en: 'Butterfly', title_pl: 'Motyl' },
+        { id: 'm-2', title_en: 'Spin', title_pl: 'Spin PL' },
+      ],
+    });
+    const result = await getAdminStatsAction();
+    expect(result.topFavouritedMoves).toEqual([
+      { id: 'm-1', title_en: 'Butterfly', title_pl: 'Motyl', count: 10 },
+      { id: 'm-2', title_en: 'Spin', title_pl: 'Spin PL', count: 3 },
+    ]);
   });
 });
 

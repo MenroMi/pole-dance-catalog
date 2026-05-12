@@ -158,11 +158,12 @@ function CatalogHealth({ stats }: { stats: AdminStats }) {
   const total = BEGINNER + INTERMEDIATE + ADVANCED;
   const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
 
-  const diffSegments = [
-    { key: 'BEGINNER', color: '#84d099', count: BEGINNER, pct: pct(BEGINNER) },
-    { key: 'INTERMEDIATE', color: '#c5afe2', count: INTERMEDIATE, pct: pct(INTERMEDIATE) },
-    { key: 'ADVANCED', color: '#fbbf24', count: ADVANCED, pct: pct(ADVANCED) },
-  ];
+  const diffSegments = (['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const).map((key) => ({
+    key,
+    color: DIFF_COLORS[key].fg,
+    count: stats.difficultyDistribution[key],
+    pct: pct(stats.difficultyDistribution[key]),
+  }));
 
   const flags = [
     { key: 'image', label: t('dashboard.withoutImage'), count: stats.movesWithoutImage },
@@ -298,8 +299,11 @@ function CatalogHealth({ stats }: { stats: AdminStats }) {
 
 function ActivityChart({ data }: { data: AdminStats['activityData'] }) {
   const t = useTranslations('admin');
+  const locale = useLocale();
   const maxReg = Math.max(...data.map((d) => d.registrations), 1);
   const maxFav = Math.max(...data.map((d) => d.favourites), 1);
+  const dayLabel = (iso: string) =>
+    new Date(iso + 'T00:00:00Z').toLocaleDateString(locale, { weekday: 'short' });
 
   return (
     <div
@@ -447,7 +451,7 @@ function ActivityChart({ data }: { data: AdminStats['activityData'] }) {
                 fontWeight: 600,
               }}
             >
-              {d.day}
+              {dayLabel(d.day)}
             </div>
           </div>
         ))}
@@ -579,6 +583,7 @@ function TopFavourited({ moves }: { moves: AdminStats['topFavouritedMoves'] }) {
 
 function RecentMoves({ moves }: { moves: AdminStats['recentMoves'] }) {
   const t = useTranslations('admin');
+  const locale = useLocale();
 
   return (
     <div
@@ -663,7 +668,7 @@ function RecentMoves({ moves }: { moves: AdminStats['recentMoves'] }) {
                   textOverflow: 'ellipsis',
                 }}
               >
-                {m.title_en}
+                {locale === 'pl' ? m.title_pl || m.title_en : m.title_en}
               </div>
               <div
                 style={{
@@ -832,13 +837,7 @@ export function AdminDashboard() {
           marginBottom: 14,
         }}
       >
-        <StatCard
-          label={t('dashboard.totalUsers')}
-          value={stats.totalUsers}
-          sub={`+${stats.newUsersThisWeek} ${t('dashboard.thisWeek')}`}
-          trend="up"
-          icon="Users"
-        />
+        <StatCard label={t('dashboard.totalUsers')} value={stats.totalUsers} icon="Users" />
         <StatCard
           label={t('dashboard.totalMoves')}
           value={stats.totalMoves}
