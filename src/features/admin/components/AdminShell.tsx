@@ -8,6 +8,8 @@ import LocaleSwitcher from '@/shared/components/LocaleSwitcher';
 
 import { SIDEBAR_KEY } from '../constants';
 
+import { NavIcon } from './NavIcon';
+
 type Section = 'dashboard' | 'moves' | 'users' | 'tags';
 
 interface AdminShellProps {
@@ -15,74 +17,6 @@ interface AdminShellProps {
   activeSection: Section;
   onSectionChange: (section: Section) => void;
   currentUserName?: string | null;
-}
-
-function NavIcon({ name, size = 16 }: { name: string; size?: number }) {
-  const paths: Record<string, React.ReactNode> = {
-    Grid: (
-      <>
-        <rect x="3" y="3" width="7" height="7" />
-        <rect x="14" y="3" width="7" height="7" />
-        <rect x="14" y="14" width="7" height="7" />
-        <rect x="3" y="14" width="7" height="7" />
-      </>
-    ),
-    Play: <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none" />,
-    Users: (
-      <>
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-    Tag: (
-      <>
-        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-        <line x1="7" y1="7" x2="7.01" y2="7" />
-      </>
-    ),
-    BarChart: (
-      <>
-        <line x1="18" y1="20" x2="18" y2="10" />
-        <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" />
-      </>
-    ),
-    Search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </>
-    ),
-    Bell: (
-      <>
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-      </>
-    ),
-    ChevronRight: <polyline points="9 18 15 12 9 6" />,
-    ArrowLeft: (
-      <>
-        <line x1="19" y1="12" x2="5" y2="12" />
-        <polyline points="12 19 5 12 12 5" />
-      </>
-    ),
-  };
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {paths[name]}
-    </svg>
-  );
 }
 
 const NAV_ITEMS: { key: Section; icon: string }[] = [
@@ -216,6 +150,7 @@ export function AdminShell({
                 key={key}
                 onClick={() => onSectionChange(key)}
                 title={collapsed ? t(`nav.${key}`) : undefined}
+                aria-current={active ? 'page' : undefined}
                 style={{
                   width: '100%',
                   display: 'flex',
@@ -398,6 +333,8 @@ export function AdminShell({
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button
               onClick={toggleCollapsed}
+              aria-label={t('nav.toggleSidebar')}
+              aria-expanded={!collapsed}
               style={{
                 background: 'transparent',
                 border: 'none',

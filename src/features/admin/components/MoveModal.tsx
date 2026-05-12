@@ -651,11 +651,12 @@ function SkeletonRow({ i }: { i: number }) {
 }
 
 function CloseBtn({ saving, onClose }: { saving: boolean; onClose: () => void }) {
+  const t = useTranslations('admin');
   const [hov, setHov] = useState(false);
   return (
     <button
       type="button"
-      aria-label="Close"
+      aria-label={t('moves.close')}
       onClick={() => {
         if (!saving) onClose();
       }}
@@ -695,11 +696,12 @@ function CloseBtn({ saving, onClose }: { saving: boolean; onClose: () => void })
 }
 
 function ClearSearchBtn({ onClear }: { onClear: () => void }) {
+  const t = useTranslations('admin');
   const [hov, setHov] = useState(false);
   return (
     <button
       type="button"
-      aria-label="Clear search"
+      aria-label={t('moves.clearSearch')}
       onClick={onClear}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -1765,7 +1767,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
                           fontFamily: 'var(--font-manrope)',
                         }}
                       >
-                        Type
+                        {t('moves.fields.typeHint')}
                       </kbd>
                       {t('moves.fields.relatedEmptyHint')}
                     </div>

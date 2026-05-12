@@ -6,54 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getAdminStatsAction } from '../actions';
 import type { AdminStats } from '../types';
 
-function NavIcon({ name, size = 18 }: { name: string; size?: number }) {
-  const paths: Record<string, React.ReactNode> = {
-    Users: (
-      <>
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-    Play: <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none" />,
-    Activity: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
-    Heart: (
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    ),
-    Tag: (
-      <>
-        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-        <line x1="7" y1="7" x2="7.01" y2="7" />
-      </>
-    ),
-    Award: (
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    ),
-    TrendingUp: (
-      <>
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-        <polyline points="17 6 23 6 23 12" />
-      </>
-    ),
-    ChevronRight: <polyline points="9 18 15 12 9 6" />,
-    Shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
-  };
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {paths[name]}
-    </svg>
-  );
-}
+import { NavIcon } from './NavIcon';
 
 const DIFF_COLORS: Record<string, { bg: string; fg: string }> = {
   BEGINNER: { bg: 'rgba(132,209,153,0.16)', fg: '#84d099' },
@@ -802,7 +755,7 @@ export function AdminDashboard() {
             marginBottom: 8,
           }}
         >
-          {monthLabel} · v.0.1
+          {monthLabel}
         </div>
         <h1
           style={{

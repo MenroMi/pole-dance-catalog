@@ -272,7 +272,8 @@
       "moves": "Ruchy",
       "users": "Użytkownicy",
       "tags": "Tagi",
-      "backToCatalog": "Wróć do katalogu"
+      "backToCatalog": "Wróć do katalogu",
+      "toggleSidebar": "Przełącz panel boczny"
     },
     "dashboard": {
       "totalMoves": "Wszystkie ruchy",
@@ -324,6 +325,8 @@
       "confirmDelete": "Czy na pewno chcesz usunąć ten ruch? Tej operacji nie można cofnąć.",
       "saving": "Zapisywanie...",
       "loadError": "Nie udało się załadować ruchów",
+      "close": "Zamknij",
+      "clearSearch": "Wyczyść wyszukiwanie",
       "cols": {
         "title": "Tytuł",
         "difficulty": "Poziom",
@@ -375,6 +378,7 @@
         "relatedSearchPlaceholder": "Szukaj po tytule po angielsku lub polsku…",
         "relatedEmptyTitle": "połącz powiązane ruchy",
         "relatedEmptyDesc": "Szukaj po tytule, aby znaleźć ruchy uzupełniające — pojawią się jako sugestie na stronie szczegółów ruchu.",
+        "typeHint": "Wpisz",
         "relatedEmptyHint": "aby szukać po tytule EN lub PL",
         "relatedNoResults": "brak wyników dla",
         "relatedNoResultsHint": "Spróbuj innego tytułu po angielsku lub polsku",

@@ -272,7 +272,8 @@
       "moves": "Moves",
       "users": "Users",
       "tags": "Tags",
-      "backToCatalog": "Back to catalog"
+      "backToCatalog": "Back to catalog",
+      "toggleSidebar": "Toggle sidebar"
     },
     "dashboard": {
       "totalMoves": "Total Moves",
@@ -324,6 +325,8 @@
       "confirmDelete": "Are you sure you want to delete this move? This action cannot be undone.",
       "saving": "Saving...",
       "loadError": "Failed to load moves",
+      "close": "Close",
+      "clearSearch": "Clear search",
       "cols": {
         "title": "Title",
         "difficulty": "Difficulty",
@@ -375,6 +378,7 @@
         "relatedSearchPlaceholder": "Search by title in English or Polish…",
         "relatedEmptyTitle": "link related moves",
         "relatedEmptyDesc": "Search by title to find moves that complement this one — they'll appear as suggestions on the move detail page.",
+        "typeHint": "Type",
         "relatedEmptyHint": "to search by EN or PL title",
         "relatedNoResults": "no results for",
         "relatedNoResultsHint": "Try a different title in English or Polish",

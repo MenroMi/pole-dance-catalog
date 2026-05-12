@@ -18,51 +18,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 
 type RoleFilter = 'ALL' | 'USER' | 'ADMIN' | 'BLOCKED';
 
-const NAV_ICON_PATHS = {
-  Search: (
-    <>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </>
-  ),
-  Shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
-  Ban: (
-    <>
-      <circle cx="12" cy="12" r="10" />
-      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-    </>
-  ),
-  RefreshCw: (
-    <>
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </>
-  ),
-  Trash: (
-    <>
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </>
-  ),
-} as const;
-
-function NavIcon({ name, size = 16 }: { name: keyof typeof NAV_ICON_PATHS; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {NAV_ICON_PATHS[name]}
-    </svg>
-  );
-}
+import { NavIcon } from './NavIcon';
 
 const GRID = '2.5fr 1fr 120px 1fr 120px';
 
@@ -563,7 +519,11 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
       } else if (confirm.type === 'delete') {
         const deleted = users.find((u) => u.id === confirm.userId);
         await deleteUserAction(confirm.userId);
-        setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
+        setUsers((prev) => {
+          const next = prev.filter((u) => u.id !== confirm.userId);
+          if (next.length === 0 && page > 1) setPage(1);
+          return next;
+        });
         setTotal((n) => Math.max(0, n - 1));
         setTotalAll((n) => Math.max(0, n - 1));
         if (deleted?.role === 'ADMIN') setTotalAdmins((n) => Math.max(0, n - 1));

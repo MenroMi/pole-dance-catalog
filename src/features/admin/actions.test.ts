@@ -156,6 +156,14 @@ describe('createMoveAction', () => {
     expect(mockMoveCreate).not.toHaveBeenCalled();
   });
 
+  it('throws Invalid input when tagIds is empty', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    await expect(createMoveAction({ ...validCreateInput, tagIds: [] })).rejects.toThrow(
+      'Invalid input',
+    );
+    expect(mockMoveCreate).not.toHaveBeenCalled();
+  });
+
   it('creates move when ADMIN', async () => {
     mockAuth.mockResolvedValue(adminSession);
     mockMoveCreate.mockResolvedValue({ id: 'move-1' });
@@ -486,9 +494,22 @@ describe('getAdminStatsAction', () => {
     recentFavDates = [] as { createdAt: Date }[],
     topMoveDetails = [] as { id: string; title_en: string; title_pl: string }[],
   } = {}) {
-    // Promise.all order: move.count×4, user.count×3, tag.count, userFavourite.count,
-    // userProgress.count, move.findMany, move.groupBy, userFavourite.groupBy,
-    // user.findMany, userFavourite.findMany
+    // Promise.all index order (must match actions.ts exactly):
+    // 0  move.count()            → totalMoves
+    // 1  user.count()            → totalUsers
+    // 2  tag.count()             → totalTags
+    // 3  userFavourite.count()   → totalFavourites
+    // 4  userProgress.count()    → totalProgress
+    // 5  user.count(createdAt)   → newUsersThisWeek
+    // 6  user.count(blockedAt)   → blockedUsers
+    // 7  move.count(imageUrl)    → movesWithoutImage
+    // 8  move.count(description) → movesWithoutDescription
+    // 9  move.count(tags)        → movesWithoutTags
+    // 10 move.findMany()         → recentMoves
+    // 11 move.groupBy()          → diffGroups
+    // 12 userFavourite.groupBy() → topFavRaw
+    // 13 user.findMany()         → recentUserDates
+    // 14 userFavourite.findMany()→ recentFavDates
     mockMoveCount
       .mockResolvedValueOnce(totalMoves)
       .mockResolvedValueOnce(movesWithoutImage)
