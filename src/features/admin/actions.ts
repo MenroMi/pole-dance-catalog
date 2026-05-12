@@ -324,10 +324,35 @@ export async function searchRelatedMovesAction(params: {
 
 export async function getAdminStatsAction(): Promise<AdminStats> {
   await requireAdmin();
-  const [totalMoves, totalUsers, totalTags, recentMoves] = await Promise.all([
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [
+    totalMoves,
+    totalUsers,
+    totalTags,
+    totalFavourites,
+    totalProgress,
+    newUsersThisWeek,
+    blockedUsers,
+    movesWithoutImage,
+    movesWithoutDescription,
+    movesWithoutTags,
+    recentMoves,
+    diffGroups,
+    topFavRaw,
+    recentUserDates,
+    recentFavDates,
+  ] = await Promise.all([
     prisma.move.count(),
     prisma.user.count(),
     prisma.tag.count(),
+    prisma.userFavourite.count(),
+    prisma.userProgress.count(),
+    prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+    prisma.user.count({ where: { blockedAt: { not: null } } }),
+    prisma.move.count({ where: { imageUrl: null } }),
+    prisma.move.count({ where: { description_en: null } }),
+    prisma.move.count({ where: { tags: { none: {} } } }),
     prisma.move.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
@@ -342,8 +367,74 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
         _count: { select: { favourites: true, progress: true } },
       },
     }),
+    prisma.move.groupBy({ by: ['difficulty'], _count: { _all: true } }),
+    prisma.userFavourite.groupBy({
+      by: ['moveId'],
+      _count: { moveId: true },
+      orderBy: { _count: { moveId: 'desc' } },
+      take: 5,
+    }),
+    prisma.user.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true },
+    }),
+    prisma.userFavourite.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true },
+    }),
   ]);
-  return { totalMoves, totalUsers, totalTags, recentMoves };
+
+  const topMoveIds = topFavRaw.map((r) => r.moveId);
+  const topMoveDetails = topMoveIds.length
+    ? await prisma.move.findMany({
+        where: { id: { in: topMoveIds } },
+        select: { id: true, title_en: true, title_pl: true },
+      })
+    : [];
+  const topFavouritedMoves = topFavRaw.map((r) => ({
+    id: r.moveId,
+    title_en: topMoveDetails.find((m) => m.id === r.moveId)?.title_en ?? '',
+    title_pl: topMoveDetails.find((m) => m.id === r.moveId)?.title_pl ?? '',
+    count: r._count.moveId,
+  }));
+
+  const difficultyDistribution = {
+    BEGINNER: diffGroups.find((g) => g.difficulty === 'BEGINNER')?._count._all ?? 0,
+    INTERMEDIATE: diffGroups.find((g) => g.difficulty === 'INTERMEDIATE')?._count._all ?? 0,
+    ADVANCED: diffGroups.find((g) => g.difficulty === 'ADVANCED')?._count._all ?? 0,
+  };
+
+  const days: { key: string; label: string }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    days.push({
+      key: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString('en', { weekday: 'short' }),
+    });
+  }
+  const activityData = days.map(({ key, label }) => ({
+    day: label,
+    registrations: recentUserDates.filter((u) => u.createdAt.toISOString().slice(0, 10) === key)
+      .length,
+    favourites: recentFavDates.filter((f) => f.createdAt.toISOString().slice(0, 10) === key).length,
+  }));
+
+  return {
+    totalMoves,
+    totalUsers,
+    totalTags,
+    totalFavourites,
+    totalProgress,
+    newUsersThisWeek,
+    blockedUsers,
+    movesWithoutImage,
+    movesWithoutDescription,
+    movesWithoutTags,
+    difficultyDistribution,
+    topFavouritedMoves,
+    activityData,
+    recentMoves,
+  };
 }
 
 export async function getTagsForAdminAction(): Promise<AdminTagRow[]> {

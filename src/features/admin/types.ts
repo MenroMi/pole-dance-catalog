@@ -96,6 +96,16 @@ export interface AdminStats {
   totalMoves: number;
   totalUsers: number;
   totalTags: number;
+  totalFavourites: number;
+  totalProgress: number;
+  newUsersThisWeek: number;
+  blockedUsers: number;
+  movesWithoutImage: number;
+  movesWithoutDescription: number;
+  movesWithoutTags: number;
+  difficultyDistribution: { BEGINNER: number; INTERMEDIATE: number; ADVANCED: number };
+  topFavouritedMoves: { id: string; title_en: string; title_pl: string; count: number }[];
+  activityData: { day: string; registrations: number; favourites: number }[];
   recentMoves: AdminMoveRow[];
 }
 

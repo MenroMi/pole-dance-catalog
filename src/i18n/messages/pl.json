@@ -297,7 +297,19 @@
       "newUsers": "Nowi użytkownicy",
       "thisWeek": "W tym tygodniu",
       "acrossCatalog": "W całym katalogu",
-      "recentMovesSection": "Ostatnie ruchy"
+      "recentMovesSection": "Ostatnie ruchy",
+      "totalFavourites": "Wszystkie ulubione",
+      "blockedUsers": "Zablokowani",
+      "catalogHealth": "Stan katalogu",
+      "withoutImage": "bez zdjęcia",
+      "withoutDescription": "bez opisu",
+      "withoutTags": "bez tagów",
+      "difficultyDistribution": "Poziomy trudności",
+      "popularity": "Popularność",
+      "topFavourited": "Najbardziej lubiane",
+      "newRegistrations": "Nowe rejestracje",
+      "registrationsLegend": "rejestracje",
+      "favouritesLegend": "ulubione"
     },
     "moves": {
       "title": "Ruchy",

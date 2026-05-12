@@ -297,7 +297,19 @@
       "newUsers": "New Users",
       "thisWeek": "This week",
       "acrossCatalog": "Across the catalog",
-      "recentMovesSection": "Recent moves"
+      "recentMovesSection": "Recent moves",
+      "totalFavourites": "Total Favourites",
+      "blockedUsers": "Blocked Users",
+      "catalogHealth": "Catalog Health",
+      "withoutImage": "without image",
+      "withoutDescription": "without description",
+      "withoutTags": "without tags",
+      "difficultyDistribution": "Difficulty Split",
+      "popularity": "Popularity",
+      "topFavourited": "Most Saved",
+      "newRegistrations": "New Registrations",
+      "registrationsLegend": "registrations",
+      "favouritesLegend": "favourites"
     },
     "moves": {
       "title": "Moves",

@@ -37,6 +37,7 @@ function NavIcon({ name, size = 18 }: { name: string; size?: number }) {
       </>
     ),
     ChevronRight: <polyline points="9 18 15 12 9 6" />,
+    Shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
   };
   return (
     <svg
@@ -151,19 +152,155 @@ function StatCard({
   );
 }
 
-const WEEK_DATA = [
-  { day: 'Mon', users: 12, moves: 2 },
-  { day: 'Tue', users: 19, moves: 3 },
-  { day: 'Wed', users: 8, moves: 1 },
-  { day: 'Thu', users: 24, moves: 4 },
-  { day: 'Fri', users: 31, moves: 2 },
-  { day: 'Sat', users: 15, moves: 1 },
-  { day: 'Sun', users: 22, moves: 3 },
-];
-
-function ActivityChart() {
+function CatalogHealth({ stats }: { stats: AdminStats }) {
   const t = useTranslations('admin');
-  const max = Math.max(...WEEK_DATA.map((d) => d.users));
+  const { BEGINNER, INTERMEDIATE, ADVANCED } = stats.difficultyDistribution;
+  const total = BEGINNER + INTERMEDIATE + ADVANCED;
+  const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
+
+  const diffSegments = [
+    { key: 'BEGINNER', color: '#84d099', count: BEGINNER, pct: pct(BEGINNER) },
+    { key: 'INTERMEDIATE', color: '#c5afe2', count: INTERMEDIATE, pct: pct(INTERMEDIATE) },
+    { key: 'ADVANCED', color: '#fbbf24', count: ADVANCED, pct: pct(ADVANCED) },
+  ];
+
+  const flags = [
+    { key: 'image', label: t('dashboard.withoutImage'), count: stats.movesWithoutImage },
+    { key: 'desc', label: t('dashboard.withoutDescription'), count: stats.movesWithoutDescription },
+    { key: 'tags', label: t('dashboard.withoutTags'), count: stats.movesWithoutTags },
+  ];
+
+  return (
+    <div
+      style={{
+        background: '#1b1b1b',
+        border: '1px solid rgba(75,68,80,0.2)',
+        borderRadius: 12,
+        padding: '20px 24px',
+        display: 'flex',
+        gap: 40,
+        alignItems: 'flex-start',
+        marginBottom: 18,
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: '#978e9b',
+            fontFamily: 'var(--font-manrope)',
+            marginBottom: 12,
+          }}
+        >
+          {t('dashboard.catalogHealth')}
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {flags.map((f) => (
+            <div
+              key={f.key}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '5px 12px',
+                borderRadius: 20,
+                background: f.count > 0 ? 'rgba(251,191,36,0.1)' : 'rgba(132,208,153,0.1)',
+                border: `1px solid ${f.count > 0 ? 'rgba(251,191,36,0.3)' : 'rgba(132,208,153,0.2)'}`,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: f.count > 0 ? '#fbbf24' : '#84d099',
+                  fontFamily: 'var(--font-manrope)',
+                }}
+              >
+                {f.count > 0 ? f.count : '✓'}
+              </span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: f.count > 0 ? '#fbbf24' : '#84d099',
+                  fontFamily: 'var(--font-manrope)',
+                }}
+              >
+                {f.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        style={{
+          width: 1,
+          alignSelf: 'stretch',
+          background: 'rgba(75,68,80,0.2)',
+          flexShrink: 0,
+        }}
+      />
+
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: '#978e9b',
+            fontFamily: 'var(--font-manrope)',
+            marginBottom: 12,
+          }}
+        >
+          {t('dashboard.difficultyDistribution')}
+        </div>
+        <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
+          {diffSegments.map((s) => (
+            <div
+              key={s.key}
+              style={{
+                width: `${s.pct}%`,
+                background: s.color,
+                minWidth: s.count > 0 ? 4 : 0,
+              }}
+            />
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'wrap' }}>
+          {diffSegments.map((s) => (
+            <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  background: s.color,
+                  display: 'inline-block',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 12, color: '#978e9b', fontFamily: 'var(--font-manrope)' }}>
+                <span style={{ color: '#e2e2e2', fontWeight: 600 }}>{s.count}</span>{' '}
+                {s.key.charAt(0) + s.key.slice(1).toLowerCase()}{' '}
+                <span style={{ color: '#6b6270', fontSize: 11 }}>({s.pct}%)</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivityChart({ data }: { data: AdminStats['activityData'] }) {
+  const t = useTranslations('admin');
+  const maxReg = Math.max(...data.map((d) => d.registrations), 1);
+  const maxFav = Math.max(...data.map((d) => d.favourites), 1);
+
   return (
     <div
       style={{
@@ -204,7 +341,7 @@ function ActivityChart() {
               letterSpacing: '-0.02em',
             }}
           >
-            {t('dashboard.activeUsers')}
+            {t('dashboard.newRegistrations')}
           </div>
         </div>
         <div
@@ -226,7 +363,7 @@ function ActivityChart() {
               display: 'inline-block',
             }}
           />
-          {t('dashboard.usersLegend')}
+          {t('dashboard.registrationsLegend')}
           <span
             style={{
               width: 8,
@@ -237,11 +374,11 @@ function ActivityChart() {
               marginLeft: 8,
             }}
           />
-          {t('dashboard.movesAddedLegend')}
+          {t('dashboard.favouritesLegend')}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100 }}>
-        {WEEK_DATA.map((d, i) => (
+        {data.map((d, i) => (
           <div
             key={i}
             style={{
@@ -263,11 +400,11 @@ function ActivityChart() {
                 justifyContent: 'flex-end',
               }}
             >
-              {d.moves > 0 && (
+              {d.favourites > 0 && (
                 <div
                   style={{
                     width: '100%',
-                    height: `${(d.moves / 5) * 100}%`,
+                    height: `${(d.favourites / maxFav) * 30}%`,
                     maxHeight: 24,
                     background: 'rgba(220,184,255,0.35)',
                     borderRadius: '3px 3px 0 0',
@@ -277,27 +414,29 @@ function ActivityChart() {
               <div
                 style={{
                   width: '100%',
-                  height: `${(d.users / max) * 80}%`,
+                  height: `${(d.registrations / maxReg) * 80}%`,
                   background: 'linear-gradient(180deg,#8458b3,#52416c)',
                   borderRadius: '3px 3px 0 0',
                   position: 'relative',
                 }}
               >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: -22,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: '#dcb8ff',
-                    fontFamily: 'var(--font-manrope)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {d.users}
-                </div>
+                {d.registrations > 0 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: -22,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#dcb8ff',
+                      fontFamily: 'var(--font-manrope)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {d.registrations}
+                  </div>
+                )}
               </div>
             </div>
             <div
@@ -313,6 +452,249 @@ function ActivityChart() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function TopFavourited({ moves }: { moves: AdminStats['topFavouritedMoves'] }) {
+  const t = useTranslations('admin');
+  const locale = useLocale();
+
+  return (
+    <div
+      style={{
+        background: '#1b1b1b',
+        border: '1px solid rgba(75,68,80,0.2)',
+        borderRadius: 12,
+        padding: 24,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div style={{ marginBottom: 18 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: '#978e9b',
+            fontFamily: 'var(--font-manrope)',
+            marginBottom: 4,
+          }}
+        >
+          {t('dashboard.popularity')}
+        </div>
+        <div
+          style={{
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 22,
+            fontWeight: 600,
+            color: '#e2e2e2',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {t('dashboard.topFavourited')}
+        </div>
+      </div>
+      {moves.length === 0 ? (
+        <div style={{ color: '#6b6270', fontSize: 13, fontFamily: 'var(--font-manrope)' }}>—</div>
+      ) : (
+        moves.map((m, i) => (
+          <div
+            key={m.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              padding: '11px 0',
+              borderTop: i > 0 ? '1px solid rgba(75,68,80,0.15)' : 'none',
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 6,
+                flexShrink: 0,
+                background: 'linear-gradient(135deg,#0e0e0e,#2a2a2a)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid rgba(75,68,80,0.2)',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-space-grotesk)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'rgba(220,184,255,0.5)',
+                }}
+              >
+                {i + 1}
+              </span>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-space-grotesk)',
+                  fontSize: 14,
+                  color: '#e2e2e2',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {locale === 'pl' ? m.title_pl || m.title_en : m.title_en}
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                flexShrink: 0,
+                color: '#dcb8ff',
+              }}
+            >
+              <NavIcon name="Heart" size={12} />
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-manrope)',
+                }}
+              >
+                {m.count.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function RecentMoves({ moves }: { moves: AdminStats['recentMoves'] }) {
+  const t = useTranslations('admin');
+
+  return (
+    <div
+      style={{
+        background: '#1b1b1b',
+        border: '1px solid rgba(75,68,80,0.2)',
+        borderRadius: 12,
+        padding: 24,
+      }}
+    >
+      <div style={{ marginBottom: 18 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: '#978e9b',
+            fontFamily: 'var(--font-manrope)',
+            marginBottom: 4,
+          }}
+        >
+          {t('moves.catalog')}
+        </div>
+        <div
+          style={{
+            fontFamily: 'var(--font-space-grotesk)',
+            fontSize: 22,
+            fontWeight: 600,
+            color: '#e2e2e2',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {t('dashboard.recentMovesSection')}
+        </div>
+      </div>
+      {moves.map((m, i) => {
+        const dc = DIFF_COLORS[m.difficulty] ?? DIFF_COLORS.BEGINNER;
+        return (
+          <div
+            key={m.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              padding: '11px 0',
+              borderTop: i > 0 ? '1px solid rgba(75,68,80,0.15)' : 'none',
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 6,
+                flexShrink: 0,
+                background: 'linear-gradient(135deg,#0e0e0e,#2a2a2a)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid rgba(75,68,80,0.2)',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-space-grotesk)',
+                  fontSize: 16,
+                  color: 'rgba(220,184,255,0.5)',
+                }}
+              >
+                ◇
+              </span>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-space-grotesk)',
+                  fontSize: 14,
+                  color: '#e2e2e2',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {m.title_en}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: '#978e9b',
+                  fontFamily: 'var(--font-manrope)',
+                  marginTop: 2,
+                }}
+              >
+                {m.category}
+              </div>
+            </div>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                padding: '3px 8px',
+                borderRadius: 9999,
+                background: dc.bg,
+                color: dc.fg,
+                fontFamily: 'var(--font-manrope)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {m.difficulty}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -441,7 +823,7 @@ export function AdminDashboard() {
         </p>
       </div>
 
-      {/* Stat grid — row 1 (4 cards) */}
+      {/* Row 1: 4 stat cards */}
       <div
         style={{
           display: 'grid',
@@ -453,7 +835,7 @@ export function AdminDashboard() {
         <StatCard
           label={t('dashboard.totalUsers')}
           value={stats.totalUsers}
-          sub={`+23 ${t('dashboard.thisWeek')}`}
+          sub={`+${stats.newUsersThisWeek} ${t('dashboard.thisWeek')}`}
           trend="up"
           icon="Users"
         />
@@ -464,23 +846,21 @@ export function AdminDashboard() {
           icon="Play"
         />
         <StatCard
-          label={t('dashboard.activeToday')}
-          value="—"
-          sub={`94 ${t('dashboard.sessionsOpen')}`}
-          trend="up"
-          icon="Activity"
-        />
-        <StatCard
-          label={t('dashboard.favourited')}
-          value="—"
+          label={t('dashboard.totalFavourites')}
+          value={stats.totalFavourites}
           sub={t('dashboard.acrossAllMoves')}
-          trend="up"
           icon="Heart"
           accent="#dcb8ff"
         />
+        <StatCard
+          label={t('dashboard.blockedUsers')}
+          value={stats.blockedUsers}
+          icon="Shield"
+          accent={stats.blockedUsers > 0 ? '#f87171' : '#84d099'}
+        />
       </div>
 
-      {/* Stat grid — row 2 (3 cards) */}
+      {/* Row 2: 3 stat cards */}
       <div
         style={{
           display: 'grid',
@@ -498,14 +878,14 @@ export function AdminDashboard() {
         />
         <StatCard
           label={t('dashboard.progressRecords')}
-          value="—"
+          value={stats.totalProgress}
           sub={t('dashboard.userMovieLinks')}
           icon="Award"
           accent="#fbbf24"
         />
         <StatCard
           label={t('dashboard.newUsers')}
-          value="—"
+          value={stats.newUsersThisWeek}
           sub={t('dashboard.thisWeek')}
           trend="up"
           icon="TrendingUp"
@@ -513,139 +893,17 @@ export function AdminDashboard() {
         />
       </div>
 
-      {/* Chart + recent moves */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 18 }}>
-        <ActivityChart />
+      {/* Row 3: Catalog health */}
+      <CatalogHealth stats={stats} />
 
-        {/* Recent moves */}
-        <div
-          style={{
-            background: '#1b1b1b',
-            border: '1px solid rgba(75,68,80,0.2)',
-            borderRadius: 12,
-            padding: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 18,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: '#978e9b',
-                  fontFamily: 'var(--font-manrope)',
-                  marginBottom: 4,
-                }}
-              >
-                {t('moves.catalog')}
-              </div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-space-grotesk)',
-                  fontSize: 22,
-                  fontWeight: 600,
-                  color: '#e2e2e2',
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                {t('dashboard.recentMovesSection')}
-              </div>
-            </div>
-          </div>
-          {stats.recentMoves.map((m, i) => {
-            const dc = DIFF_COLORS[m.difficulty] ?? DIFF_COLORS.BEGINNER;
-            return (
-              <div
-                key={m.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '11px 0',
-                  borderTop: i > 0 ? '1px solid rgba(75,68,80,0.15)' : 'none',
-                }}
-              >
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 6,
-                    flexShrink: 0,
-                    background: 'linear-gradient(135deg,#0e0e0e,#2a2a2a)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid rgba(75,68,80,0.2)',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-space-grotesk)',
-                      fontSize: 16,
-                      color: 'rgba(220,184,255,0.5)',
-                    }}
-                  >
-                    ◇
-                  </span>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-space-grotesk)',
-                      fontSize: 14,
-                      color: '#e2e2e2',
-                      fontWeight: 500,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {m.title_en}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: '#978e9b',
-                      fontFamily: 'var(--font-manrope)',
-                      marginTop: 2,
-                    }}
-                  >
-                    {m.category}
-                  </div>
-                </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
-                    padding: '3px 8px',
-                    borderRadius: 9999,
-                    background: dc.bg,
-                    color: dc.fg,
-                    fontFamily: 'var(--font-manrope)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {m.difficulty}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      {/* Row 4: Activity chart + Top favourited */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 18, marginBottom: 18 }}>
+        <ActivityChart data={stats.activityData} />
+        <TopFavourited moves={stats.topFavouritedMoves} />
       </div>
+
+      {/* Row 5: Recent moves */}
+      <RecentMoves moves={stats.recentMoves} />
     </div>
   );
 }
