@@ -70,7 +70,7 @@ const moveSchema = z.object({
   stepsData_en: z
     .array(z.object({ text: z.string(), timestamp: z.number().optional() }))
     .default([]),
-  tagIds: z.array(z.string()).min(1).default([]),
+  tagIds: z.array(z.string()).min(1),
   relatedMoveIds: z.array(z.string()).default([]),
 });
 
@@ -326,7 +326,8 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
   await requireAdmin();
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
-  const sevenDaysAgo = new Date(todayUTC.getTime() - 6 * 24 * 60 * 60 * 1000);
+  // windowStartUTC = today-midnight - 6 days → 7-day window (today inclusive)
+  const windowStartUTC = new Date(todayUTC.getTime() - 6 * 24 * 60 * 60 * 1000);
 
   const [
     totalMoves,
@@ -350,7 +351,7 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
     prisma.tag.count(),
     prisma.userFavourite.count(),
     prisma.userProgress.count(),
-    prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+    prisma.user.count({ where: { createdAt: { gte: windowStartUTC } } }),
     prisma.user.count({ where: { blockedAt: { not: null } } }),
     prisma.move.count({ where: { imageUrl: null } }),
     prisma.move.count({ where: { OR: [{ description_en: null }, { description_pl: null }] } }),
@@ -377,12 +378,14 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
       take: 5,
     }),
     prisma.user.findMany({
-      where: { createdAt: { gte: sevenDaysAgo } },
+      where: { createdAt: { gte: windowStartUTC } },
       select: { createdAt: true },
+      take: 10000,
     }),
     prisma.userFavourite.findMany({
-      where: { createdAt: { gte: sevenDaysAgo } },
+      where: { createdAt: { gte: windowStartUTC } },
       select: { createdAt: true },
+      take: 10000,
     }),
   ]);
 
@@ -445,7 +448,13 @@ export async function getTagsForAdminAction(): Promise<AdminTagRow[]> {
   await requireAdmin();
   return prisma.tag.findMany({
     orderBy: { name_en: 'asc' },
-    include: { _count: { select: { moves: true } } },
+    select: {
+      id: true,
+      name_en: true,
+      name_pl: true,
+      color: true,
+      _count: { select: { moves: true } },
+    },
   });
 }
 
@@ -626,12 +635,12 @@ async function destroyCloudinaryImage(url: string): Promise<void> {
   });
 }
 
+const CLOUDINARY_MOVES_RE =
+  /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/(?:v\d+\/)?pole-dance-catalog\/moves\/[^/]+$/i;
+
 export async function deleteUploadedImageAction(url: string): Promise<void> {
   await requireAdmin();
-  if (
-    !url.startsWith('https://res.cloudinary.com/') ||
-    !url.includes('/pole-dance-catalog/moves/')
-  ) {
+  if (!CLOUDINARY_MOVES_RE.test(url)) {
     throw new Error('Invalid image URL');
   }
   await destroyCloudinaryImage(url);

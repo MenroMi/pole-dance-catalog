@@ -450,6 +450,14 @@ describe('deleteUploadedImageAction', () => {
     expect(mockDestroy).not.toHaveBeenCalled();
   });
 
+  it('throws Invalid image URL on path traversal attempt', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/../avatars/photo.jpg';
+    await expect(deleteUploadedImageAction(url)).rejects.toThrow('Invalid image URL');
+    expect(mockDestroy).not.toHaveBeenCalled();
+  });
+
   it('resolves without throwing when Cloudinary destroy fails', async () => {
     mockAuth.mockResolvedValue(adminSession);
     mockDestroy.mockRejectedValue(new Error('network error'));

@@ -408,7 +408,8 @@
       "randomColor": "Losowy kolor",
       "placeholderEn": "np. aerial",
       "placeholderPl": "np. powietrzny",
-      "loadError": "Nie udało się załadować tagów"
+      "loadError": "Nie udało się załadować tagów",
+      "invalidHexColor": "Musi być poprawny kolor hex (np. #dcb8ff)"
     },
     "users": {
       "title": "Użytkownicy",

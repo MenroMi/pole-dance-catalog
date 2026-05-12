@@ -422,8 +422,8 @@ export function AdminMoves() {
         if (next.length === 0 && page > 1) setPage(1);
         return next;
       });
-      setTotal((n) => n - 1);
-      setTotalAll((n) => n - 1);
+      setTotal((n) => Math.max(0, n - 1));
+      setTotalAll((n) => Math.max(0, n - 1));
       setDeleteTarget(null);
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : tRef.current('error'));

@@ -526,13 +526,13 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         // If ADMIN filter is active and role is being revoked, the row no longer matches
         if (roleFilterRef.current === 'ADMIN' && newRole === 'USER') {
           setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
-          setTotal((n) => n - 1);
+          setTotal((n) => Math.max(0, n - 1));
         } else {
           setUsers((prev) =>
             prev.map((u) => (u.id === confirm.userId ? { ...u, role: newRole } : u)),
           );
         }
-        setTotalAdmins((n) => n + (newRole === 'ADMIN' ? 1 : -1));
+        setTotalAdmins((n) => Math.max(0, n + (newRole === 'ADMIN' ? 1 : -1)));
       } else if (confirm.type === 'block') {
         const reason = blockReason.trim() || undefined;
         await blockUserAction(confirm.userId, reason);
@@ -551,7 +551,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
         // If BLOCKED filter is active, the unblocked user no longer matches
         if (roleFilterRef.current === 'BLOCKED') {
           setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
-          setTotal((n) => n - 1);
+          setTotal((n) => Math.max(0, n - 1));
         } else {
           setUsers((prev) =>
             prev.map((u) =>
@@ -559,15 +559,15 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
             ),
           );
         }
-        setTotalBlocked((n) => n - 1);
+        setTotalBlocked((n) => Math.max(0, n - 1));
       } else if (confirm.type === 'delete') {
         const deleted = users.find((u) => u.id === confirm.userId);
         await deleteUserAction(confirm.userId);
         setUsers((prev) => prev.filter((u) => u.id !== confirm.userId));
-        setTotal((n) => n - 1);
-        setTotalAll((n) => n - 1);
-        if (deleted?.role === 'ADMIN') setTotalAdmins((n) => n - 1);
-        if (deleted?.blockedAt) setTotalBlocked((n) => n - 1);
+        setTotal((n) => Math.max(0, n - 1));
+        setTotalAll((n) => Math.max(0, n - 1));
+        if (deleted?.role === 'ADMIN') setTotalAdmins((n) => Math.max(0, n - 1));
+        if (deleted?.blockedAt) setTotalBlocked((n) => Math.max(0, n - 1));
       }
       setConfirm(null);
       setActionError(null);

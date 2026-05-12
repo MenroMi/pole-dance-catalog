@@ -408,7 +408,8 @@
       "randomColor": "Random color",
       "placeholderEn": "e.g. aerial",
       "placeholderPl": "e.g. flying",
-      "loadError": "Failed to load tags"
+      "loadError": "Failed to load tags",
+      "invalidHexColor": "Must be a valid hex color (e.g. #dcb8ff)"
     },
     "users": {
       "title": "Users",

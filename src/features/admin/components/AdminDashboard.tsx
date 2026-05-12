@@ -620,86 +620,90 @@ function RecentMoves({ moves }: { moves: AdminStats['recentMoves'] }) {
           {t('dashboard.recentMovesSection')}
         </div>
       </div>
-      {moves.map((m, i) => {
-        const dc = DIFF_COLORS[m.difficulty] ?? DIFF_COLORS.BEGINNER;
-        return (
-          <div
-            key={m.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-              padding: '11px 0',
-              borderTop: i > 0 ? '1px solid rgba(75,68,80,0.15)' : 'none',
-            }}
-          >
+      {moves.length === 0 ? (
+        <div style={{ color: '#6b6270', fontSize: 13, fontFamily: 'var(--font-manrope)' }}>—</div>
+      ) : (
+        moves.map((m, i) => {
+          const dc = DIFF_COLORS[m.difficulty] ?? DIFF_COLORS.BEGINNER;
+          return (
             <div
+              key={m.id}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 6,
-                flexShrink: 0,
-                background: 'linear-gradient(135deg,#0e0e0e,#2a2a2a)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid rgba(75,68,80,0.2)',
+                gap: 14,
+                padding: '11px 0',
+                borderTop: i > 0 ? '1px solid rgba(75,68,80,0.15)' : 'none',
               }}
             >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 6,
+                  flexShrink: 0,
+                  background: 'linear-gradient(135deg,#0e0e0e,#2a2a2a)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(75,68,80,0.2)',
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-space-grotesk)',
+                    fontSize: 16,
+                    color: 'rgba(220,184,255,0.5)',
+                  }}
+                >
+                  ◇
+                </span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-space-grotesk)',
+                    fontSize: 14,
+                    color: '#e2e2e2',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {locale === 'pl' ? m.title_pl || m.title_en : m.title_en}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: '#978e9b',
+                    fontFamily: 'var(--font-manrope)',
+                    marginTop: 2,
+                  }}
+                >
+                  {m.category}
+                </div>
+              </div>
               <span
                 style={{
-                  fontFamily: 'var(--font-space-grotesk)',
-                  fontSize: 16,
-                  color: 'rgba(220,184,255,0.5)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  padding: '3px 8px',
+                  borderRadius: 9999,
+                  background: dc.bg,
+                  color: dc.fg,
+                  fontFamily: 'var(--font-manrope)',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                ◇
+                {m.difficulty}
               </span>
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-space-grotesk)',
-                  fontSize: 14,
-                  color: '#e2e2e2',
-                  fontWeight: 500,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {locale === 'pl' ? m.title_pl || m.title_en : m.title_en}
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: '#978e9b',
-                  fontFamily: 'var(--font-manrope)',
-                  marginTop: 2,
-                }}
-              >
-                {m.category}
-              </div>
-            </div>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                padding: '3px 8px',
-                borderRadius: 9999,
-                background: dc.bg,
-                color: dc.fg,
-                fontFamily: 'var(--font-manrope)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {m.difficulty}
-            </span>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
     </div>
   );
 }

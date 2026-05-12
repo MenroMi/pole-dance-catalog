@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from '@/shared/components/LocaleSwitcher';
+
+import { SIDEBAR_KEY } from '../constants';
 
 type Section = 'dashboard' | 'moves' | 'users' | 'tags';
 
@@ -90,21 +92,15 @@ const NAV_ITEMS: { key: Section; icon: string }[] = [
   { key: 'tags', icon: 'Tag' },
 ];
 
-const SIDEBAR_KEY = 'admin-sidebar-collapsed';
-
 export function AdminShell({
   children,
   activeSection,
   onSectionChange,
   currentUserName,
 }: AdminShellProps) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(SIDEBAR_KEY) === 'true';
-    const t = setTimeout(() => setCollapsed(stored), 0);
-    return () => clearTimeout(t);
-  }, []);
+  const [collapsed, setCollapsed] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem(SIDEBAR_KEY) === 'true',
+  );
   const t = useTranslations('admin');
 
   function toggleCollapsed() {

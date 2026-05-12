@@ -458,7 +458,7 @@ function TagModal({
                 onBlur={() => {
                   setFocusHex(false);
                   if (form.color && !/^#[0-9a-fA-F]{6}$/.test(form.color)) {
-                    setHexError('Must be a valid hex color (e.g. #dcb8ff)');
+                    setHexError(t('tags.invalidHexColor'));
                   } else {
                     setHexError('');
                   }
