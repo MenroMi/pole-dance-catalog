@@ -694,6 +694,10 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const watchedImageUrl = watch('imageUrl');
 
   useEffect(() => {
+    if (tab !== 'related') setRelatedQuery('');
+  }, [tab]);
+
+  useEffect(() => {
     if (!relatedQuery.trim()) {
       setSearchResults([]);
       setSearchError(false);
