@@ -558,6 +558,7 @@ function RelatedMoveRow({
 
 function SelectedPill({ move: m, onRemove }: { move: RelatedMoveInfo; onRemove: () => void }) {
   const [hov, setHov] = useState(false);
+  const [btnFocused, setBtnFocused] = useState(false);
   return (
     <div
       onMouseEnter={() => setHov(true)}
@@ -596,11 +597,13 @@ function SelectedPill({ move: m, onRemove }: { move: RelatedMoveInfo; onRemove: 
           e.stopPropagation();
           onRemove();
         }}
+        onFocus={() => setBtnFocused(true)}
+        onBlur={() => setBtnFocused(false)}
         style={{
           background: 'transparent',
           border: 'none',
           cursor: 'pointer',
-          color: hov ? '#dcb8ff' : 'rgba(220,184,255,0.5)',
+          color: hov || btnFocused ? '#dcb8ff' : 'rgba(220,184,255,0.5)',
           display: 'flex',
           padding: 0,
           transition: 'color 150ms',
@@ -652,6 +655,7 @@ function CloseBtn({ saving, onClose }: { saving: boolean; onClose: () => void })
   return (
     <button
       type="button"
+      aria-label="Close"
       onClick={() => {
         if (!saving) onClose();
       }}
@@ -681,6 +685,7 @@ function CloseBtn({ saving, onClose }: { saving: boolean; onClose: () => void })
         stroke="currentColor"
         strokeWidth={2}
         strokeLinecap="round"
+        aria-hidden="true"
       >
         <line x1="18" y1="6" x2="6" y2="18" />
         <line x1="6" y1="6" x2="18" y2="18" />
@@ -694,6 +699,7 @@ function ClearSearchBtn({ onClear }: { onClear: () => void }) {
   return (
     <button
       type="button"
+      aria-label="Clear search"
       onClick={onClear}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -715,6 +721,7 @@ function ClearSearchBtn({ onClear }: { onClear: () => void }) {
         stroke="currentColor"
         strokeWidth={2}
         strokeLinecap="round"
+        aria-hidden="true"
       >
         <line x1="18" y1="6" x2="6" y2="18" />
         <line x1="6" y1="6" x2="18" y2="18" />
@@ -759,6 +766,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [searchResults, setSearchResults] = useState<RelatedMoveInfo[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(false);
@@ -798,7 +806,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
 
   useEffect(() => {
     if (tab !== 'related') setRelatedQuery('');
-  }, [tab, setRelatedQuery]);
+  }, [tab]);
 
   useEffect(() => {
     if (!relatedQuery.trim()) {
@@ -925,6 +933,41 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   ];
 
   useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const getFocusable = () =>
+      Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    getFocusable()[0]?.focus();
+    function trapTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab') return;
+      const els = getFocusable();
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    }
+    document.addEventListener('keydown', trapTab);
+    return () => {
+      document.removeEventListener('keydown', trapTab);
+      previouslyFocused?.focus();
+    };
+  }, []);
+
+  useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && !saving) onClose();
     }
@@ -971,6 +1014,10 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
       }}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
         style={{
           background: '#1a1a1a',
           borderRadius: 16,
@@ -993,7 +1040,10 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
             justifyContent: 'space-between',
           }}
         >
-          <h2 style={{ margin: 0, color: '#e0e0e0', fontSize: 18, fontWeight: 600 }}>
+          <h2
+            id="modal-title"
+            style={{ margin: 0, color: '#e0e0e0', fontSize: 18, fontWeight: 600 }}
+          >
             {move ? t('moves.editMove') : t('moves.addMove')}
           </h2>
           <CloseBtn saving={saving} onClose={onClose} />
