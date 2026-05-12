@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -96,12 +97,14 @@ function MoveRow({
   move,
   isLast,
   isEditing,
+  isDeleteDisabled,
   onEdit,
   onDelete,
 }: {
   move: AdminMoveRow;
   isLast: boolean;
   isEditing?: boolean;
+  isDeleteDisabled?: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -258,7 +261,7 @@ function MoveRow({
           }}
         >
           {isEditing ? (
-            <span style={{ width: 13, height: 13, display: 'inline-block', opacity: 0.7 }}>…</span>
+            <Loader2 size={13} className="animate-spin" style={{ color: '#dcb8ff' }} />
           ) : (
             <NavIcon name="Edit" size={13} />
           )}
@@ -266,6 +269,7 @@ function MoveRow({
         <button
           type="button"
           onClick={onDelete}
+          disabled={isDeleteDisabled}
           title={t('delete')}
           style={{
             background: 'transparent',
@@ -273,17 +277,22 @@ function MoveRow({
             borderRadius: 6,
             padding: 7,
             color: '#978e9b',
-            cursor: 'pointer',
+            cursor: isDeleteDisabled ? 'default' : 'pointer',
             display: 'flex',
             transition: 'all 150ms',
+            opacity: isDeleteDisabled ? 0.4 : 1,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#ef4444';
-            e.currentTarget.style.color = '#ef4444';
+            if (!isDeleteDisabled) {
+              e.currentTarget.style.borderColor = '#ef4444';
+              e.currentTarget.style.color = '#ef4444';
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
-            e.currentTarget.style.color = '#978e9b';
+            if (!isDeleteDisabled) {
+              e.currentTarget.style.borderColor = 'rgba(75,68,80,0.4)';
+              e.currentTarget.style.color = '#978e9b';
+            }
           }}
         >
           <NavIcon name="Trash" size={13} />
@@ -299,7 +308,8 @@ const PAGE_SIZE = 20;
 type CachedMoves = { moves: AdminMoveRow[]; total: number; totalAll: number };
 let _movesCache: CachedMoves | null = null;
 let _movesCacheKey = '';
-const DEFAULT_MOVES_CACHE_KEY = '1::ALL';
+// Must match the cache key format: `${page}:${query}:${diffFilter}` (see fetch effect below)
+const DEFAULT_MOVES_CACHE_KEY = '1::ALL'; // page=1, query='', diffFilter='ALL'
 
 export function AdminMoves() {
   const t = useTranslations('admin');
@@ -401,13 +411,14 @@ export function AdminMoves() {
 
   async function handleDeleteConfirm() {
     if (!deleteTarget) return;
+    const targetId = deleteTarget.id; // capture before awaits — state may change mid-flight
     setDeleting(true);
     setDeleteError(null);
     try {
-      await deleteMoveAction(deleteTarget.id);
+      await deleteMoveAction(targetId);
       _movesCache = null;
       setMoves((prev) => {
-        const next = prev.filter((m) => m.id !== deleteTarget.id);
+        const next = prev.filter((m) => m.id !== targetId);
         if (next.length === 0 && page > 1) setPage(1);
         return next;
       });
@@ -728,6 +739,7 @@ export function AdminMoves() {
                     move={move}
                     isLast={i === moves.length - 1}
                     isEditing={editingId === move.id}
+                    isDeleteDisabled={deleteTarget !== null}
                     onEdit={() => handleEditMove(move.id)}
                     onDelete={() => {
                       setDeleteTarget(move);

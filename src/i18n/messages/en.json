@@ -264,6 +264,8 @@
     "loading": "Loading…",
     "retry": "Retry",
     "invalidJson": "Invalid JSON",
+    "fieldRequired": "Required",
+    "youtubeUrlInvalid": "Must be a valid YouTube URL (https://youtube.com/… or https://youtu.be/…)",
     "error": "Something went wrong",
     "nav": {
       "dashboard": "Dashboard",
@@ -361,10 +363,13 @@
         "coachNotePlPlaceholder": "e.g. Trzymaj napięty core",
         "coachNoteAuthorPlaceholder": "e.g. Anna K.",
         "relatedSearchPlaceholder": "Search moves…",
+        "relatedStartTyping": "Start typing to find related moves",
         "relatedNoResults": "No moves found",
+        "relatedSearchError": "Search failed. Try again.",
+        "relatedSelectedCount": "{count} selected",
         "imageDrop": "Drop image here, or click to browse",
-        "imageUploading": "Uploading…",
         "imageChange": "Change image",
+        "imageRemove": "Remove image",
         "imageOnlyImages": "Only image files are allowed",
         "imageMaxSize": "Max 5 MB"
       }

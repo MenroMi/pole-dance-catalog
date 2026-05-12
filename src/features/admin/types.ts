@@ -9,7 +9,7 @@ export interface CreateMoveInput {
   category: Move['category'];
   poleTypes: PoleType[];
   youtubeUrl: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   gripType_pl?: string;
   gripType_en?: string;
   entry_pl?: string;

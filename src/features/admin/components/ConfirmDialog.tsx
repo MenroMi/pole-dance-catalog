@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -30,7 +31,7 @@ export function ConfirmDialog({
   open,
   title,
   description,
-  confirmLabel = 'Confirm',
+  confirmLabel = 'Confirm', // callers should always pass a translated label
   loadingLabel = '…',
   onConfirm,
   onCancel,
@@ -85,8 +86,12 @@ export function ConfirmDialog({
               fontWeight: 500,
               cursor: loading ? 'not-allowed' : 'pointer',
               fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
             }}
           >
+            {loading && <Loader2 size={14} className="animate-spin" style={{ flexShrink: 0 }} />}
             {loading ? loadingLabel : confirmLabel}
           </button>
         </AlertDialogFooter>

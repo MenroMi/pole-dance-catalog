@@ -52,9 +52,10 @@ const moveSchema = z.object({
   imageUrl: z
     .string()
     .url()
+    .nullable()
     .optional()
     .or(z.literal(''))
-    .transform((v) => (v === '' ? undefined : v)),
+    .transform((v) => (v === '' || v == null ? null : v)),
   gripType_pl: z.string().optional(),
   gripType_en: z.string().optional(),
   entry_pl: z.string().optional(),
@@ -69,7 +70,7 @@ const moveSchema = z.object({
   stepsData_en: z
     .array(z.object({ text: z.string(), timestamp: z.number().optional() }))
     .default([]),
-  tagIds: z.array(z.string()).default([]),
+  tagIds: z.array(z.string()).min(1).default([]),
   relatedMoveIds: z.array(z.string()).default([]),
 });
 
@@ -85,7 +86,10 @@ const tagSchema = z.object({
 export async function createMoveAction(input: CreateMoveInput) {
   await requireAdmin();
   const parsed = moveSchema.safeParse(input);
-  if (!parsed.success) throw new Error('Invalid input');
+  if (!parsed.success) {
+    console.error('[createMoveAction] validation failed:', parsed.error.flatten());
+    throw new Error('Invalid input');
+  }
   const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
   const result = await prisma.move.create({
     data: {
@@ -107,7 +111,10 @@ export async function updateMoveAction(input: UpdateMoveInput) {
   const parsedId = z.string().min(1).safeParse(id);
   if (!parsedId.success) throw new Error('Invalid input');
   const parsed = moveSchema.safeParse(rest);
-  if (!parsed.success) throw new Error('Invalid input');
+  if (!parsed.success) {
+    console.error('[updateMoveAction] validation failed:', parsed.error.flatten());
+    throw new Error('Invalid input');
+  }
   const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
 
   const current = await prisma.move.findUnique({
@@ -127,8 +134,13 @@ export async function updateMoveAction(input: UpdateMoveInput) {
     },
   });
 
+  // best-effort: DB write already succeeded, Cloudinary failure must not roll it back
   if (current?.imageUrl && current.imageUrl !== data.imageUrl) {
-    await destroyCloudinaryImage(current.imageUrl);
+    try {
+      await destroyCloudinaryImage(current.imageUrl);
+    } catch {
+      // destroyCloudinaryImage logs internally; swallow here to protect the caller
+    }
   }
 
   revalidatePath('/', 'layout');
@@ -147,8 +159,13 @@ export async function deleteMoveAction(id: string) {
 
   const result = await prisma.move.delete({ where: { id: parsedId.data } });
 
+  // best-effort: DB row already deleted, Cloudinary failure must not surface to caller
   if (current?.imageUrl) {
-    await destroyCloudinaryImage(current.imageUrl);
+    try {
+      await destroyCloudinaryImage(current.imageUrl);
+    } catch {
+      // destroyCloudinaryImage logs internally; swallow here to protect the caller
+    }
   }
 
   revalidatePath('/', 'layout');
@@ -226,16 +243,40 @@ export async function getMoveByIdAction(id: string): Promise<FullAdminMove | nul
       relatedMoves: { select: { id: true, title_en: true, title_pl: true } },
     },
   });
-  return result as unknown as FullAdminMove | null;
+  if (!result) return null;
+  // stepsData_en/pl are Json in Prisma but always stored as StepData[] by this app
+  type StepData = { text: string; timestamp?: number };
+  return {
+    ...result,
+    stepsData_en: (result.stepsData_en ?? []) as StepData[],
+    stepsData_pl: (result.stepsData_pl ?? []) as StepData[],
+  } as FullAdminMove;
 }
 
-export async function getMovesListAction(): Promise<
-  { id: string; title_en: string; title_pl: string }[]
-> {
+export async function searchRelatedMovesAction(params: {
+  query: string;
+  excludeId?: string;
+}): Promise<{ id: string; title_en: string; title_pl: string }[]> {
   await requireAdmin();
+  const parsed = z
+    .object({ query: z.string().min(1).max(200), excludeId: z.string().optional() })
+    .safeParse(params);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { query, excludeId } = parsed.data;
   return prisma.move.findMany({
-    take: 200, // upper bound for related-move picker; increase if catalog outgrows this
+    where: {
+      AND: [
+        ...(excludeId ? [{ id: { not: excludeId } }] : []),
+        {
+          OR: [
+            { title_en: { contains: query, mode: 'insensitive' as const } },
+            { title_pl: { contains: query, mode: 'insensitive' as const } },
+          ],
+        },
+      ],
+    },
     orderBy: { title_en: 'asc' },
+    take: 20,
     select: { id: true, title_en: true, title_pl: true },
   });
 }
@@ -444,7 +485,20 @@ function extractCloudinaryPublicId(url: string): string | null {
 async function destroyCloudinaryImage(url: string): Promise<void> {
   const publicId = extractCloudinaryPublicId(url);
   if (!publicId) return;
-  await cloudinary.uploader.destroy(publicId).catch(() => {});
+  await cloudinary.uploader.destroy(publicId).catch((err) => {
+    console.error('[Cloudinary] destroy failed for public_id:', publicId, err);
+  });
+}
+
+export async function deleteUploadedImageAction(url: string): Promise<void> {
+  await requireAdmin();
+  if (
+    !url.startsWith('https://res.cloudinary.com/') ||
+    !url.includes('/pole-dance-catalog/moves/')
+  ) {
+    throw new Error('Invalid image URL');
+  }
+  await destroyCloudinaryImage(url);
 }
 
 function isImageBuffer(buf: Buffer): boolean {

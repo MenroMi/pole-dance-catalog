@@ -56,11 +56,12 @@ import {
   createTagAction,
   deleteTagAction,
   deleteMoveAction,
+  deleteUploadedImageAction,
   deleteUserAction,
   getAdminStatsAction,
   getMoveByIdAction,
   getMovesForAdminAction,
-  getMovesListAction,
+  searchRelatedMovesAction,
   getTagsForAdminAction,
   getUsersForAdminAction,
   unblockUserAction,
@@ -101,7 +102,7 @@ const validCreateInput = {
   youtubeUrl: 'https://youtu.be/dQw4w9WgXcQ',
   stepsData_pl: [],
   stepsData_en: [],
-  tagIds: [],
+  tagIds: ['tag-1'],
   relatedMoveIds: [],
 };
 
@@ -366,14 +367,57 @@ describe('getMoveByIdAction', () => {
     const move = {
       id: 'move-1',
       title_en: 'T',
+      stepsData_en: null,
+      stepsData_pl: null,
       tags: [{ id: 'tag-1', name_en: 'Spin', name_pl: 'Spin' }],
     };
     mockMoveFindUnique.mockResolvedValue(move);
     const result = await getMoveByIdAction('move-1');
-    expect(result).toEqual(move);
+    expect(result).toEqual({ ...move, stepsData_en: [], stepsData_pl: [] });
     expect(mockMoveFindUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'move-1' } }),
     );
+  });
+});
+
+describe('deleteUploadedImageAction', () => {
+  it('throws Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/img.jpg';
+    await expect(deleteUploadedImageAction(url)).rejects.toThrow('Unauthorized');
+  });
+
+  it('throws Unauthorized when not ADMIN', async () => {
+    mockAuth.mockResolvedValue(userSession);
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/img.jpg';
+    await expect(deleteUploadedImageAction(url)).rejects.toThrow('Unauthorized');
+  });
+
+  it('calls Cloudinary destroy with the correct public ID when ADMIN', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockDestroy.mockResolvedValue({ result: 'ok' });
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/img.jpg';
+    await deleteUploadedImageAction(url);
+    expect(mockDestroy).toHaveBeenCalledWith('pole-dance-catalog/moves/img');
+  });
+
+  it('throws Invalid image URL when URL is outside the moves folder', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/avatars/photo.jpg';
+    await expect(deleteUploadedImageAction(url)).rejects.toThrow('Invalid image URL');
+    expect(mockDestroy).not.toHaveBeenCalled();
+  });
+
+  it('resolves without throwing when Cloudinary destroy fails', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockDestroy.mockRejectedValue(new Error('network error'));
+    const url =
+      'https://res.cloudinary.com/test/image/upload/v1234/pole-dance-catalog/moves/img.jpg';
+    await expect(deleteUploadedImageAction(url)).resolves.toBeUndefined();
   });
 });
 
@@ -712,33 +756,52 @@ describe('deleteUserAction', () => {
   });
 });
 
-describe('getMovesListAction', () => {
+describe('searchRelatedMovesAction', () => {
   it('throws Unauthorized when not authenticated', async () => {
     mockAuth.mockResolvedValue(null);
-    await expect(getMovesListAction()).rejects.toThrow('Unauthorized');
+    await expect(searchRelatedMovesAction({ query: 'spin' })).rejects.toThrow('Unauthorized');
     expect(mockMoveFindMany).not.toHaveBeenCalled();
   });
 
   it('throws Unauthorized when role is not ADMIN', async () => {
     mockAuth.mockResolvedValue(userSession);
-    await expect(getMovesListAction()).rejects.toThrow('Unauthorized');
+    await expect(searchRelatedMovesAction({ query: 'spin' })).rejects.toThrow('Unauthorized');
   });
 
-  it('returns moves list with take:200', async () => {
+  it('throws Invalid input when query is empty', async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const moves = [
-      { id: 'm-1', title_en: 'A', title_pl: 'A PL' },
-      { id: 'm-2', title_en: 'B', title_pl: 'B PL' },
-    ];
+    await expect(searchRelatedMovesAction({ query: '' })).rejects.toThrow('Invalid input');
+  });
+
+  it('returns up to 20 results matching query', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const moves = [{ id: 'm-1', title_en: 'Spin', title_pl: 'Spin PL' }];
     mockMoveFindMany.mockResolvedValue(moves);
-    const result = await getMovesListAction();
+    const result = await searchRelatedMovesAction({ query: 'spin' });
     expect(mockMoveFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        take: 200,
+        take: 20,
         select: { id: true, title_en: true, title_pl: true },
       }),
     );
     expect(result).toEqual(moves);
+  });
+
+  it('excludes the given move id when excludeId is provided', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindMany.mockResolvedValue([]);
+    await searchRelatedMovesAction({ query: 'spin', excludeId: 'move-1' });
+    const call = mockMoveFindMany.mock.calls[0][0];
+    expect(call.where.AND[0]).toEqual({ id: { not: 'move-1' } });
+  });
+
+  it('does not add id exclusion when excludeId is omitted', async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockMoveFindMany.mockResolvedValue([]);
+    await searchRelatedMovesAction({ query: 'spin' });
+    const call = mockMoveFindMany.mock.calls[0][0];
+    expect(call.where.AND).toHaveLength(1);
+    expect(call.where.AND[0]).toHaveProperty('OR');
   });
 });
 

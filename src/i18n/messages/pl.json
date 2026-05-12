@@ -264,6 +264,8 @@
     "loading": "Ładowanie…",
     "retry": "Ponów",
     "invalidJson": "Nieprawidłowy JSON",
+    "fieldRequired": "Wymagane",
+    "youtubeUrlInvalid": "Podaj prawidłowy URL YouTube (https://youtube.com/… lub https://youtu.be/…)",
     "error": "Coś poszło nie tak",
     "nav": {
       "dashboard": "Dashboard",
@@ -361,10 +363,13 @@
         "coachNotePlPlaceholder": "np. Trzymaj napięty core",
         "coachNoteAuthorPlaceholder": "np. Anna K.",
         "relatedSearchPlaceholder": "Szukaj ruchów…",
+        "relatedStartTyping": "Zacznij pisać, aby znaleźć powiązane ruchy",
         "relatedNoResults": "Nie znaleziono ruchów",
+        "relatedSearchError": "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
+        "relatedSelectedCount": "{count, plural, one {# zaznaczony} few {# zaznaczone} other {# zaznaczonych}}",
         "imageDrop": "Przeciągnij zdjęcie lub kliknij, żeby wybrać",
-        "imageUploading": "Przesyłanie…",
         "imageChange": "Zmień zdjęcie",
+        "imageRemove": "Usuń zdjęcie",
         "imageOnlyImages": "Dozwolone są tylko pliki graficzne",
         "imageMaxSize": "Maks. 5 MB"
       }
