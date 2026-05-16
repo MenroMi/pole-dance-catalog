@@ -183,12 +183,14 @@
 
 ## Feature Gaps
 
-**Admin panel — UI not implemented** (2026-05-05)
+~~**Admin panel — UI not implemented**~~ ✅ Done (2026-05-12) — `feat/admin-ui`
 
-- `src/app/[locale]/admin/page.tsx` рендерит только `t('title')` — заглушка
-- `createMoveAction` и `deleteMoveAction` реализованы и покрыты тестами, UI отсутствует
-- Нужно: форма создания движения (title_pl/en, description_pl/en, difficulty, category, youtubeUrl, imageUrl, tags), список существующих движений с кнопкой удаления
-- `SessionGuard` добавить в `/admin` layout (аналогично `/profile`) — todo из cross-tab auth sync
+- Dashboard с live DB stats, Moves CRUD, Tags CRUD, Users management
+- 592 тестов passing, TypeScript + ESLint чистые, HEAD `c06ecee`
+- Прошла полное ревью (2026-05-16): security, correctness, UX, quality — все замечания исправлены
+- `imageUrl` ограничен Cloudinary domain (Zod refine); `$queryRaw GROUP BY` вместо `take:10000`
+- `_usersCache` сбрасывается при каждой мутации; `admin/error.tsx` добавлен
+- `SessionGuard` в `/admin` layout — отложено (см. Auth Sync todo ниже)
 
 **Profile Settings — Preferences section not implemented** (2026-04-24)
 
