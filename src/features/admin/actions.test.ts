@@ -33,6 +33,7 @@ vi.mock('@/shared/lib/prisma', () => ({
     userProgress: {
       count: vi.fn(),
     },
+    $queryRaw: vi.fn(),
   },
 }));
 
@@ -101,6 +102,7 @@ const mockUserFavouriteCount = prisma.userFavourite.count as ReturnType<typeof v
 const mockUserFavouriteGroupBy = prisma.userFavourite.groupBy as ReturnType<typeof vi.fn>;
 const mockUserFavouriteFindMany = prisma.userFavourite.findMany as ReturnType<typeof vi.fn>;
 const mockUserProgressCount = prisma.userProgress.count as ReturnType<typeof vi.fn>;
+const mockQueryRaw = prisma.$queryRaw as ReturnType<typeof vi.fn>;
 const mockUploadStream = cloudinary.uploader.upload_stream as ReturnType<typeof vi.fn>;
 const mockDestroy = cloudinary.uploader.destroy as ReturnType<typeof vi.fn>;
 
@@ -490,8 +492,8 @@ describe('getAdminStatsAction', () => {
     recentMoves = [] as unknown[],
     diffGroups = [] as { difficulty: string; _count: { _all: number } }[],
     topFavRaw = [] as { moveId: string; _count: { moveId: number } }[],
-    recentUserDates = [] as { createdAt: Date }[],
-    recentFavDates = [] as { createdAt: Date }[],
+    recentUserGroups = [] as { day: Date; count: bigint }[],
+    recentFavGroups = [] as { day: Date; count: bigint }[],
     topMoveDetails = [] as { id: string; title_en: string; title_pl: string }[],
   } = {}) {
     // Promise.all index order (must match actions.ts exactly):
@@ -508,8 +510,8 @@ describe('getAdminStatsAction', () => {
     // 10 move.findMany()         → recentMoves
     // 11 move.groupBy()          → diffGroups
     // 12 userFavourite.groupBy() → topFavRaw
-    // 13 user.findMany()         → recentUserDates
-    // 14 userFavourite.findMany()→ recentFavDates
+    // 13 $queryRaw GROUP BY day  → recentUserGroups
+    // 14 $queryRaw GROUP BY day  → recentFavGroups
     mockMoveCount
       .mockResolvedValueOnce(totalMoves)
       .mockResolvedValueOnce(movesWithoutImage)
@@ -528,8 +530,7 @@ describe('getAdminStatsAction', () => {
     }
     mockMoveGroupBy.mockResolvedValue(diffGroups);
     mockUserFavouriteGroupBy.mockResolvedValue(topFavRaw);
-    mockUserFindMany.mockResolvedValue(recentUserDates);
-    mockUserFavouriteFindMany.mockResolvedValue(recentFavDates);
+    mockQueryRaw.mockResolvedValueOnce(recentUserGroups).mockResolvedValueOnce(recentFavGroups);
   }
 
   it('throws Unauthorized when not authenticated', async () => {
@@ -583,7 +584,7 @@ describe('getAdminStatsAction', () => {
     const today = new Date();
     today.setUTCHours(12, 0, 0, 0);
     const todayKey = today.toISOString().slice(0, 10);
-    setupStatsMocks({ recentUserDates: [{ createdAt: today }] });
+    setupStatsMocks({ recentUserGroups: [{ day: today, count: BigInt(1) }] });
     const result = await getAdminStatsAction();
     const todayEntry = result.activityData.find((e) => e.day === todayKey);
     expect(todayEntry?.registrations).toBe(1);

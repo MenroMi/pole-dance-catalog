@@ -715,6 +715,7 @@ export function AdminDashboard() {
       >
         <span>{error ?? t('dashboard.loadError')}</span>
         <button
+          type="button"
           onClick={() => {
             setLoading(true);
             setError(null);

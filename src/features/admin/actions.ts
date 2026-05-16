@@ -52,6 +52,7 @@ const moveSchema = z.object({
   imageUrl: z
     .string()
     .url()
+    .refine((v) => /^https:\/\/res\.cloudinary\.com\//.test(v), 'Must be a Cloudinary URL')
     .nullable()
     .optional()
     .or(z.literal(''))
@@ -343,8 +344,8 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
     recentMoves,
     diffGroups,
     topFavRaw,
-    recentUserDates,
-    recentFavDates,
+    recentUserGroups,
+    recentFavGroups,
   ] = await Promise.all([
     prisma.move.count(),
     prisma.user.count(),
@@ -377,16 +378,18 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
       orderBy: { _count: { moveId: 'desc' } },
       take: 5,
     }),
-    prisma.user.findMany({
-      where: { createdAt: { gte: windowStartUTC } },
-      select: { createdAt: true },
-      take: 10000,
-    }),
-    prisma.userFavourite.findMany({
-      where: { createdAt: { gte: windowStartUTC } },
-      select: { createdAt: true },
-      take: 10000,
-    }),
+    prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+      SELECT DATE_TRUNC('day', "createdAt") AS day, COUNT(*) AS count
+      FROM "User"
+      WHERE "createdAt" >= ${windowStartUTC}
+      GROUP BY 1
+    `,
+    prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+      SELECT DATE_TRUNC('day', "createdAt") AS day, COUNT(*) AS count
+      FROM "UserFavourite"
+      WHERE "createdAt" >= ${windowStartUTC}
+      GROUP BY 1
+    `,
   ]);
 
   const topMoveIds = topFavRaw.map((r) => r.moveId);
@@ -419,11 +422,16 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
   for (let i = 6; i >= 0; i--) {
     days.push(new Date(todayUTC.getTime() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
   }
+  const userDayMap = new Map(
+    recentUserGroups.map((r) => [r.day.toISOString().slice(0, 10), Number(r.count)]),
+  );
+  const favDayMap = new Map(
+    recentFavGroups.map((r) => [r.day.toISOString().slice(0, 10), Number(r.count)]),
+  );
   const activityData = days.map((key) => ({
     day: key,
-    registrations: recentUserDates.filter((u) => u.createdAt.toISOString().slice(0, 10) === key)
-      .length,
-    favourites: recentFavDates.filter((f) => f.createdAt.toISOString().slice(0, 10) === key).length,
+    registrations: userDayMap.get(key) ?? 0,
+    favourites: favDayMap.get(key) ?? 0,
   }));
 
   return {

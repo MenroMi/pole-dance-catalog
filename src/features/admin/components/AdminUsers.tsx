@@ -472,6 +472,7 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
 
   async function applyConfirm() {
     if (!confirm) return;
+    _usersCache = null;
     setActing(true);
     setActionError(null);
     setActingUserId(confirm.userId);
@@ -502,6 +503,9 @@ export function AdminUsers({ currentUserId }: { currentUserId: string | null }) 
           ),
         );
         setTotalBlocked((n) => n + 1);
+        if (roleFilterRef.current === 'BLOCKED') {
+          setRetryKey((k) => k + 1);
+        }
       } else if (confirm.type === 'unblock') {
         await unblockUserAction(confirm.userId);
         // If BLOCKED filter is active, the unblocked user no longer matches

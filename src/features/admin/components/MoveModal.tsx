@@ -48,7 +48,10 @@ function validateStepsJson(text: string): boolean {
   if (!text.trim()) return true;
   try {
     const parsed = JSON.parse(text);
-    return Array.isArray(parsed);
+    if (!Array.isArray(parsed)) return false;
+    return parsed.every(
+      (item) => typeof item === 'object' && item !== null && typeof item.text === 'string',
+    );
   } catch {
     return false;
   }
@@ -905,9 +908,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
       onSaved();
     } catch (e) {
       if (uploadedUrl) {
-        deleteUploadedImageAction(uploadedUrl).catch((err) =>
-          console.error('[MoveModal] cleanup upload failed:', err),
-        );
+        deleteUploadedImageAction(uploadedUrl).catch(() => {});
       }
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
