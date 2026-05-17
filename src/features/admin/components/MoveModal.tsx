@@ -207,8 +207,10 @@ function ImageDropZone({
 
   const safePreviewUrl = (() => {
     try {
-      const { protocol } = new URL(previewUrl);
-      return protocol === 'blob:' || protocol === 'https:' ? previewUrl : '';
+      const { protocol, hostname } = new URL(previewUrl);
+      if (protocol === 'blob:') return previewUrl;
+      if (protocol === 'https:' && hostname === 'res.cloudinary.com') return previewUrl;
+      return '';
     } catch {
       return '';
     }
