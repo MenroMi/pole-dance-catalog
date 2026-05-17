@@ -1,56 +1,688 @@
 'use server';
-import { Difficulty, Category } from '@prisma/client';
+import { Category, Difficulty, PoleType } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { auth } from '@/shared/lib/auth';
+import { cloudinary } from '@/shared/lib/cloudinary';
 import { prisma } from '@/shared/lib/prisma';
 
-import type { CreateMoveInput } from './types';
-
-const createMoveSchema = z.object({
-  title_pl: z.string().min(1),
-  title_en: z.string().min(1),
-  description_pl: z.string().optional(),
-  description_en: z.string().optional(),
-  difficulty: z.nativeEnum(Difficulty),
-  category: z.nativeEnum(Category),
-  youtubeUrl: z.string().url(),
-  imageUrl: z.string().url().optional(),
-  tags: z.array(z.string()).optional(),
-});
+import type {
+  AdminMoveRow,
+  AdminStats,
+  AdminTagRow,
+  AdminUserRow,
+  CreateMoveInput,
+  CreateTagInput,
+  FullAdminMove,
+  UpdateMoveInput,
+  UpdateTagInput,
+} from './types';
 
 async function requireAdmin() {
   const session = await auth();
   if (!session || session.user?.role !== 'ADMIN') {
     throw new Error('Unauthorized');
   }
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id! },
+    select: { blockedAt: true },
+  });
+  if (!dbUser || dbUser.blockedAt) {
+    throw new Error('Unauthorized');
+  }
+  return session;
 }
+
+const moveSchema = z.object({
+  title_pl: z.string().min(1),
+  title_en: z.string().min(1),
+  description_pl: z.string().optional(),
+  description_en: z.string().optional(),
+  difficulty: z.nativeEnum(Difficulty),
+  category: z.nativeEnum(Category),
+  poleTypes: z.array(z.nativeEnum(PoleType)).default([]),
+  youtubeUrl: z
+    .string()
+    .url()
+    .refine(
+      (v) => /^https:\/\/(www\.youtube\.com|youtube\.com|youtu\.be)\//.test(v),
+      'Must be a YouTube URL',
+    ),
+  imageUrl: z
+    .string()
+    .url()
+    .refine((v) => /^https:\/\/res\.cloudinary\.com\//.test(v), 'Must be a Cloudinary URL')
+    .nullable()
+    .optional()
+    .or(z.literal(''))
+    .transform((v) => (v === '' || v == null ? null : v)),
+  gripType_pl: z.string().optional(),
+  gripType_en: z.string().optional(),
+  entry_pl: z.string().optional(),
+  entry_en: z.string().optional(),
+  duration: z.string().optional(),
+  coachNote_pl: z.string().optional(),
+  coachNote_en: z.string().optional(),
+  coachNoteAuthor: z.string().optional(),
+  stepsData_pl: z
+    .array(z.object({ text: z.string(), timestamp: z.number().optional() }))
+    .default([]),
+  stepsData_en: z
+    .array(z.object({ text: z.string(), timestamp: z.number().optional() }))
+    .default([]),
+  tagIds: z.array(z.string()).min(1),
+  relatedMoveIds: z.array(z.string()).default([]),
+});
+
+const tagSchema = z.object({
+  name_en: z.string().min(1),
+  name_pl: z.string().min(1),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+});
 
 export async function createMoveAction(input: CreateMoveInput) {
   await requireAdmin();
-  const parsed = createMoveSchema.safeParse(input);
+  const parsed = moveSchema.safeParse(input);
   if (!parsed.success) throw new Error('Invalid input');
-  return prisma.move.create({
+  const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+  const result = await prisma.move.create({
     data: {
-      title_pl: parsed.data.title_pl,
-      title_en: parsed.data.title_en,
-      description_pl: parsed.data.description_pl,
-      description_en: parsed.data.description_en,
-      difficulty: parsed.data.difficulty,
-      category: parsed.data.category,
-      youtubeUrl: parsed.data.youtubeUrl,
-      imageUrl: parsed.data.imageUrl,
-      tags: {
-        connectOrCreate: (parsed.data.tags ?? []).map((name) => ({
-          where: { name_en: name },
-          create: { name_pl: name, name_en: name },
-        })),
-      },
+      ...data,
+      poleTypes,
+      stepsData_pl,
+      stepsData_en,
+      tags: { connect: tagIds.map((id) => ({ id })) },
+      relatedMoves: { connect: relatedMoveIds.map((id) => ({ id })) },
     },
   });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function updateMoveAction(input: UpdateMoveInput) {
+  await requireAdmin();
+  const { id, ...rest } = input;
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const parsed = moveSchema.safeParse(rest);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
+
+  const current = await prisma.move.findUnique({
+    where: { id: parsedId.data },
+    select: { imageUrl: true },
+  });
+
+  const result = await prisma.move.update({
+    where: { id: parsedId.data },
+    data: {
+      ...data,
+      poleTypes,
+      stepsData_pl,
+      stepsData_en,
+      tags: { set: [], connect: tagIds.map((id) => ({ id })) },
+      relatedMoves: { set: [], connect: relatedMoveIds.map((id) => ({ id })) },
+    },
+  });
+
+  // best-effort: DB write already succeeded, Cloudinary failure must not roll it back
+  if (current?.imageUrl && current.imageUrl !== data.imageUrl) {
+    try {
+      await destroyCloudinaryImage(current.imageUrl);
+    } catch {
+      // destroyCloudinaryImage logs internally; swallow here to protect the caller
+    }
+  }
+
+  revalidatePath('/', 'layout');
+  return result;
 }
 
 export async function deleteMoveAction(id: string) {
   await requireAdmin();
-  return prisma.move.delete({ where: { id } });
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+
+  const current = await prisma.move.findUnique({
+    where: { id: parsedId.data },
+    select: { imageUrl: true },
+  });
+
+  const result = await prisma.move.delete({ where: { id: parsedId.data } });
+
+  // best-effort: DB row already deleted, Cloudinary failure must not surface to caller
+  if (current?.imageUrl) {
+    try {
+      await destroyCloudinaryImage(current.imageUrl);
+    } catch {
+      // destroyCloudinaryImage logs internally; swallow here to protect the caller
+    }
+  }
+
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+const movesQuerySchema = z.object({
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(1).max(100).default(20),
+  query: z.string().max(200).default(''),
+  difficulty: z.enum(['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED']).default('ALL'),
+});
+
+export async function getMovesForAdminAction(
+  params: {
+    page?: number;
+    pageSize?: number;
+    query?: string;
+    difficulty?: 'ALL' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  } = {},
+): Promise<{ moves: AdminMoveRow[]; total: number; totalAll: number }> {
+  await requireAdmin();
+  const parsed = movesQuerySchema.safeParse(params);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { page, pageSize, query, difficulty } = parsed.data;
+
+  const searchCondition = query
+    ? {
+        OR: [
+          { title_en: { contains: query, mode: 'insensitive' as const } },
+          { title_pl: { contains: query, mode: 'insensitive' as const } },
+        ],
+      }
+    : undefined;
+
+  const diffCondition = difficulty !== 'ALL' ? { difficulty: difficulty as Difficulty } : undefined;
+
+  const conditions = [searchCondition, diffCondition].filter((c): c is NonNullable<typeof c> =>
+    Boolean(c),
+  );
+  const where = conditions.length > 0 ? { AND: conditions } : {};
+
+  const [moves, total, totalAll] = await Promise.all([
+    prisma.move.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      select: {
+        id: true,
+        title_en: true,
+        title_pl: true,
+        difficulty: true,
+        category: true,
+        createdAt: true,
+        tags: { select: { id: true, name_en: true } },
+        _count: { select: { favourites: true, progress: true } },
+      },
+    }),
+    prisma.move.count({ where }),
+    prisma.move.count(),
+  ]);
+
+  return { moves, total, totalAll };
+}
+
+export async function getMoveByIdAction(id: string): Promise<FullAdminMove | null> {
+  await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const result = await prisma.move.findUnique({
+    where: { id: parsedId.data },
+    include: {
+      tags: { select: { id: true, name_en: true, name_pl: true } },
+      relatedMoves: {
+        select: {
+          id: true,
+          title_en: true,
+          title_pl: true,
+          difficulty: true,
+          category: true,
+          _count: { select: { favourites: true } },
+        },
+      },
+    },
+  });
+  if (!result) return null;
+  // stepsData_en/pl are Json in Prisma but always stored as StepData[] by this app
+  type StepData = { text: string; timestamp?: number };
+  return {
+    ...result,
+    stepsData_en: (result.stepsData_en ?? []) as StepData[],
+    stepsData_pl: (result.stepsData_pl ?? []) as StepData[],
+    relatedMoves: (result.relatedMoves ?? []).map((m) => ({
+      id: m.id,
+      title_en: m.title_en,
+      title_pl: m.title_pl,
+      difficulty: m.difficulty,
+      category: m.category,
+      favourites: m._count.favourites,
+    })),
+  } satisfies FullAdminMove;
+}
+
+export async function searchRelatedMovesAction(params: {
+  query: string;
+  excludeId?: string;
+}): Promise<
+  {
+    id: string;
+    title_en: string;
+    title_pl: string;
+    difficulty: Difficulty;
+    category: Category;
+    favourites: number;
+  }[]
+> {
+  await requireAdmin();
+  const parsed = z
+    .object({ query: z.string().min(1).max(200), excludeId: z.string().optional() })
+    .safeParse(params);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { query, excludeId } = parsed.data;
+  const moves = await prisma.move.findMany({
+    where: {
+      AND: [
+        ...(excludeId ? [{ id: { not: excludeId } }] : []),
+        {
+          OR: [
+            { title_en: { contains: query, mode: 'insensitive' as const } },
+            { title_pl: { contains: query, mode: 'insensitive' as const } },
+          ],
+        },
+      ],
+    },
+    orderBy: { title_en: 'asc' },
+    take: 20,
+    select: {
+      id: true,
+      title_en: true,
+      title_pl: true,
+      difficulty: true,
+      category: true,
+      _count: { select: { favourites: true } },
+    },
+  });
+  return moves.map((m) => ({
+    id: m.id,
+    title_en: m.title_en,
+    title_pl: m.title_pl,
+    difficulty: m.difficulty,
+    category: m.category,
+    favourites: m._count.favourites,
+  }));
+}
+
+export async function getAdminStatsAction(): Promise<AdminStats> {
+  await requireAdmin();
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
+  // windowStartUTC = today-midnight - 6 days → 7-day window (today inclusive)
+  const windowStartUTC = new Date(todayUTC.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+  const [
+    totalMoves,
+    totalUsers,
+    totalTags,
+    totalFavourites,
+    totalProgress,
+    newUsersThisWeek,
+    blockedUsers,
+    movesWithoutImage,
+    movesWithoutDescription,
+    movesWithoutTags,
+    recentMoves,
+    diffGroups,
+    topFavRaw,
+    recentUserGroups,
+    recentFavGroups,
+  ] = await Promise.all([
+    prisma.move.count(),
+    prisma.user.count(),
+    prisma.tag.count(),
+    prisma.userFavourite.count(),
+    prisma.userProgress.count(),
+    prisma.user.count({ where: { createdAt: { gte: windowStartUTC } } }),
+    prisma.user.count({ where: { blockedAt: { not: null } } }),
+    prisma.move.count({ where: { imageUrl: null } }),
+    prisma.move.count({ where: { OR: [{ description_en: null }, { description_pl: null }] } }),
+    prisma.move.count({ where: { tags: { none: {} } } }),
+    prisma.move.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title_en: true,
+        title_pl: true,
+        difficulty: true,
+        category: true,
+        createdAt: true,
+        tags: { select: { id: true, name_en: true } },
+        _count: { select: { favourites: true, progress: true } },
+      },
+    }),
+    prisma.move.groupBy({ by: ['difficulty'], _count: { _all: true } }),
+    prisma.userFavourite.groupBy({
+      by: ['moveId'],
+      _count: { moveId: true },
+      orderBy: { _count: { moveId: 'desc' } },
+      take: 5,
+    }),
+    prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+      SELECT DATE_TRUNC('day', "createdAt") AS day, COUNT(*) AS count
+      FROM "User"
+      WHERE "createdAt" >= ${windowStartUTC}
+      GROUP BY 1
+    `,
+    prisma.$queryRaw<{ day: Date; count: bigint }[]>`
+      SELECT DATE_TRUNC('day', "createdAt") AS day, COUNT(*) AS count
+      FROM "UserFavourite"
+      WHERE "createdAt" >= ${windowStartUTC}
+      GROUP BY 1
+    `,
+  ]);
+
+  const topMoveIds = topFavRaw.map((r) => r.moveId);
+  const topMoveDetails = topMoveIds.length
+    ? await prisma.move.findMany({
+        where: { id: { in: topMoveIds } },
+        select: { id: true, title_en: true, title_pl: true },
+      })
+    : [];
+  const detailMap = new Map(topMoveDetails.map((m) => [m.id, m]));
+  const topFavouritedMoves = topFavRaw
+    .map((r) => {
+      const detail = detailMap.get(r.moveId);
+      return {
+        id: r.moveId,
+        title_en: detail?.title_en ?? '',
+        title_pl: detail?.title_pl ?? '',
+        count: r._count.moveId,
+      };
+    })
+    .filter((m) => m.title_en);
+
+  const difficultyDistribution = {
+    BEGINNER: diffGroups.find((g) => g.difficulty === 'BEGINNER')?._count._all ?? 0,
+    INTERMEDIATE: diffGroups.find((g) => g.difficulty === 'INTERMEDIATE')?._count._all ?? 0,
+    ADVANCED: diffGroups.find((g) => g.difficulty === 'ADVANCED')?._count._all ?? 0,
+  };
+
+  const days: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    days.push(new Date(todayUTC.getTime() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+  }
+  const userDayMap = new Map(
+    recentUserGroups.map((r) => [r.day.toISOString().slice(0, 10), Number(r.count)]),
+  );
+  const favDayMap = new Map(
+    recentFavGroups.map((r) => [r.day.toISOString().slice(0, 10), Number(r.count)]),
+  );
+  const activityData = days.map((key) => ({
+    day: key,
+    registrations: userDayMap.get(key) ?? 0,
+    favourites: favDayMap.get(key) ?? 0,
+  }));
+
+  return {
+    totalMoves,
+    totalUsers,
+    totalTags,
+    totalFavourites,
+    totalProgress,
+    newUsersThisWeek,
+    blockedUsers,
+    movesWithoutImage,
+    movesWithoutDescription,
+    movesWithoutTags,
+    difficultyDistribution,
+    topFavouritedMoves,
+    activityData,
+    recentMoves,
+  };
+}
+
+export async function getTagsForAdminAction(): Promise<AdminTagRow[]> {
+  await requireAdmin();
+  return prisma.tag.findMany({
+    orderBy: { name_en: 'asc' },
+    select: {
+      id: true,
+      name_en: true,
+      name_pl: true,
+      color: true,
+      _count: { select: { moves: true } },
+    },
+  });
+}
+
+export async function createTagAction(input: CreateTagInput) {
+  await requireAdmin();
+  const parsed = tagSchema.safeParse(input);
+  if (!parsed.success) throw new Error('Invalid input');
+  const result = await prisma.tag.create({ data: parsed.data });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function updateTagAction(input: UpdateTagInput) {
+  await requireAdmin();
+  const { id, ...rest } = input;
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const parsed = tagSchema.safeParse(rest);
+  if (!parsed.success) throw new Error('Invalid input');
+  const result = await prisma.tag.update({ where: { id: parsedId.data }, data: parsed.data });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function deleteTagAction(id: string) {
+  await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(id);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const result = await prisma.tag.delete({ where: { id: parsedId.data } });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+const usersQuerySchema = z.object({
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(1).max(100).default(20),
+  query: z.string().max(200).default(''),
+  roleFilter: z.enum(['ALL', 'USER', 'ADMIN', 'BLOCKED']).default('ALL'),
+});
+
+export async function getUsersForAdminAction(
+  params: {
+    page?: number;
+    pageSize?: number;
+    query?: string;
+    roleFilter?: 'ALL' | 'USER' | 'ADMIN' | 'BLOCKED';
+  } = {},
+): Promise<{
+  users: AdminUserRow[];
+  total: number;
+  totalAll: number;
+  totalAdmins: number;
+  totalBlocked: number;
+}> {
+  await requireAdmin();
+  const parsed = usersQuerySchema.safeParse(params);
+  if (!parsed.success) throw new Error('Invalid input');
+  const { page, pageSize, query, roleFilter } = parsed.data;
+
+  const searchCondition = query
+    ? {
+        OR: [
+          { email: { contains: query, mode: 'insensitive' as const } },
+          { firstName: { contains: query, mode: 'insensitive' as const } },
+          { lastName: { contains: query, mode: 'insensitive' as const } },
+        ],
+      }
+    : undefined;
+
+  const roleCondition =
+    roleFilter === 'ADMIN'
+      ? { role: 'ADMIN' as const }
+      : roleFilter === 'USER'
+        ? { role: 'USER' as const }
+        : roleFilter === 'BLOCKED'
+          ? { blockedAt: { not: null } }
+          : undefined;
+
+  const conditions = [searchCondition, roleCondition].filter((c): c is NonNullable<typeof c> =>
+    Boolean(c),
+  );
+  const where = conditions.length > 0 ? { AND: conditions } : {};
+
+  const select = {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    image: true,
+    location: true,
+    role: true,
+    blockedAt: true,
+    blockReason: true,
+    createdAt: true,
+  };
+
+  const [users, total, totalAll, totalAdmins, totalBlocked] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      select,
+    }),
+    prisma.user.count({ where }),
+    prisma.user.count(),
+    prisma.user.count({ where: { role: 'ADMIN' } }),
+    prisma.user.count({ where: { blockedAt: { not: null } } }),
+  ]);
+
+  return { users, total, totalAll, totalAdmins, totalBlocked };
+}
+
+export async function changeUserRoleAction(userId: string, role: 'USER' | 'ADMIN') {
+  const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const parsedRole = z.enum(['USER', 'ADMIN']).safeParse(role);
+  if (!parsedRole.success) throw new Error('Invalid input');
+  if (session.user?.id === userId) throw new Error('Cannot change your own role');
+  const result = await prisma.user.update({
+    where: { id: parsedId.data },
+    data: { role: parsedRole.data },
+  });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function blockUserAction(userId: string, reason?: string) {
+  const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
+  const parsedReason = z.string().max(500).optional().safeParse(reason);
+  if (!parsedReason.success) throw new Error('Invalid input');
+  if (session.user?.id === userId) throw new Error('Cannot block yourself');
+  const result = await prisma.user.update({
+    where: { id: parsedId.data },
+    data: { blockedAt: new Date(), blockReason: parsedReason.data ?? null },
+  });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function unblockUserAction(userId: string) {
+  const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
+  if (session.user?.id === userId) throw new Error('Cannot unblock yourself');
+  const result = await prisma.user.update({
+    where: { id: parsedId.data },
+    data: { blockedAt: null, blockReason: null },
+  });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+export async function deleteUserAction(userId: string) {
+  const session = await requireAdmin();
+  const parsedId = z.string().min(1).safeParse(userId);
+  if (!parsedId.success) throw new Error('Invalid input');
+  if (session.user?.id === userId) throw new Error('Cannot delete yourself');
+  const result = await prisma.user.delete({ where: { id: parsedId.data } });
+  revalidatePath('/', 'layout');
+  return result;
+}
+
+function extractCloudinaryPublicId(url: string): string | null {
+  // Parses /upload/[v<version>/]<public_id>.<ext> — no transformation segments expected
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+  return match?.[1] ?? null;
+}
+
+async function destroyCloudinaryImage(url: string): Promise<void> {
+  const publicId = extractCloudinaryPublicId(url);
+  if (!publicId) return;
+  await cloudinary.uploader.destroy(publicId).catch((err) => {
+    console.error('[Cloudinary] destroy failed for public_id:', publicId, err);
+  });
+}
+
+const CLOUDINARY_MOVES_RE =
+  /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/(?:v\d+\/)?pole-dance-catalog\/moves\/[^/]+$/i;
+
+export async function deleteUploadedImageAction(url: string): Promise<void> {
+  await requireAdmin();
+  if (!CLOUDINARY_MOVES_RE.test(url)) {
+    throw new Error('Invalid image URL');
+  }
+  await destroyCloudinaryImage(url);
+}
+
+function isImageBuffer(buf: Buffer): boolean {
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return true; // JPEG
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return true; // PNG
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return true; // GIF
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 &&
+    buf[1] === 0x49 &&
+    buf[2] === 0x46 &&
+    buf[3] === 0x46 &&
+    buf[8] === 0x57 &&
+    buf[9] === 0x45 &&
+    buf[10] === 0x42 &&
+    buf[11] === 0x50
+  )
+    return true; // WebP (RIFF....WEBP)
+  // AVIF intentionally excluded — uncommon format for move images
+  return false;
+}
+
+export async function uploadMoveImageAction(formData: FormData): Promise<{ imageUrl: string }> {
+  await requireAdmin();
+  const file = formData.get('image') as File | null;
+  if (!file) throw new Error('No file provided');
+  if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed');
+  if (file.size > 5 * 1024 * 1024) throw new Error('File size must be under 5MB');
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!isImageBuffer(buffer)) throw new Error('Only image files are allowed');
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream({ folder: 'pole-dance-catalog/moves' }, (error, res) => {
+        if (error || !res) reject(error ?? new Error('Upload failed'));
+        else resolve(res as { secure_url: string });
+      })
+      .end(buffer);
+  });
+  return { imageUrl: result.secure_url };
 }

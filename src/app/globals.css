@@ -104,6 +104,40 @@
   font-family: var(--font-display);
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.88);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -165,36 +199,54 @@
   animation: blob-drift-b 31s cubic-bezier(0.37, 0, 0.63, 1) infinite;
 }
 
-@layer utilities {
-  .kinetic-gradient {
-    background: linear-gradient(135deg, var(--primary), var(--primary-container), var(--primary));
-    background-size: 200% 200%;
-    background-position: left center;
-    color: var(--on-primary-container);
-    box-shadow: var(--aura-cta);
-    transition:
-      background-position 600ms ease,
-      transform 300ms ease,
-      box-shadow 300ms ease,
-      opacity 300ms ease;
-  }
-  .kinetic-gradient:hover {
-    background-position: right center;
-    box-shadow: var(--aura-cta-hover);
-  }
+.kinetic-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--primary-container), var(--primary));
+  background-size: 200% 200%;
+  background-position: left center;
+  color: var(--on-primary-container);
+  box-shadow: var(--aura-cta);
+  transition:
+    background-position 600ms ease,
+    transform 300ms ease,
+    box-shadow 300ms ease,
+    opacity 300ms ease;
+}
+.kinetic-gradient:hover {
+  background-position: right center;
+  box-shadow: var(--aura-cta-hover);
+}
 
-  .glass {
-    background-color: var(--glass-tint);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: var(--hairline-soft);
-  }
+.glass {
+  background-color: var(--glass-tint);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--hairline-soft);
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    .animate-blob-a,
-    .animate-blob-b,
-    .animate-fade-in-up {
-      animation: none;
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-a,
+  .animate-blob-b,
+  .animate-fade-in-up {
+    animation: none;
+  }
+  @keyframes shimmer {
+    0%,
+    100% {
+      background-position: 200% 0%;
+    }
+  }
+  @keyframes slide-down {
+    from,
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pop-in {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 }
@@ -203,4 +255,9 @@ body {
   background-color: var(--surface);
   color: var(--on-surface);
   font-family: var(--font-manrope), Arial, sans-serif;
+}
+
+.admin-field::placeholder {
+  color: #6b6270 !important;
+  opacity: 1;
 }

@@ -1,0 +1,101 @@
+'use client';
+
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/components/ui/alert-dialog';
+
+interface ConfirmDialogProps {
+  open: boolean;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  loadingLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading?: boolean;
+  error?: string | null;
+  danger?: boolean;
+  children?: React.ReactNode;
+}
+
+export function ConfirmDialog({
+  open,
+  title,
+  description,
+  confirmLabel = 'Confirm', // callers should always pass a translated label
+  loadingLabel = '…',
+  onConfirm,
+  onCancel,
+  loading,
+  error,
+  danger,
+  children,
+}: ConfirmDialogProps) {
+  const t = useTranslations('admin');
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && !loading) onCancel();
+      }}
+    >
+      <AlertDialogContent
+        style={{
+          background: '#1e1e1e',
+          border: '1px solid rgba(255,255,255,0.1)',
+          color: '#e0e0e0',
+        }}
+      >
+        <AlertDialogHeader>
+          <AlertDialogTitle style={{ color: '#e0e0e0' }}>{title}</AlertDialogTitle>
+          <AlertDialogDescription style={{ color: '#888' }}>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        {children}
+        {error && <p style={{ color: '#f87171', fontSize: 13, margin: '4px 0 0' }}>{error}</p>}
+        <AlertDialogFooter>
+          <AlertDialogCancel
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#e0e0e0',
+            }}
+          >
+            {t('cancel')}
+          </AlertDialogCancel>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            style={{
+              background: danger ? '#dc2626' : '#8458b3',
+              color: '#fff',
+              opacity: loading ? 0.6 : 1,
+              padding: '8px 16px',
+              borderRadius: 6,
+              border: 'none',
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            {loading && <Loader2 size={14} className="animate-spin" style={{ flexShrink: 0 }} />}
+            {loading ? loadingLabel : confirmLabel}
+          </button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}

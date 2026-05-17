@@ -68,4 +68,38 @@ describe('getProtectedRedirect', () => {
     expect(url).not.toBeNull();
     expect(url!.searchParams.get('callbackUrl')).toBe('/pl/profile?tab=progress');
   });
+
+  it('redirects authenticated non-admin from /pl/admin to /pl/catalog', () => {
+    const url = getProtectedRedirect('/pl/admin', true, 'http://localhost', '', 'USER');
+    expect(url).not.toBeNull();
+    expect(url!.pathname).toBe('/pl/catalog');
+  });
+
+  it('allows authenticated ADMIN on /pl/admin', () => {
+    expect(getProtectedRedirect('/pl/admin', true, 'http://localhost', '', 'ADMIN')).toBeNull();
+  });
+
+  it('redirects blocked ADMIN from /pl/admin to catalog', () => {
+    const result = getProtectedRedirect(
+      '/pl/admin',
+      true,
+      'http://localhost',
+      '',
+      'ADMIN',
+      '2026-01-01T00:00:00.000Z',
+    );
+    expect(result?.pathname).toBe('/pl/catalog');
+  });
+
+  it('redirects authenticated non-admin from /pl/admin/moves to /pl/catalog', () => {
+    const url = getProtectedRedirect('/pl/admin/moves', true, 'http://localhost', '', 'USER');
+    expect(url).not.toBeNull();
+    expect(url!.pathname).toBe('/pl/catalog');
+  });
+
+  it('still redirects unauthenticated user from /pl/admin to /pl/login', () => {
+    const url = getProtectedRedirect('/pl/admin', false, 'http://localhost', '', undefined);
+    expect(url).not.toBeNull();
+    expect(url!.pathname).toBe('/pl/login');
+  });
 });

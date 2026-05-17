@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { PasswordInput } from '@/shared/components/PasswordInput';
 
 import { loginAction, signInWithOAuthAction } from '../actions';
@@ -19,6 +19,7 @@ const OAUTH_ERROR_MAP: Record<string, string> = {
   OAuthAccountNotLinked: 'oauthAccountNotLinked',
   OAuthCallbackError: 'oauthCallbackError',
   OAuthSignin: 'oauthSignin',
+  AccountBlocked: 'accountBlocked',
 };
 
 const facebookEnabled = process.env.NEXT_PUBLIC_FACEBOOK_ENABLED === 'true';
@@ -27,6 +28,8 @@ export function LoginForm() {
   const t = useTranslations('auth.login');
   const te = useTranslations('auth.errors');
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const showResetBanner = searchParams.get('reset') === 'true';
   const showVerifiedBanner = searchParams.get('verified') === 'true';
   const oauthErrorCode = searchParams.get('error');
@@ -44,12 +47,31 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setUnverifiedEmail(null);
+    if (oauthErrorCode) {
+      const params = new URLSearchParams();
+      if (callbackUrl) params.set('callbackUrl', callbackUrl);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    }
     const result = await loginAction(data);
     if (result?.error) {
       setError('root', { message: result.error });
       if (result.email) setUnverifiedEmail(result.email);
     }
   };
+
+  const CRED_ERROR_MAP: Record<string, string> = {
+    'Invalid credentials': te('invalidCredentials'),
+    AccountBlocked: te('accountBlocked'),
+    'Please verify your email first': te('verifyEmailFirst'),
+    'Please sign in with Google or Facebook': te('pleaseSignInWithOAuth'),
+  };
+
+  const currentError = errors.root?.message
+    ? (CRED_ERROR_MAP[errors.root.message] ?? errors.root.message)
+    : oauthErrorCode
+      ? te(OAUTH_ERROR_MAP[oauthErrorCode] ?? 'oauthGeneric')
+      : null;
 
   const handleOAuthSignIn = (provider: 'google' | 'facebook') => {
     setPendingProvider(provider);
@@ -89,12 +111,37 @@ export function LoginForm() {
         </p>
       )}
 
-      {oauthErrorCode && (
+      {currentError && (
         <div
           role="alert"
-          className="rounded-lg border border-red-500/20 bg-red-500/8 px-3.5 py-3 text-sm text-red-400"
+          className="flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/8 px-3.5 py-3 text-sm text-red-400"
         >
-          {te(OAUTH_ERROR_MAP[oauthErrorCode] ?? 'oauthGeneric')}
+          <svg
+            className="mt-0.5 h-4 w-4 shrink-0"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>
+            {currentError}
+            {unverifiedEmail && (
+              <>
+                {' — '}
+                <Link
+                  href={`/verify-email?sent=true&email=${encodeURIComponent(unverifiedEmail)}`}
+                  className="underline underline-offset-4 hover:text-red-300"
+                >
+                  {t('resendVerificationLink')}
+                </Link>
+              </>
+            )}
+          </span>
         </div>
       )}
 
@@ -165,46 +212,6 @@ export function LoginForm() {
             )}
           </div>
         </div>
-
-        {errors.root && (
-          <div
-            role="alert"
-            className="flex items-start gap-2.5 rounded-lg border border-red-500/20 bg-red-500/8 px-3.5 py-3 text-sm text-red-400"
-          >
-            <svg
-              className="mt-0.5 h-4 w-4 shrink-0"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>
-              {(
-                {
-                  'Invalid credentials': te('invalidCredentials'),
-                  'Please verify your email first': te('verifyEmailFirst'),
-                  'Please sign in with Google or Facebook': te('pleaseSignInWithOAuth'),
-                } as Record<string, string>
-              )[errors.root.message ?? ''] ?? errors.root.message}
-              {unverifiedEmail && (
-                <>
-                  {' — '}
-                  <Link
-                    href={`/verify-email?sent=true&email=${encodeURIComponent(unverifiedEmail)}`}
-                    className="underline underline-offset-4 hover:text-red-300"
-                  >
-                    {t('resendVerificationLink')}
-                  </Link>
-                </>
-              )}
-            </span>
-          </div>
-        )}
 
         <button
           type="submit"

@@ -18,6 +18,8 @@ model User {
   location      String?
   password      String?
   role          Role      @default(USER)
+  blockedAt     DateTime?
+  blockReason   String?
   createdAt     DateTime  @default(now())
 
   progress   UserProgress[]
@@ -102,6 +104,8 @@ model Move {
   progress   UserProgress[]
   favourites UserFavourite[]
   tags       Tag[]
+  relatedMoves   Move[] @relation("RelatedMoves")
+  relatedMovesOf Move[] @relation("RelatedMoves")
 }
 
 model UserProgress {
