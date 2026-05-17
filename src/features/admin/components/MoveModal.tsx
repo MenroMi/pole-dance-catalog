@@ -205,7 +205,16 @@ function ImageDropZone({
     />
   );
 
-  if (previewUrl) {
+  const safePreviewUrl = (() => {
+    try {
+      const { protocol } = new URL(previewUrl);
+      return protocol === 'blob:' || protocol === 'https:' ? previewUrl : '';
+    } catch {
+      return '';
+    }
+  })();
+
+  if (safePreviewUrl) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div
@@ -219,7 +228,7 @@ function ImageDropZone({
           {fileInput}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={previewUrl}
+            src={safePreviewUrl}
             alt=""
             style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
           />
