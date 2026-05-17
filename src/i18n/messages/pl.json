@@ -460,6 +460,12 @@
         "roleStatus": "Rola i status",
         "actions": "Akcje"
       }
+    },
+    "errorBoundary": {
+      "panel": "Panel Admina",
+      "description": "Wystąpił nieoczekiwany błąd w panelu admina.",
+      "tryAgain": "Spróbuj ponownie",
+      "backToDashboard": "Powrót do panelu"
     }
   },
   "enums": {

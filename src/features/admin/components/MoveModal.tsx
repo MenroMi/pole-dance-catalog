@@ -5,7 +5,7 @@ import { Category, Difficulty } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { type FieldError, type FieldErrors, useForm } from 'react-hook-form';
+import { type FieldError, type FieldErrors, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/shared/components/ui/button';
@@ -806,7 +806,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<FormValues>({
@@ -815,19 +815,23 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
     mode: 'onTouched',
   });
 
-  const watchedPoleTypes = watch('poleTypes');
-  const watchedTagIds = watch('tagIds');
-  const watchedRelatedMoveIds = watch('relatedMoveIds');
-  const watchedImageUrl = watch('imageUrl');
+  const [watchedPoleTypes, watchedTagIds, watchedRelatedMoveIds, watchedImageUrl] = useWatch({
+    control,
+    name: ['poleTypes', 'tagIds', 'relatedMoveIds', 'imageUrl'],
+  });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (tab !== 'related') setRelatedQuery('');
   }, [tab]);
 
   useEffect(() => {
     if (!relatedQuery.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults([]);
+
       setSearchError(false);
+
       setSearchLoading(false);
       return;
     }
@@ -867,6 +871,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
 
   useEffect(() => {
     if (!pendingFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setObjectUrl(null);
       return;
     }
@@ -1003,6 +1008,7 @@ export function MoveModal({ move, availableTags, onClose, onSaved }: MoveModalPr
   }
 
   // Always pin ALL selected moves — no flicker when they enter/leave search results.
+  // eslint-disable-next-line react-hooks/refs
   const pinnedSelected = watchedRelatedMoveIds.flatMap((id) => {
     const info = knownMovesRef.current.get(id);
     return info ? [{ id, ...info }] : [];

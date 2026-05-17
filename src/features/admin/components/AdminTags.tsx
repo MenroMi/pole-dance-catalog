@@ -596,6 +596,10 @@ function TagModal({
 
 export function AdminTags() {
   const t = useTranslations('admin');
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  });
   const [tags, setTags] = useState<AdminTagRow[]>([]);
   const hasFetchedRef = useRef(false);
   const [loading, setLoading] = useState(true);
@@ -625,7 +629,7 @@ export function AdminTags() {
       .catch((e) => {
         if (!cancelled) {
           hasFetchedRef.current = false;
-          setLoadError(e instanceof Error ? e.message : t('tags.loadError'));
+          setLoadError(e instanceof Error ? e.message : tRef.current('tags.loadError'));
         }
       })
       .finally(() => {
@@ -637,7 +641,7 @@ export function AdminTags() {
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey]); // tRef is a stable ref — intentionally omitted
 
   const filtered = tags.filter(
     (t) =>

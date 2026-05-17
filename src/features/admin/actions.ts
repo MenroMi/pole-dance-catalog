@@ -87,10 +87,7 @@ const tagSchema = z.object({
 export async function createMoveAction(input: CreateMoveInput) {
   await requireAdmin();
   const parsed = moveSchema.safeParse(input);
-  if (!parsed.success) {
-    console.error('[createMoveAction] validation failed:', parsed.error.flatten());
-    throw new Error('Invalid input');
-  }
+  if (!parsed.success) throw new Error('Invalid input');
   const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
   const result = await prisma.move.create({
     data: {
@@ -112,10 +109,7 @@ export async function updateMoveAction(input: UpdateMoveInput) {
   const parsedId = z.string().min(1).safeParse(id);
   if (!parsedId.success) throw new Error('Invalid input');
   const parsed = moveSchema.safeParse(rest);
-  if (!parsed.success) {
-    console.error('[updateMoveAction] validation failed:', parsed.error.flatten());
-    throw new Error('Invalid input');
-  }
+  if (!parsed.success) throw new Error('Invalid input');
   const { tagIds, relatedMoveIds, stepsData_pl, stepsData_en, poleTypes, ...data } = parsed.data;
 
   const current = await prisma.move.findUnique({
@@ -670,6 +664,17 @@ function isImageBuffer(buf: Buffer): boolean {
     buf[11] === 0x50
   )
     return true; // WebP
+  // AVIF: ftyp box with 'avif' or 'avis' brand at offset 4–7
+  if (
+    buf.length >= 12 &&
+    buf[4] === 0x66 &&
+    buf[5] === 0x74 &&
+    buf[6] === 0x79 &&
+    buf[7] === 0x70 &&
+    ((buf[8] === 0x61 && buf[9] === 0x76 && buf[10] === 0x69 && buf[11] === 0x66) ||
+      (buf[8] === 0x61 && buf[9] === 0x76 && buf[10] === 0x69 && buf[11] === 0x73))
+  )
+    return true; // AVIF
   return false;
 }
 

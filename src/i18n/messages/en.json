@@ -460,6 +460,12 @@
         "roleStatus": "Role & Status",
         "actions": "Actions"
       }
+    },
+    "errorBoundary": {
+      "panel": "Admin Panel",
+      "description": "An unexpected error occurred in the admin panel.",
+      "tryAgain": "Try again",
+      "backToDashboard": "Back to dashboard"
     }
   },
   "enums": {

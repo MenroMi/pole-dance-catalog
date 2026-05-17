@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { Link } from '@/i18n/navigation';
 
 type Props = {
@@ -8,6 +10,8 @@ type Props = {
 };
 
 export default function AdminError({ error, unstable_retry }: Props) {
+  const t = useTranslations('admin');
+
   return (
     <div
       style={{
@@ -41,7 +45,7 @@ export default function AdminError({ error, unstable_retry }: Props) {
             marginBottom: '16px',
           }}
         >
-          Admin Panel
+          {t('errorBoundary.panel')}
         </p>
 
         <h1
@@ -53,7 +57,7 @@ export default function AdminError({ error, unstable_retry }: Props) {
             marginBottom: '12px',
           }}
         >
-          Something went wrong
+          {t('error')}
         </h1>
 
         <p
@@ -64,7 +68,7 @@ export default function AdminError({ error, unstable_retry }: Props) {
             marginBottom: error.digest ? '8px' : '0',
           }}
         >
-          An unexpected error occurred in the admin panel.
+          {t('errorBoundary.description')}
         </p>
 
         {error.digest && (
@@ -104,7 +108,7 @@ export default function AdminError({ error, unstable_retry }: Props) {
               fontFamily: 'var(--font-manrope)',
             }}
           >
-            Try again
+            {t('errorBoundary.tryAgain')}
           </button>
 
           <Link
@@ -123,7 +127,7 @@ export default function AdminError({ error, unstable_retry }: Props) {
               textDecoration: 'none',
             }}
           >
-            Back to dashboard
+            {t('errorBoundary.backToDashboard')}
           </Link>
         </div>
       </div>

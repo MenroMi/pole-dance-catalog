@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { SECTION_KEY } from '../constants';
+
 import { AdminDashboard } from './AdminDashboard';
 import { AdminMoves } from './AdminMoves';
 import { AdminShell } from './AdminShell';
@@ -10,11 +12,9 @@ import { AdminUsers } from './AdminUsers';
 
 type Section = 'dashboard' | 'moves' | 'users' | 'tags';
 
-const STORAGE_KEY = 'admin_section';
-
 function getSavedSection(): Section {
   if (typeof window === 'undefined') return 'dashboard';
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(SECTION_KEY);
   if (saved === 'moves' || saved === 'users' || saved === 'tags') return saved;
   return 'dashboard';
 }
@@ -30,7 +30,7 @@ export function AdminApp({
 
   function handleSectionChange(s: Section) {
     setSection(s);
-    localStorage.setItem(STORAGE_KEY, s);
+    localStorage.setItem(SECTION_KEY, s);
   }
 
   return (
