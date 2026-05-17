@@ -183,14 +183,14 @@
 
 ## Feature Gaps
 
-~~**Admin panel — UI not implemented**~~ ✅ Done (2026-05-12) — `feat/admin-ui`
+~~**Admin panel — UI not implemented**~~ ✅ Done — `feat/admin-ui` PR #36 (2026-05-17)
 
 - Dashboard с live DB stats, Moves CRUD, Tags CRUD, Users management
-- 592 тестов passing, TypeScript + ESLint чистые, HEAD `c06ecee`
-- Прошла полное ревью (2026-05-16): security, correctness, UX, quality — все замечания исправлены
-- `imageUrl` ограничен Cloudinary domain (Zod refine); `$queryRaw GROUP BY` вместо `take:10000`
-- `_usersCache` сбрасывается при каждой мутации; `admin/error.tsx` добавлен
-- `SessionGuard` в `/admin` layout — отложено (см. Auth Sync todo ниже)
+- 592 тестов passing, TypeScript + ESLint чистые, HEAD `46abe26`
+- 9 раундов ревью пройдено; CI + CodeQL зелёные
+- Security: next 16.2.6, fast-uri override, XSS sanitization (blob:/cloudinary whitelist)
+- barrel exports, i18n error boundary, tRef/useWatch паттерны — все замечания финального ревью исправлены
+- `SessionGuard` в `/admin` layout — отложено (низкий приоритет, `requireAdmin()` покрывает безопасность)
 
 **Profile Settings — Preferences section not implemented** (2026-04-24)
 
