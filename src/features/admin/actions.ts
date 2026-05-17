@@ -663,18 +663,8 @@ function isImageBuffer(buf: Buffer): boolean {
     buf[10] === 0x42 &&
     buf[11] === 0x50
   )
-    return true; // WebP
-  // AVIF: ftyp box with 'avif' or 'avis' brand at offset 4–7
-  if (
-    buf.length >= 12 &&
-    buf[4] === 0x66 &&
-    buf[5] === 0x74 &&
-    buf[6] === 0x79 &&
-    buf[7] === 0x70 &&
-    ((buf[8] === 0x61 && buf[9] === 0x76 && buf[10] === 0x69 && buf[11] === 0x66) ||
-      (buf[8] === 0x61 && buf[9] === 0x76 && buf[10] === 0x69 && buf[11] === 0x73))
-  )
-    return true; // AVIF
+    return true; // WebP (RIFF....WEBP)
+  // AVIF intentionally excluded — uncommon format for move images
   return false;
 }
 
